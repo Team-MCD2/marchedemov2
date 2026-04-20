@@ -98,7 +98,8 @@ export const MAGASINS: Record<MagasinSlug, Magasin> = {
       "https://www.google.com/maps?q=8+All%C3%A9e+Pablo+Picasso+31120+Portet-sur-Garonne&output=embed",
     mapsLink:
       "https://maps.google.com/?q=8+All%C3%A9e+Pablo+Picasso+31120+Portet-sur-Garonne",
-    photo: "/magasins/portet.jpg",
+    // TODO: replace with real storefront photo at /magasins/portet.jpg
+    photo: "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&w=1600&q=80",
     badge: "Magasin historique",
     accroche: "Le magasin fondateur — 1 200 m² de saveurs du monde à Portet-sur-Garonne.",
     dateOuverture: "Août 2024",
@@ -141,7 +142,8 @@ export const MAGASINS: Record<MagasinSlug, Magasin> = {
       "https://www.google.com/maps?q=5+rue+Joachim+du+Bellay+31100+Toulouse&output=embed",
     mapsLink:
       "https://maps.google.com/?q=5+rue+Joachim+du+Bellay+31100+Toulouse",
-    photo: "/magasins/toulouse-sud.jpg",
+    // TODO: replace with real storefront photo at /magasins/toulouse-sud.jpg
+    photo: "https://images.unsplash.com/photo-1580913428023-02c695666d61?auto=format&fit=crop&w=1600&q=80",
     badge: "Dernier-né du groupe",
     accroche: "Le second magasin du Groupe, au cœur de Toulouse Sud Cépière.",
     dateOuverture: "Avril 2026",
