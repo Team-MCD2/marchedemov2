@@ -1,0 +1,15 @@
+{
+  "id": "promo-003",
+  "titre": "Ras el hanout artisanal — 250 g",
+  "description": "Mélange signature de 23 épices, torréfaction Maghreb.",
+  "image": "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=1200&q=80",
+  "prix_original": "7.50",
+  "prix_promo": "4.99",
+  "reduction_pct": 33,
+  "rayon": "epices-du-monde",
+  "magasin": "tous",
+  "date_debut": "2026-04-15",
+  "date_fin": "2026-04-27",
+  "mise_en_avant": false,
+  "actif": true
+}

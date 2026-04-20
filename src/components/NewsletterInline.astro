@@ -1,0 +1,71 @@
+---
+/**
+ * NewsletterInline — bloc abonnement réutilisable.
+ * Intégration côté /api/newsletter (POST vers Brevo ou Mailchimp).
+ */
+
+interface Props {
+  variant?: "light" | "dark";
+  compact?: boolean;
+}
+
+const { variant = "light", compact = false } = Astro.props as Props;
+const isDark = variant === "dark";
+---
+
+<section class={`${compact ? "py-12" : "section"} ${isDark ? "bg-noir text-white" : "bg-creme"}`}>
+  <div class="container-mo">
+    <div class={`relative overflow-hidden rounded-3xl p-8 md:p-14 ${
+      isDark
+        ? "bg-gradient-to-br from-[#0F0F0F] to-[#1A1A1A] border border-white/10"
+        : "bg-white"
+    }`}>
+      <!-- Decorative Mo' watermark -->
+      <img
+        src="/logos/favicon-marchedemo-contourwh.png"
+        alt=""
+        aria-hidden="true"
+        class="absolute -right-12 -bottom-12 w-64 opacity-[0.04] pointer-events-none"
+      />
+
+      <div class="relative z-10 grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+        <div>
+          <span class={`eyebrow ${isDark ? "text-vert-light" : ""}`}>-20% sur votre prochain caddie</span>
+          <h2 class={`display-lg mt-4 text-balance ${isDark ? "!text-white" : ""}`}>
+            Abonnez-vous et économisez.
+          </h2>
+          <p class={`mt-4 text-[15px] leading-relaxed max-w-md ${isDark ? "text-white/65" : "text-neutral-600"}`}>
+            Recevez nos promos hebdo, nos nouveautés et nos coups de cœur produits
+            directement par email. <strong>Zéro spam</strong> — désinscription en un clic.
+          </p>
+        </div>
+
+        <form
+          method="POST"
+          action="/api/newsletter"
+          class="flex flex-col sm:flex-row gap-3"
+        >
+          <label class="sr-only" for="newsletter-email-inline">Votre email</label>
+          <input
+            id="newsletter-email-inline"
+            type="email"
+            name="email"
+            required
+            placeholder="votre@email.com"
+            class={`flex-1 rounded-full px-6 py-4 font-pro text-[15px] focus:outline-none focus:ring-2 focus:ring-vert/30 transition ${
+              isDark
+                ? "bg-white/10 text-white placeholder-white/50 border border-white/15"
+                : "bg-creme border border-neutral-200"
+            }`}
+          />
+          <button type="submit" class="btn btn-primary whitespace-nowrap">
+            S'abonner
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M5 12h14M13 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>

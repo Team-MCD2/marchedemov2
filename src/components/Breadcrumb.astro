@@ -1,0 +1,38 @@
+---
+/**
+ * Breadcrumb — fil d'Ariane discret + JSON-LD gérable côté page.
+ */
+interface Item {
+  name: string;
+  href?: string;
+}
+
+interface Props {
+  items: Item[];
+  darkText?: boolean;
+}
+
+const { items, darkText = false } = Astro.props as Props;
+---
+
+<nav aria-label="Fil d'Ariane" class="container-mo py-4">
+  <ol class={`flex flex-wrap items-center gap-2 text-[13px] ${darkText ? "text-white/70" : "text-neutral-500"} font-pro`}>
+    <li>
+      <a href="/" class={`hover:underline ${darkText ? "hover:text-white" : "hover:text-vert"}`}>Accueil</a>
+    </li>
+    {items.map((item) => (
+      <>
+        <li aria-hidden="true" class="opacity-40">/</li>
+        <li>
+          {item.href ? (
+            <a href={item.href} class={`hover:underline ${darkText ? "hover:text-white" : "hover:text-vert"}`}>
+              {item.name}
+            </a>
+          ) : (
+            <span class={darkText ? "text-white" : "text-neutral-900"}>{item.name}</span>
+          )}
+        </li>
+      </>
+    ))}
+  </ol>
+</nav>

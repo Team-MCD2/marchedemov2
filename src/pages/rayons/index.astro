@@ -1,0 +1,48 @@
+---
+import Layout from "@layouts/Layout.astro";
+import RayonCard from "@components/RayonCard.astro";
+import Breadcrumb from "@components/Breadcrumb.astro";
+import FAQAccordion from "@components/FAQAccordion.astro";
+import NewsletterInline from "@components/NewsletterInline.astro";
+import { RAYONS_LIST, SITE } from "@/lib/site";
+import { FAQ_RAYONS_GENERAL } from "@/lib/faqs";
+import { breadcrumbSchema } from "@/lib/schema";
+
+const bc = breadcrumbSchema([{ name: "Nos rayons", url: "/rayons" }]);
+---
+
+<Layout
+  title={`Nos 10 rayons — Saveurs du monde · ${SITE.name}`}
+  description="10 rayons, 10 000+ références : boucherie halal, fruits & légumes exotiques, épices du monde, saveurs d'Afrique, d'Asie, de Méditerranée, Sud-Amérique, Balkans & Turquie."
+  faqItems={FAQ_RAYONS_GENERAL}
+  schema={bc}
+>
+  <Breadcrumb items={[{ name: "Nos rayons" }]} />
+
+  <!-- Hero -->
+  <section class="bg-blanc pb-8">
+    <div class="container-mo">
+      <span class="eyebrow">Exploration</span>
+      <h1 class="display-xl mt-4 text-balance max-w-5xl">
+        10 rayons. <span class="text-vert">10 continents</span> de saveurs.
+      </h1>
+      <p class="mt-6 max-w-2xl text-[17px] text-neutral-600 leading-relaxed">
+        Chaque rayon raconte une histoire. Chaque produit vient de sa région d'origine.
+        Chaque équipe porte la culture de son terroir. Explorez nos 10 univers — 5 avec
+        leur direction artistique culturelle propre.
+      </p>
+    </div>
+  </section>
+
+  <!-- Grille rayons -->
+  <section class="section-sm bg-blanc">
+    <div class="container-mo grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+      {RAYONS_LIST.map((r, i) => (
+        <RayonCard rayon={r} large={i === 0} />
+      ))}
+    </div>
+  </section>
+
+  <NewsletterInline />
+  <FAQAccordion items={FAQ_RAYONS_GENERAL} />
+</Layout>

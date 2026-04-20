@@ -1,0 +1,220 @@
+---
+/**
+ * Header — sticky, identical across every page.
+ * - Top bar : service client + à propos
+ * - Logo : rond contour vert (gauche)
+ * - Nav : accueil, enseigne, rayons (dropdown), promos (badge rouge), magasins, recrutement, fidélité, actualités
+ */
+import { RAYONS_LIST } from "@/lib/site";
+
+const pathname = Astro.url.pathname;
+const isActive = (href: string) =>
+  href === "/" ? pathname === "/" : pathname.startsWith(href);
+---
+
+<header
+  id="site-header"
+  class="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-black/5 transition-shadow duration-300"
+>
+  <!-- Top bar discrète -->
+  <div class="hidden md:block border-b border-black/5 bg-white">
+    <div class="container-mo flex items-center justify-between py-2 text-[12px] text-neutral-500 font-pro">
+      <span class="flex items-center gap-2">
+        <span class="inline-block w-1.5 h-1.5 rounded-full bg-vert"></span>
+        Bienvenue chez <strong class="text-neutral-900 font-bold">Marché de Mo'</strong>
+        · Le plus grand supermarché ethnique d'Occitanie
+      </span>
+      <nav class="flex items-center gap-5">
+        <a href="/notre-enseigne" class="hover:text-vert transition-colors">À propos</a>
+        <a href="/service-client" class="hover:text-vert transition-colors">Service client</a>
+        <a href="/programme-fidelite" class="hover:text-vert transition-colors">Espace Pro</a>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Nav principale -->
+  <div class="container-mo flex items-center justify-between py-3 lg:py-4 gap-4">
+    <!-- Logo -->
+    <a href="/" class="flex items-center gap-3 shrink-0" aria-label="Marché de Mo' — retour à l'accueil">
+      <img
+        src="/logos/logo-marchedemo-rond-contourgreen.png"
+        alt="Marché de Mo'"
+        width="56"
+        height="56"
+        fetchpriority="high"
+        class="w-12 h-12 lg:w-14 lg:h-14 object-contain"
+      />
+      <span class="hidden sm:block font-soft font-bold text-[18px] leading-none text-vert-dark">
+        Marché de Mo'
+        <span class="block text-[11px] font-pro font-normal text-neutral-500 tracking-wide mt-0.5">
+          Saveurs du Monde
+        </span>
+      </span>
+    </a>
+
+    <!-- Navigation desktop -->
+    <nav class="hidden lg:flex items-center gap-1 font-pro text-[14px] font-semibold">
+      <a
+        href="/"
+        class:list={["px-3 py-2 rounded-full hover:bg-black/5 transition", isActive("/") && "text-vert"]}
+      >
+        Accueil
+      </a>
+      <a
+        href="/notre-enseigne"
+        class:list={["px-3 py-2 rounded-full hover:bg-black/5 transition", isActive("/notre-enseigne") && "text-vert"]}
+      >
+        Notre enseigne
+      </a>
+
+      <!-- Dropdown Rayons -->
+      <div class="relative group">
+        <a
+          href="/rayons"
+          class:list={["px-3 py-2 rounded-full hover:bg-black/5 transition inline-flex items-center gap-1", isActive("/rayons") && "text-vert"]}
+        >
+          Nos rayons
+          <svg class="w-3.5 h-3.5 transition-transform group-hover:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="m6 9 6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+        <div class="absolute top-full left-0 mt-2 w-[480px] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform translate-y-2 group-hover:translate-y-0">
+          <div class="bg-white rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] border border-black/5 p-4 grid grid-cols-2 gap-1">
+            {RAYONS_LIST.map((r) => (
+              <a
+                href={`/rayons/${r.slug}`}
+                class="flex items-start gap-3 p-3 rounded-2xl hover:bg-vert-50 transition-colors group/item"
+              >
+                <span class="mt-0.5 w-2 h-2 rounded-full bg-vert shrink-0 opacity-40 group-hover/item:opacity-100 transition-opacity"></span>
+                <span class="flex-1 min-w-0">
+                  <span class="block font-bold text-[13.5px] text-neutral-900 leading-tight">{r.nom}</span>
+                  <span class="block text-[11.5px] text-neutral-500 truncate mt-0.5">{r.tagline}</span>
+                </span>
+              </a>
+            ))}
+          </div>
+          <div class="px-4 py-3 mt-2 bg-noir rounded-2xl flex items-center justify-between gap-3">
+            <span class="text-white text-[13px] font-pro">
+              <strong class="font-bold">10 000+</strong> références · 10 rayons
+            </span>
+            <a href="/rayons" class="text-white font-bold text-[13px] hover:text-vert-light transition">
+              Voir tout →
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <a
+        href="/promos"
+        class:list={[
+          "ml-1 px-3.5 py-2 rounded-full inline-flex items-center gap-1.5 transition",
+          isActive("/promos")
+            ? "bg-rouge text-white"
+            : "bg-rouge/10 text-rouge hover:bg-rouge hover:text-white",
+        ]}
+      >
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="9" cy="9" r="1.5" fill="currentColor"/>
+          <circle cx="15" cy="15" r="1.5" fill="currentColor"/>
+          <path d="m7 17 10-10" stroke-linecap="round"/>
+        </svg>
+        Promos
+      </a>
+
+      <a
+        href="/magasins"
+        class:list={["px-3 py-2 rounded-full hover:bg-black/5 transition", isActive("/magasins") && "text-vert"]}
+      >
+        Magasins
+      </a>
+      <a
+        href="/recrutement"
+        class:list={["px-3 py-2 rounded-full hover:bg-black/5 transition", isActive("/recrutement") && "text-vert"]}
+      >
+        Recrutement
+      </a>
+      <a
+        href="/actualites"
+        class:list={["px-3 py-2 rounded-full hover:bg-black/5 transition", isActive("/actualites") && "text-vert"]}
+      >
+        Actualités
+      </a>
+    </nav>
+
+    <!-- CTA desktop -->
+    <a
+      href={`tel:${import.meta.env.PUBLIC_PHONE || "0582958252"}`}
+      class="hidden xl:inline-flex btn btn-primary py-2.5 text-[13px]"
+    >
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      05 82 95 82 52
+    </a>
+
+    <!-- Mobile burger -->
+    <button
+      id="burger-btn"
+      aria-label="Ouvrir le menu"
+      class="lg:hidden p-2 rounded-full hover:bg-black/5 transition"
+    >
+      <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M3 12h18M3 6h18M3 18h18" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Mobile drawer -->
+  <div
+    id="mobile-drawer"
+    class="lg:hidden hidden border-t border-black/5 bg-white max-h-[80vh] overflow-y-auto"
+  >
+    <nav class="container-mo py-4 space-y-1 font-pro font-semibold text-[15px]">
+      <a href="/" class="block py-2.5 border-b border-black/5">Accueil</a>
+      <a href="/notre-enseigne" class="block py-2.5 border-b border-black/5">Notre enseigne</a>
+
+      <details class="border-b border-black/5">
+        <summary class="py-2.5 cursor-pointer flex justify-between items-center">
+          Nos rayons <span class="text-vert">+</span>
+        </summary>
+        <div class="pl-3 pb-2 space-y-1">
+          {RAYONS_LIST.map((r) => (
+            <a href={`/rayons/${r.slug}`} class="block py-1.5 text-[14px] font-normal text-neutral-700">
+              {r.nom}
+            </a>
+          ))}
+        </div>
+      </details>
+
+      <a href="/promos" class="block py-2.5 border-b border-black/5 text-rouge font-bold">Promos</a>
+      <a href="/magasins" class="block py-2.5 border-b border-black/5">Magasins</a>
+      <a href="/recrutement" class="block py-2.5 border-b border-black/5">Recrutement</a>
+      <a href="/programme-fidelite" class="block py-2.5 border-b border-black/5">Programme fidélité</a>
+      <a href="/actualites" class="block py-2.5 border-b border-black/5">Actualités</a>
+      <a href="/service-client" class="block py-2.5 border-b border-black/5">Service client</a>
+
+      <a href={`tel:0582958252`} class="mt-4 btn btn-primary w-full">
+        Nous appeler — 05 82 95 82 52
+      </a>
+    </nav>
+  </div>
+</header>
+
+<script>
+  // Burger menu
+  const burger = document.getElementById("burger-btn");
+  const drawer = document.getElementById("mobile-drawer");
+  burger?.addEventListener("click", () => {
+    drawer?.classList.toggle("hidden");
+  });
+
+  // Elevate header on scroll
+  const header = document.getElementById("site-header");
+  const onScroll = () => {
+    if (!header) return;
+    if (window.scrollY > 12) header.classList.add("shadow-[0_4px_20px_rgba(0,0,0,0.06)]");
+    else header.classList.remove("shadow-[0_4px_20px_rgba(0,0,0,0.06)]");
+  };
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+</script>

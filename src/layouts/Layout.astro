@@ -1,0 +1,128 @@
+---
+/**
+ * Layout.astro — wrap every page.
+ * Injects: Typekit (Filson Pro/Soft), full SEO head, sticky Header, full Footer.
+ * Each page passes its own title/description/og/faq/schema via Astro.props.
+ */
+import "@styles/global.css";
+import Header from "@components/Header.astro";
+import Footer from "@components/Footer.astro";
+import { SITE } from "@/lib/site";
+import { faqSchema } from "@/lib/schema";
+import type { FAQItem } from "@/lib/faqs";
+
+interface Props {
+  /** Page title (used as <title> and og:title). */
+  title: string;
+  /** Meta description + og:description. 150–160 chars max. */
+  description: string;
+  /** Canonical URL. If omitted, we'll derive it. */
+  canonical?: string;
+  /** Image for social sharing (path from root or absolute). */
+  ogImage?: string;
+  /** Accordion FAQ items. If provided, injects FAQPage JSON-LD automatically. */
+  faqItems?: FAQItem[];
+  /** Extra schema.org objects (Organization, GroceryStore, Offer, etc.). */
+  schema?: object | object[];
+  /** Lock body scroll (e.g. for /admin login screens). */
+  noIndex?: boolean;
+  /** Extra body classes (rayons culturels : `data-rayon` + bg). */
+  bodyClass?: string;
+  bodyDataRayon?: string;
+  /** Hide header/footer (for minimal admin screens). */
+  hideChrome?: boolean;
+}
+
+const {
+  title,
+  description,
+  canonical,
+  ogImage = "/logos/logo-marchedemo-rond-contourgreen.png",
+  faqItems,
+  schema,
+  noIndex,
+  bodyClass = "",
+  bodyDataRayon,
+  hideChrome,
+} = Astro.props as Props;
+
+const canonicalUrl = canonical ?? new URL(Astro.url.pathname, SITE.url).toString();
+const absoluteOgImage = ogImage.startsWith("http") ? ogImage : `${SITE.url}${ogImage}`;
+const schemas = Array.isArray(schema) ? schema : schema ? [schema] : [];
+---
+
+<!doctype html>
+<html lang="fr" data-astro-cid>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Favicon officiel : portrait sketch de Mo' -->
+    <link rel="icon" type="image/png" href="/logos/favicon-marchedemo.png" />
+    <link rel="apple-touch-icon" href="/logos/logo-marchedemo-rond-contourgreen.png" />
+    <meta name="theme-color" content="#1C6B35" />
+
+    <!-- Typekit : Filson Pro + Filson Soft -->
+    <link rel="preconnect" href="https://use.typekit.net" crossorigin />
+    <link rel="preconnect" href="https://p.typekit.net" crossorigin />
+    <link rel="stylesheet" href="https://use.typekit.net/tci0qgy.css" />
+
+    <!-- Preload du logo du header pour le premier paint -->
+    <link
+      rel="preload"
+      as="image"
+      href="/logos/logo-marchedemo-rond-contourgreen.png"
+      type="image/png"
+      fetchpriority="high"
+    />
+
+    <!-- SEO -->
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+    {noIndex && <meta name="robots" content="noindex, nofollow" />}
+    <meta name="author" content={SITE.name} />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={absoluteOgImage} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:locale" content="fr_FR" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={absoluteOgImage} />
+
+    <!-- JSON-LD : FAQ (auto si faqItems) -->
+    {faqItems && faqItems.length > 0 && (
+      <script
+        type="application/ld+json"
+        set:html={JSON.stringify(faqSchema(faqItems))}
+      />
+    )}
+
+    <!-- JSON-LD : autres schémas -->
+    {schemas.map((s) => (
+      <script type="application/ld+json" set:html={JSON.stringify(s)} />
+    ))}
+  </head>
+
+  <body
+    class={`min-h-screen flex flex-col bg-white text-[color:var(--color-texte)] font-pro antialiased ${bodyClass}`}
+    data-rayon={bodyDataRayon}
+  >
+    {!hideChrome && <Header />}
+
+    <main class="flex-1">
+      <slot />
+    </main>
+
+    {!hideChrome && <Footer />}
+  </body>
+</html>

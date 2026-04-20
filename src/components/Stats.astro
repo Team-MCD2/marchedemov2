@@ -1,0 +1,59 @@
+---
+/**
+ * Stats — 4 chiffres clés en très grande typographie display.
+ * Utilisé sur la home + /notre-enseigne + /magasins.
+ */
+
+interface Stat {
+  chiffre: string;
+  suffixe?: string;
+  label: string;
+  hint?: string;
+}
+
+interface Props {
+  items?: Stat[];
+  variant?: "light" | "dark";
+}
+
+const defaultStats: Stat[] = [
+  { chiffre: "10 000", suffixe: "+", label: "références", hint: "en rayon" },
+  { chiffre: "7", suffixe: "j/7", label: "ouvert", hint: "même le dimanche" },
+  { chiffre: "2", label: "magasins", hint: "à Toulouse" },
+  { chiffre: "Halal", label: "certifié", hint: "sans électronarcose" },
+];
+
+const { items = defaultStats, variant = "light" } = Astro.props as Props;
+const isDark = variant === "dark";
+---
+
+<section class={`section-sm ${isDark ? "bg-noir text-white" : "bg-creme"}`}>
+  <div class="container-mo">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-y-12 gap-x-8">
+      {items.map((stat, i) => (
+        <div class="group">
+          <div class="flex items-baseline gap-1">
+            <span class={`stat-number ${isDark ? "!text-white" : ""}`}>{stat.chiffre}</span>
+            {stat.suffixe && (
+              <span class={`font-soft font-bold text-[clamp(1.5rem,3vw,2.5rem)] leading-none -ml-0.5 ${
+                isDark ? "text-vert-light" : "text-vert"
+              }`}>
+                {stat.suffixe}
+              </span>
+            )}
+          </div>
+          <div class={`mt-2 font-pro font-bold text-[15px] tracking-wide uppercase ${
+            isDark ? "text-white/80" : "text-noir"
+          }`}>
+            {stat.label}
+          </div>
+          {stat.hint && (
+            <div class={`text-[13px] mt-0.5 ${isDark ? "text-white/50" : "text-neutral-500"}`}>
+              {stat.hint}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

@@ -1,0 +1,149 @@
+---
+import Layout from "@layouts/Layout.astro";
+import Breadcrumb from "@components/Breadcrumb.astro";
+import Stats from "@components/Stats.astro";
+import FAQAccordion from "@components/FAQAccordion.astro";
+import NewsletterInline from "@components/NewsletterInline.astro";
+import { SITE, MAGASINS } from "@/lib/site";
+import { FAQ_HOME } from "@/lib/faqs";
+import { breadcrumbSchema, organizationSchema } from "@/lib/schema";
+
+const bc = breadcrumbSchema([{ name: "Notre enseigne", url: "/notre-enseigne" }]);
+---
+
+<Layout
+  title={`Notre enseigne — L'histoire du Marché de Mo' · ${SITE.name}`}
+  description="Le Marché de Mo' est né d'une conviction : les saveurs du monde doivent être accessibles à tous. Retour sur notre histoire, notre équipe et notre ambition."
+  faqItems={FAQ_HOME}
+  schema={[bc, organizationSchema()]}
+>
+  <Breadcrumb items={[{ name: "Notre enseigne" }]} />
+
+  <!-- HERO -->
+  <section class="bg-blanc pb-8 relative overflow-hidden">
+    <img src="/logos/favicon-marchedemo.png" alt="" aria-hidden="true" class="absolute -right-24 top-0 w-[620px] opacity-[0.04] pointer-events-none select-none" />
+    <div class="container-mo relative">
+      <span class="eyebrow">Notre histoire</span>
+      <h1 class="display-xl mt-4 text-balance max-w-5xl">
+        Une famille.<br/>
+        Une <span class="text-vert">vision</span>.<br/>
+        10 000+ références.
+      </h1>
+      <p class="mt-6 max-w-2xl text-[17px] text-neutral-600 leading-relaxed">
+        Le Marché de Mo' est né en août 2024, à Portet-sur-Garonne, près de Toulouse.
+        Depuis, <strong>10 000+ références</strong>, deux magasins et une équipe de
+        <strong>24 passionnés</strong> racontent la même histoire : celle d'un
+        commerçant indépendant, engagé, qui croit aux saveurs du monde.
+      </p>
+    </div>
+  </section>
+
+  <Stats />
+
+  <!-- STORY -->
+  <section class="section bg-blanc">
+    <div class="container-mo grid lg:grid-cols-12 gap-10 lg:gap-16 items-start">
+      <div class="lg:col-span-5 lg:sticky lg:top-28">
+        <div class="relative aspect-square rounded-[36px] overflow-hidden shadow-card">
+          <img
+            src="https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&w=800&q=80"
+            alt="L'équipe Marché de Mo' Toulouse"
+            class="w-full h-full object-cover"
+            loading="lazy"
+          />
+        </div>
+        <div class="mt-6 bg-creme rounded-2xl p-5">
+          <p class="text-[13px] uppercase tracking-wider text-neutral-500 font-bold">Fondateur</p>
+          <p class="font-soft font-bold text-[22px] mt-1">Samir Ouaddaha</p>
+          <p class="text-[13.5px] text-neutral-600 mt-2">
+            Lauréat 2024 · Réseau Entreprendre Occitanie · Parrainé par le
+            directeur d'Auchan Gramont.
+          </p>
+        </div>
+      </div>
+
+      <div class="lg:col-span-7 space-y-10">
+        <div>
+          <span class="eyebrow">Chapitre 1 — Mo'</span>
+          <h2 class="display-md mt-4">Mo', c'était <span class="text-vert">Mohammed</span>.</h2>
+          <p class="mt-4 text-[15.5px] text-neutral-700 leading-relaxed">
+            Le patriarche. Le père d'une famille de commerçants passionnés dont est
+            issu Samir Ouaddaha. C'est en son hommage — et pour perpétuer cet esprit
+            de transmission — que l'enseigne porte son nom.
+          </p>
+        </div>
+
+        <div>
+          <span class="eyebrow">Chapitre 2 — Portet</span>
+          <h2 class="display-md mt-4">31 août 2024 : l'ouverture.</h2>
+          <p class="mt-4 text-[15.5px] text-neutral-700 leading-relaxed">
+            Le premier magasin ouvre ses portes au <strong>8 Allée Pablo Picasso</strong>,
+            dans la zone commerciale de Portet-sur-Garonne, dans les locaux de
+            l'ancienne Biocoop. 1 200 m², plus de 6 000 références le jour de l'ouverture,
+            aujourd'hui 10 000+. Le plus grand supermarché ethnique d'Occitanie.
+          </p>
+        </div>
+
+        <div>
+          <span class="eyebrow">Chapitre 3 — Cépière</span>
+          <h2 class="display-md mt-4">Un deuxième magasin, au cœur de Toulouse.</h2>
+          <p class="mt-4 text-[15.5px] text-neutral-700 leading-relaxed">
+            Le Groupe Marché de Mo' étend sa présence avec l'ouverture du magasin
+            <strong>Toulouse Sud — Cépière</strong>, dans les locaux de l'ancien
+            hypermarché du centre commercial L'Hippodrome. Même philosophie, même
+            surface (1 200 m²), même engagement à recruter localement.
+          </p>
+        </div>
+
+        <div>
+          <span class="eyebrow">Chapitre 4 — Demain</span>
+          <h2 class="display-md mt-4">Et après ?</h2>
+          <p class="mt-4 text-[15.5px] text-neutral-700 leading-relaxed">
+            D'autres magasins sont en projet. Mais avant l'expansion, notre priorité
+            reste la même : <strong>qualité, engagement, inclusion</strong>. Chaque
+            magasin est conçu pour être un lieu de lien social — pas juste un point
+            de vente.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHIFFRES ENGAGEMENTS -->
+  <section class="section bg-noir-section">
+    <div class="container-mo">
+      <span class="eyebrow !text-vert-light">En chiffres</span>
+      <h2 class="display-lg mt-4 text-balance max-w-3xl !text-white">
+        Le Marché de Mo', <span class="text-vert-light">c'est aussi</span> :
+      </h2>
+
+      <div class="mt-14 grid grid-cols-2 lg:grid-cols-4 gap-y-10 gap-x-6">
+        <div><div class="stat-number !text-white">24</div><div class="mt-2 font-bold text-[14px] uppercase tracking-wide">salariés engagés</div></div>
+        <div><div class="stat-number !text-white">90<span class="text-vert-light text-[0.7em]">%</span></div><div class="mt-2 font-bold text-[14px] uppercase tracking-wide">sans emploi avant</div></div>
+        <div><div class="stat-number !text-white">120<span class="text-vert-light text-[0.7em]">+</span></div><div class="mt-2 font-bold text-[14px] uppercase tracking-wide">fruits exotiques</div></div>
+        <div><div class="stat-number !text-white">19 – 56</div><div class="mt-2 font-bold text-[14px] uppercase tracking-wide">ans, notre équipe</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAGASINS teaser -->
+  <section class="section bg-blanc">
+    <div class="container-mo">
+      <span class="eyebrow">Nos magasins</span>
+      <h2 class="display-md mt-4 max-w-3xl">Venez nous rencontrer.</h2>
+      <div class="mt-10 grid md:grid-cols-2 gap-6">
+        {Object.values(MAGASINS).map((m) => (
+          <a href={`/magasins/${m.slug}`} class="group bg-creme rounded-3xl p-6 md:p-8 hover:bg-creme-warm transition-all duration-300 hover:-translate-y-1">
+            <span class="pill pill-vert">{m.badge}</span>
+            <h3 class="font-soft font-bold text-[24px] mt-4">{m.nomCourt}</h3>
+            <p class="text-[14px] text-neutral-600 mt-2">{m.adresseLigne1}, {m.codePostal} {m.ville}</p>
+            <span class="mt-5 inline-flex items-center gap-2 font-bold text-[14px] text-vert group-hover:translate-x-1 transition-transform">Voir le magasin →</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <NewsletterInline />
+  <FAQAccordion items={FAQ_HOME} />
+</Layout>

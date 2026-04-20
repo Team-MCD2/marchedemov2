@@ -1,0 +1,33 @@
+/* DA latam — Saveur Sud-Américaine
+   Festive, vibrante, chaleur tropicale. Géométrie andine / textiles péruviens. */
+
+[data-rayon="saveur-sud-amer"] {
+  --rayon-accent:       #E63946;   /* rouge vif */
+  --rayon-accent-dark:  #B12430;
+  --rayon-accent-2:     #F4C430;   /* jaune tropical */
+  --rayon-accent-3:     #2A9D8F;   /* turquoise */
+  --rayon-fond-section: #FFF9EC;
+  --rayon-fond-hero:    #1D1A14;
+  --rayon-texte-hero:   #FFF9EC;
+  --rayon-font-deco:    var(--font-display);
+}
+
+[data-rayon="saveur-sud-amer"] .rayon-hero {
+  background: linear-gradient(135deg, #1D1A14 0%, #2A1810 100%);
+  color: var(--rayon-texte-hero);
+}
+
+/* Motif géométrie andine — triangles & rayures */
+[data-rayon="saveur-sud-amer"] .rayon-motif {
+  background-image:
+    repeating-linear-gradient(90deg,
+      transparent 0 22px,
+      rgba(230, 57, 70, 0.08) 22px 26px,
+      transparent 26px 48px,
+      rgba(244, 196, 48, 0.07) 48px 52px);
+}
+
+[data-rayon="saveur-sud-amer"] .rayon-badge {
+  background: var(--rayon-accent);
+  color: #FFF9EC;
+}

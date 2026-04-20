@@ -1,0 +1,100 @@
+---
+import Layout from "@layouts/Layout.astro";
+import Breadcrumb from "@components/Breadcrumb.astro";
+import { SITE } from "@/lib/site";
+---
+
+<Layout
+  title={`Termes & conditions d'utilisation · ${SITE.name}`}
+  description="Conditions générales d'utilisation du site Marché de Mo'."
+>
+  <Breadcrumb items={[{ name: "Termes & conditions" }]} />
+
+  <section class="section bg-blanc">
+    <div class="container-mo max-w-3xl">
+      <h1 class="display-lg">Termes & conditions d'utilisation</h1>
+      <p class="mt-4 text-[13px] text-neutral-500 font-pro">Dernière mise à jour : avril 2026</p>
+
+      <div class="prose-mo mt-10">
+        <h2>Objet</h2>
+        <p>
+          Les présentes conditions générales d'utilisation (« CGU ») ont pour objet de définir
+          les modalités et conditions d'utilisation du site internet édité par {SITE.legalName}
+          (« le Site »). L'utilisation du Site implique l'acceptation pleine et entière des
+          présentes CGU.
+        </p>
+
+        <h2>Services proposés</h2>
+        <p>
+          Le Site a pour vocation de présenter l'enseigne <strong>Marché de Mo'</strong>, ses
+          magasins, ses rayons, ses promotions et ses offres de recrutement. Le Site ne
+          propose pas de vente en ligne.
+        </p>
+
+        <h2>Disponibilité des promotions</h2>
+        <p>
+          Les promotions et offres présentées sont valables uniquement en magasin, dans la
+          limite des stocks disponibles et pendant la période indiquée. Elles ne sont pas
+          cumulables avec d'autres offres sauf mention contraire.
+        </p>
+
+        <h2>Formulaires</h2>
+        <p>
+          Les formulaires accessibles depuis le Site (contact, candidature, fidélité,
+          newsletter) sont réservés à un usage personnel et non commercial. Les informations
+          transmises doivent être exactes, complètes et à jour.
+        </p>
+
+        <h2>Comportement de l'utilisateur</h2>
+        <p>
+          L'utilisateur s'engage à ne pas :
+        </p>
+        <ul>
+          <li>tenter d'accéder de manière non autorisée au Site ou à ses systèmes ;</li>
+          <li>transmettre du contenu illégal, diffamatoire ou violent via les formulaires ;</li>
+          <li>utiliser des moyens automatisés pour accéder au Site (scraping) sans autorisation.</li>
+        </ul>
+
+        <h2>Liens externes</h2>
+        <p>
+          Le Site peut contenir des liens vers des sites tiers (réseaux sociaux, Google Maps,
+          TikTok, etc.). Nous ne sommes pas responsables du contenu ni des pratiques de ces
+          sites — leur consultation se fait sous votre seule responsabilité.
+        </p>
+
+        <h2>Responsabilité</h2>
+        <p>
+          Nous mettons tout en œuvre pour fournir des informations exactes et à jour. Toutefois,
+          {SITE.legalName} ne saurait être tenue pour responsable d'éventuelles inexactitudes,
+          omissions ou interruptions de service.
+        </p>
+
+        <h2>Modification des CGU</h2>
+        <p>
+          Les présentes CGU peuvent être modifiées à tout moment. La version applicable est
+          celle en vigueur au moment de votre utilisation du Site.
+        </p>
+
+        <h2>Droit applicable</h2>
+        <p>
+          Les présentes CGU sont régies par le droit français. Tout litige relatif à leur
+          interprétation ou à leur exécution sera de la compétence exclusive des tribunaux de Toulouse.
+        </p>
+
+        <h2>Contact</h2>
+        <p>
+          Pour toute question, écrivez-nous à <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.
+        </p>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .prose-mo h2 { font-family: var(--font-soft); font-weight: 700; font-size: 22px; margin-top: 2rem; margin-bottom: 0.5rem; color: #0A0A0A; }
+  .prose-mo p  { font-size: 15px; line-height: 1.75; color: rgb(64, 64, 64); margin: 0.75rem 0; }
+  .prose-mo ul { margin: 0.75rem 0 1rem 1.25rem; }
+  .prose-mo ul li { font-size: 15px; line-height: 1.75; list-style: disc; color: rgb(64, 64, 64); margin: 0.25rem 0; }
+  .prose-mo a  { color: #1C6B35; text-decoration: underline; text-underline-offset: 3px; }
+  .prose-mo strong { color: #0A0A0A; }
+</style>

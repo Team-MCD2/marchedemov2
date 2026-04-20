@@ -1,0 +1,34 @@
+/* DA ottomane — Balkans & Turques
+   Marchés de Constantinople modernisés. Géométrie ottomane, arabesques,
+   carreaux Iznik.                                                               */
+
+[data-rayon="balkans-turques"] {
+  --rayon-accent:       #C0392B;   /* rouge turc */
+  --rayon-accent-dark:  #8E241A;
+  --rayon-accent-2:     #C8A951;   /* or sable */
+  --rayon-accent-3:     #1F3A6E;   /* bleu profond */
+  --rayon-fond-section: #FAF7F1;
+  --rayon-fond-hero:    #1F3A6E;
+  --rayon-texte-hero:   #FAF7F1;
+  --rayon-font-deco:    var(--font-display);
+}
+
+[data-rayon="balkans-turques"] .rayon-hero {
+  background: linear-gradient(135deg, #1F3A6E 0%, #17264A 100%);
+  color: var(--rayon-texte-hero);
+}
+
+/* Motif Iznik — étoile à 8 branches stylisée */
+[data-rayon="balkans-turques"] .rayon-motif {
+  background-image:
+    radial-gradient(circle at 50% 50%, rgba(200, 169, 81, 0.1) 2px, transparent 3px),
+    repeating-linear-gradient(45deg,
+      transparent 0 20px,
+      rgba(192, 57, 43, 0.04) 20px 22px);
+  background-size: 48px 48px, auto;
+}
+
+[data-rayon="balkans-turques"] .rayon-badge {
+  background: var(--rayon-accent);
+  color: #FAF7F1;
+}

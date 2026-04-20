@@ -1,0 +1,392 @@
+---
+import Layout from "@layouts/Layout.astro";
+import RayonCard from "@components/RayonCard.astro";
+import PromoCard from "@components/PromoCard.astro";
+import Stats from "@components/Stats.astro";
+import FAQAccordion from "@components/FAQAccordion.astro";
+import NewsletterInline from "@components/NewsletterInline.astro";
+import TikTokEmbed from "@components/islands/TikTokEmbed.jsx";
+import PromoCarousel from "@components/islands/PromoCarousel.jsx";
+import { getCollection } from "astro:content";
+import { RAYONS_LIST, ENGAGEMENTS, MAGASINS, SITE } from "@/lib/site";
+import { FAQ_HOME } from "@/lib/faqs";
+import { organizationSchema, websiteSchema, allMagasinsSchema, offerSchema } from "@/lib/schema";
+
+/* Promos featured + toutes les promos actives */
+const allPromos = await getCollection("promos", (p) => p.data.actif);
+const featuredPromo = allPromos.find((p) => p.data.mise_en_avant) ?? allPromos[0];
+const promosHome = allPromos.slice(0, 6);
+
+/* Videos home */
+const videos = (await getCollection("videos", (v) => v.data.actif && v.data.rayon === "home"))
+  .sort((a, b) => a.data.ordre - b.data.ordre);
+
+const schemas = [
+  organizationSchema(),
+  websiteSchema(),
+  ...allMagasinsSchema(),
+  ...(featuredPromo ? [offerSchema(featuredPromo.data)] : []),
+];
+---
+
+<Layout
+  title={`${SITE.name} — Plus grand supermarché ethnique d'Occitanie · Toulouse`}
+  description={SITE.shortPitch + ". Boucherie halal, fruits & légumes exotiques, épices du monde — 2 magasins à Toulouse."}
+  faqItems={FAQ_HOME}
+  schema={schemas}
+>
+  {/* ====================== 1 · HERO ====================== */}
+  <section class="relative overflow-hidden bg-gradient-to-br from-white via-creme to-[#F7F5F0]">
+    <!-- Watermark Mo' -->
+    <img
+      src="/logos/favicon-marchedemo.png"
+      alt=""
+      aria-hidden="true"
+      class="absolute -right-20 top-10 w-[640px] max-w-[70%] opacity-[0.045] pointer-events-none select-none"
+    />
+    <div class="container-mo relative z-10 pt-12 lg:pt-20 pb-20 lg:pb-28 grid lg:grid-cols-12 gap-10 items-center">
+      <div class="lg:col-span-7">
+        <span class="eyebrow">Commerçant engagé · Saveurs du Monde</span>
+        <h1 class="display-xl mt-6 text-balance">
+          Les <span class="text-vert">saveurs</span><br/>
+          du monde,<br/>
+          sous un même <span class="text-rouge">toit</span>.
+        </h1>
+        <p class="mt-6 max-w-xl text-[17px] leading-relaxed text-neutral-600 text-pretty">
+          Plus grand supermarché ethnique d'Occitanie. <strong>10 000+ références</strong>,
+          boucherie halal sur carcasse, fruits et légumes exotiques, épices du monde.
+          Ouvert <strong>7j/7</strong> à Toulouse.
+        </p>
+        <div class="mt-10 flex flex-col sm:flex-row gap-3">
+          <a href="/rayons" class="btn btn-primary">
+            Explorer nos rayons
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M5 12h14M13 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+          <a href="/magasins" class="btn btn-ghost">Voir nos magasins</a>
+        </div>
+
+        <!-- Trust indicators -->
+        <div class="mt-12 flex flex-wrap items-center gap-8 text-[13px] text-neutral-500">
+          <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-vert"></span> 100% halal certifié</span>
+          <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-rouge"></span> Arrivage quotidien</span>
+          <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-noir"></span> 2 magasins à Toulouse</span>
+        </div>
+      </div>
+
+      <!-- Hero visual -->
+      <div class="lg:col-span-5 relative">
+        <div class="relative aspect-[4/5] rounded-[48px] overflow-hidden shadow-[0_30px_80px_rgba(0,0,0,0.2)]">
+          <img
+            src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1200&q=85"
+            alt="Fruits et légumes exotiques au Marché de Mo' Toulouse"
+            class="w-full h-full object-cover"
+            fetchpriority="high"
+            width="800"
+            height="1000"
+          />
+          <!-- Sticker logo rouge -->
+          <img
+            src="/logos/logo-marchedemo-FDROUGE.png"
+            alt=""
+            aria-hidden="true"
+            class="absolute -top-6 -right-6 w-32 md:w-40 drop-shadow-2xl rotate-[8deg]"
+          />
+        </div>
+        <!-- Floating badge -->
+        <div class="absolute -left-4 bottom-8 md:-left-10 bg-white rounded-2xl shadow-2xl p-4 md:p-5 flex items-center gap-3 max-w-[260px]">
+          <div class="w-12 h-12 rounded-xl bg-vert/10 flex items-center justify-center text-vert shrink-0">
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 12l2 2 4-4M12 2a10 10 0 100 20 10 10 0 000-20z" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div>
+            <div class="font-soft font-bold text-[15px] leading-tight">Halal certifié</div>
+            <div class="text-[12px] text-neutral-500 leading-tight mt-0.5">Sans électronarcose<br/>Travail sur carcasse</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* ====================== 2 · PROMO BANNER ====================== */}
+  {featuredPromo && (
+    <section class="relative overflow-hidden bg-rouge text-white">
+      <div class="container-mo py-4 md:py-5 flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] md:text-[14px] font-pro">
+        <span class="inline-flex items-center gap-2 font-bold">
+          <span class="badge-promo !bg-white !text-rouge !shadow-none !min-w-0 !h-auto !px-2 !py-0.5 !text-[12px]">
+            -{featuredPromo.data.reduction_pct}%
+          </span>
+          Offre de la semaine
+        </span>
+        <span>
+          <strong>{featuredPromo.data.titre}</strong> ·
+          {featuredPromo.data.prix_promo} € au lieu de {featuredPromo.data.prix_original} €
+        </span>
+        <a href="/promos" class="ml-auto font-bold underline underline-offset-4 hover:opacity-80 transition">
+          Voir toutes les promos →
+        </a>
+      </div>
+    </section>
+  )}
+
+  {/* ====================== 3 · STATS ====================== */}
+  <Stats variant="light" />
+
+  {/* ====================== 4 · RAYONS ====================== */}
+  <section class="section bg-blanc">
+    <div class="container-mo">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+        <div class="max-w-2xl">
+          <span class="eyebrow">Nos 10 rayons</span>
+          <h2 class="display-lg mt-4 text-balance">
+            Chaque continent a son rayon.<br/>
+            Chaque rayon a son <span class="text-vert">caractère</span>.
+          </h2>
+        </div>
+        <a href="/rayons" class="btn btn-secondary shrink-0">
+          Voir tous les rayons
+        </a>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+        {RAYONS_LIST.slice(0, 6).map((r, i) => (
+          <RayonCard rayon={r} large={i === 0} />
+        ))}
+      </div>
+    </div>
+  </section>
+
+  {/* ====================== 5 · QUI EST MO' ====================== */}
+  <section class="section bg-noir-section relative overflow-hidden">
+    <img
+      src="/logos/favicon-marchedemo-contourwh.png"
+      alt=""
+      aria-hidden="true"
+      class="absolute -right-20 top-10 w-[640px] max-w-[80%] opacity-[0.06] pointer-events-none select-none"
+    />
+    <div class="container-mo relative z-10 grid lg:grid-cols-12 gap-12 items-center">
+      <div class="lg:col-span-7">
+        <span class="eyebrow !text-vert-light">Notre histoire</span>
+        <h2 class="display-lg mt-4 text-balance !text-white">
+          Mo', c'était<br/>
+          <span class="text-vert-light">Mohammed</span>.
+        </h2>
+        <div class="mt-6 space-y-4 text-white/75 text-[16px] leading-relaxed max-w-2xl">
+          <p>
+            Le patriarche. Le père de cette famille de commerçants passionnés
+            dont est issu <strong class="text-white">Samir Ouaddaha</strong>,
+            fondateur du Marché de Mo'.
+          </p>
+          <p>
+            Lauréat du <strong class="text-white">Réseau Entreprendre Occitanie</strong>,
+            Samir a ouvert le premier magasin en août 2024 à Portet-sur-Garonne.
+            Avec une conviction simple : les saveurs du monde doivent être
+            accessibles à tous, avec la <strong class="text-white">qualité d'un ultra-frais</strong>
+            et le prix d'un supermarché.
+          </p>
+          <p>
+            Aujourd'hui, 2 magasins, <strong class="text-white">24 salariés</strong>,
+            et une certitude : <strong class="text-white">90% de notre équipe</strong>
+            n'avait pas d'emploi avant de rejoindre le Marché de Mo'.
+          </p>
+        </div>
+        <div class="mt-10 flex flex-col sm:flex-row gap-3">
+          <a href="/notre-enseigne" class="btn btn-primary">Notre enseigne</a>
+          <a href="/nos-engagements" class="btn btn-ghost !text-white !border-white/25 hover:!border-white">
+            Nos engagements
+          </a>
+        </div>
+      </div>
+
+      <div class="lg:col-span-5">
+        <div class="relative aspect-square rounded-full overflow-hidden bg-vert-dark/30 ring-4 ring-white/10">
+          <img
+            src="https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&w=800&q=80"
+            alt="L'équipe Marché de Mo' Toulouse"
+            class="w-full h-full object-cover"
+            loading="lazy"
+          />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* ====================== 6 · ENGAGEMENTS ====================== */}
+  <section class="section bg-creme">
+    <div class="container-mo">
+      <div class="text-center max-w-3xl mx-auto mb-14">
+        <span class="eyebrow !justify-center">Nos 4 engagements</span>
+        <h2 class="display-lg mt-4 text-balance">
+          Un supermarché, oui.<br/>
+          <span class="text-rouge">Un engagement</span>, surtout.
+        </h2>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
+        {ENGAGEMENTS.map((e) => (
+          <article class="bg-white rounded-3xl p-8 shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1">
+            <div class="w-14 h-14 rounded-2xl bg-vert/10 text-vert flex items-center justify-center mb-6">
+              {e.icone === "heart" && (
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+              )}
+              {e.icone === "people" && (
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+              )}
+              {e.icone === "trophy" && (
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22M18 2H6v7a6 6 0 0 0 12 0V2z"/>
+                </svg>
+              )}
+              {e.icone === "care" && (
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                  <path d="M12 7v4M9 9h6"/>
+                </svg>
+              )}
+            </div>
+            <h3 class="font-soft font-bold text-[20px] leading-tight">{e.titre}</h3>
+            <p class="mt-2 text-[14px] text-neutral-500 font-pro">{e.resume}</p>
+            <p class="mt-4 text-[14px] text-neutral-700 leading-relaxed">{e.description}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  {/* ====================== 7 · VIDEOS ====================== */}
+  {videos.length > 0 && (
+    <section class="section bg-blanc">
+      <div class="container-mo">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+          <div class="max-w-2xl">
+            <span class="eyebrow">Marché de Mo' en vidéos</span>
+            <h2 class="display-lg mt-4 text-balance">
+              Rencontrez nos équipes et nos rayons.
+            </h2>
+          </div>
+          <a href="https://www.tiktok.com/@marchedemo" target="_blank" rel="noopener noreferrer" class="btn btn-secondary shrink-0">
+            Nous suivre sur TikTok
+          </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {videos.slice(0, 3).map((v) => (
+            <TikTokEmbed
+              client:visible
+              url={v.data.url_tiktok}
+              title={v.data.titre}
+              thumbnail={v.data.thumbnail}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  {/* ====================== 8 · PROMOS ====================== */}
+  {promosHome.length > 0 && (
+    <section class="section bg-creme">
+      <div class="container-mo">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+          <div class="max-w-2xl">
+            <span class="eyebrow !text-rouge">Promos de la semaine</span>
+            <h2 class="display-lg mt-4 text-balance">
+              Les <span class="text-rouge">meilleures offres</span> du moment.
+            </h2>
+            <p class="mt-3 text-[15px] text-neutral-600">
+              Mises à jour chaque semaine, valables dans nos 2 magasins.
+            </p>
+          </div>
+          <a href="/promos" class="btn btn-rouge shrink-0">
+            Voir toutes les promos
+          </a>
+        </div>
+
+        <PromoCarousel client:visible>
+          {promosHome.map((p) => (
+            <PromoCard
+              titre={p.data.titre}
+              description={p.data.description}
+              image={p.data.image}
+              prix_original={p.data.prix_original}
+              prix_promo={p.data.prix_promo}
+              reduction_pct={p.data.reduction_pct}
+              rayon={p.data.rayon}
+              magasin={p.data.magasin}
+              date_fin={p.data.date_fin}
+              featured={p.data.mise_en_avant}
+            />
+          ))}
+        </PromoCarousel>
+      </div>
+    </section>
+  )}
+
+  {/* ====================== 9 · MAGASINS ====================== */}
+  <section class="section bg-blanc">
+    <div class="container-mo">
+      <div class="text-center max-w-3xl mx-auto mb-14">
+        <span class="eyebrow !justify-center">Nos magasins</span>
+        <h2 class="display-lg mt-4 text-balance">
+          2 magasins. Un seul engagement : <span class="text-vert">la qualité</span>.
+        </h2>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6 lg:gap-8">
+        {Object.values(MAGASINS).map((m) => (
+          <a
+            href={`/magasins/${m.slug}`}
+            class="group relative overflow-hidden rounded-3xl bg-noir text-white shadow-xl hover:shadow-2xl transition-all duration-500"
+          >
+            <div class="aspect-[16/10] relative overflow-hidden bg-noir-softer">
+              <img
+                src={m.photo || "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&w=1200&q=80"}
+                alt={`${m.nom} — extérieur`}
+                loading="lazy"
+                class="w-full h-full object-cover opacity-70 group-hover:opacity-85 group-hover:scale-[1.05] transition-all duration-700"
+                onerror="this.style.opacity='0.3'"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+              {m.badge && (
+                <span class="absolute top-5 left-5 pill pill-rouge bg-rouge !text-white">
+                  {m.badge}
+                </span>
+              )}
+            </div>
+            <div class="absolute inset-x-0 bottom-0 p-7 lg:p-10">
+              <h3 class="font-soft font-bold text-[26px] lg:text-[32px] leading-tight">
+                {m.nomCourt}
+              </h3>
+              <p class="mt-2 text-white/80 text-[14px]">{m.adresseLigne1}, {m.codePostal} {m.ville}</p>
+              <div class="mt-5 flex flex-wrap items-center gap-x-5 gap-y-1 text-[12.5px] text-white/70">
+                <span class="inline-flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  7j/7
+                </span>
+                <span>{m.surface}</span>
+                <span>{m.parking}</span>
+              </div>
+              <span class="mt-6 inline-flex items-center gap-2 font-bold text-[13.5px] group-hover:translate-x-1 transition-transform">
+                Voir le magasin
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  {/* ====================== 10 · NEWSLETTER ====================== */}
+  <NewsletterInline variant="dark" />
+
+  {/* ====================== 11 · FAQ ====================== */}
+  <FAQAccordion items={FAQ_HOME} />
+</Layout>

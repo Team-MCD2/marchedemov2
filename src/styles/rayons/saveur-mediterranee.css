@@ -1,0 +1,36 @@
+/* DA méditerranéenne — Saveur Méditerranéenne
+   Lumière du sud, marché provençal premium. Faïence Zellige.
+   Pas d'orientalisme cliché.                                                    */
+
+[data-rayon="saveur-mediterranee"] {
+  --rayon-accent:       #2A6599;   /* bleu méditerranéen */
+  --rayon-accent-dark:  #1E4A72;
+  --rayon-accent-2:     #7A8C3A;   /* olive */
+  --rayon-accent-3:     #F6E9CF;   /* sable chaud */
+  --rayon-fond-section: #F6F9FC;
+  --rayon-fond-hero:    #F2F7FB;
+  --rayon-texte-hero:   #1E4A72;
+  --rayon-font-deco:    var(--font-display);
+}
+
+[data-rayon="saveur-mediterranee"] .rayon-hero {
+  background:
+    linear-gradient(135deg, #F2F7FB 0%, #E7EFF7 100%);
+  color: var(--rayon-texte-hero);
+}
+
+/* Motif Zellige simplifié — losanges & carreaux */
+[data-rayon="saveur-mediterranee"] .rayon-motif {
+  background-image:
+    linear-gradient(45deg, rgba(42, 101, 153, 0.06) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(42, 101, 153, 0.06) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(42, 101, 153, 0.06) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(42, 101, 153, 0.06) 75%);
+  background-size: 24px 24px;
+  background-position: 0 0, 0 12px, 12px -12px, -12px 0;
+}
+
+[data-rayon="saveur-mediterranee"] .rayon-badge {
+  background: var(--rayon-accent);
+  color: #FFFFFF;
+}

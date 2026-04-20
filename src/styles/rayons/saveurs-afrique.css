@@ -1,0 +1,35 @@
+/* DA africaine — Saveurs d'Afrique & Créole
+   Chaleur, communauté, couleurs qui claquent. Marché urbain Dakar/Abidjan.
+   Géométrie Kente / Adinkra / fractales — jamais de cliché safari.             */
+
+[data-rayon="saveurs-afrique"] {
+  --rayon-accent:       #C8751A;   /* ocre chaleureux */
+  --rayon-accent-dark:  #A05E11;
+  --rayon-accent-2:     #C1440E;   /* terracotta */
+  --rayon-accent-3:     #2D6A1F;   /* vert foncé */
+  --rayon-fond-section: #FBF4EC;
+  --rayon-fond-hero:    #1F1A12;
+  --rayon-texte-hero:   #FBF4EC;
+  --rayon-font-deco:    var(--font-display);
+}
+
+[data-rayon="saveurs-afrique"] .rayon-hero {
+  background: linear-gradient(135deg, #1F1A12 0%, #2D1F10 100%);
+  color: var(--rayon-texte-hero);
+}
+
+/* Motif Kente stylisé — trame discrète */
+[data-rayon="saveurs-afrique"] .rayon-motif {
+  background-image:
+    repeating-linear-gradient(45deg,
+      transparent 0 14px,
+      rgba(200, 117, 26, 0.08) 14px 16px),
+    repeating-linear-gradient(-45deg,
+      transparent 0 14px,
+      rgba(193, 68, 14, 0.06) 14px 16px);
+}
+
+[data-rayon="saveurs-afrique"] .rayon-badge {
+  background: var(--rayon-accent);
+  color: #1F1A12;
+}

@@ -1,0 +1,126 @@
+---
+import Layout from "@layouts/Layout.astro";
+import Breadcrumb from "@components/Breadcrumb.astro";
+import FAQAccordion from "@components/FAQAccordion.astro";
+import NewsletterInline from "@components/NewsletterInline.astro";
+import ApplicationForm from "@components/islands/ApplicationForm.jsx";
+import { getCollection } from "astro:content";
+import { SITE } from "@/lib/site";
+import { FAQ_RECRUTEMENT } from "@/lib/faqs";
+import { breadcrumbSchema, jobPostingSchema } from "@/lib/schema";
+
+export async function getStaticPaths() {
+  const postes = await getCollection("postes");
+  return postes.map((p) => ({ params: { slug: p.slug }, props: { poste: p } }));
+}
+
+const { poste } = Astro.props;
+const { Content } = await poste.render();
+
+const bc = breadcrumbSchema([
+  { name: "Recrutement", url: "/recrutement" },
+  { name: poste.data.titre, url: `/recrutement/${poste.slug}` },
+]);
+
+const jp = jobPostingSchema({
+  titre: poste.data.titre,
+  description: poste.data.resume,
+  datePosted: poste.data.date_publication.toISOString().split("T")[0],
+  employmentType:
+    poste.data.type_contrat === "CDI" ? "FULL_TIME" :
+    poste.data.type_contrat === "Apprentissage" ? "INTERN" :
+    poste.data.type_contrat === "Alternance" ? "INTERN" : "OTHER",
+  magasin: poste.data.magasin,
+  slug: poste.slug,
+});
+
+const magasinLabel =
+  poste.data.magasin === "tous" ? "Les 2 magasins" :
+  poste.data.magasin === "portet" ? "Portet-sur-Garonne" : "Toulouse Sud — Cépière";
+---
+
+<Layout
+  title={`${poste.data.titre} — ${poste.data.type_contrat} · ${SITE.name}`}
+  description={poste.data.resume}
+  faqItems={FAQ_RECRUTEMENT}
+  schema={[bc, jp]}
+>
+  <Breadcrumb
+    items={[
+      { name: "Recrutement", href: "/recrutement" },
+      { name: poste.data.titre },
+    ]}
+  />
+
+  <!-- Hero -->
+  <section class="bg-blanc pb-8">
+    <div class="container-mo">
+      <div class="flex flex-wrap items-center gap-2 mb-4">
+        <span class="pill pill-vert">{poste.data.type_contrat}</span>
+        <span class="pill bg-white border border-black/10">{poste.data.temps}</span>
+        <span class="pill bg-white border border-black/10">{magasinLabel}</span>
+      </div>
+      <h1 class="display-xl text-balance max-w-4xl">{poste.data.titre}</h1>
+      <p class="mt-6 max-w-2xl text-[17px] text-neutral-600 leading-relaxed">{poste.data.resume}</p>
+    </div>
+  </section>
+
+  <!-- Body : missions + profil + formulaire -->
+  <section class="section bg-blanc">
+    <div class="container-mo grid lg:grid-cols-12 gap-10 lg:gap-16">
+      <div class="lg:col-span-7 space-y-10">
+        <div>
+          <h2 class="font-soft font-bold text-[22px] md:text-[26px]">Vos missions</h2>
+          <ul class="mt-4 space-y-2.5">
+            {poste.data.missions.map((m: string) => (
+              <li class="flex items-start gap-3 text-[15px] leading-relaxed">
+                <span class="mt-2 w-1.5 h-1.5 rounded-full bg-vert shrink-0"></span>
+                <span>{m}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div>
+          <h2 class="font-soft font-bold text-[22px] md:text-[26px]">Votre profil</h2>
+          <ul class="mt-4 space-y-2.5">
+            {poste.data.profil.map((p: string) => (
+              <li class="flex items-start gap-3 text-[15px] leading-relaxed">
+                <span class="mt-2 w-1.5 h-1.5 rounded-full bg-rouge shrink-0"></span>
+                <span>{p}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div class="prose-mo">
+          <Content />
+        </div>
+      </div>
+
+      <!-- Sidebar formulaire sticky -->
+      <div class="lg:col-span-5">
+        <div class="lg:sticky lg:top-28">
+          <ApplicationForm
+            client:visible
+            poste={poste.slug}
+            posteNom={poste.data.titre}
+          />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <NewsletterInline />
+  <FAQAccordion items={FAQ_RECRUTEMENT} />
+</Layout>
+
+<style>
+  .prose-mo h2 { font-family: var(--font-soft); font-weight: 700; font-size: 22px; margin-top: 2.5rem; margin-bottom: 0.75rem; }
+  .prose-mo h3 { font-family: var(--font-soft); font-weight: 700; font-size: 18px; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+  .prose-mo p  { font-size: 15px; line-height: 1.7; color: rgb(64, 64, 64); margin: 0.75rem 0; }
+  .prose-mo ul { margin: 0.75rem 0 1rem 1.25rem; }
+  .prose-mo ul li { font-size: 15px; line-height: 1.7; list-style: disc; margin: 0.25rem 0; color: rgb(64, 64, 64); }
+  .prose-mo strong { color: #0A0A0A; }
+  .prose-mo a { color: #1C6B35; text-decoration: underline; text-underline-offset: 3px; }
+</style>

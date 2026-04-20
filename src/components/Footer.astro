@@ -1,0 +1,219 @@
+---
+/**
+ * Footer — identical across every page.
+ * 4 colonnes + réseaux + mentions légales + crédit Microdidact.
+ * Fond noir officiel (#0F0F0F), watermark portrait Mo' discret.
+ */
+import { SITE, SOCIAL } from "@/lib/site";
+---
+
+<footer class="relative bg-noir text-white mt-auto overflow-hidden">
+  <!-- Watermark discret Mo' -->
+  <img
+    src="/logos/favicon-marchedemo-contourwh.png"
+    alt=""
+    aria-hidden="true"
+    class="absolute -right-20 -bottom-10 w-[420px] opacity-[0.035] pointer-events-none select-none"
+  />
+
+  <!-- Top band : newsletter mini -->
+  <div class="relative z-10 border-b border-white/10">
+    <div class="container-mo py-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+      <div>
+        <p class="eyebrow text-vert-light">Newsletter · -20% sur votre prochain caddie</p>
+        <h3 class="font-soft font-bold text-[26px] md:text-[32px] leading-tight text-white mt-2">
+          Abonnez-vous et économisez.
+        </h3>
+      </div>
+      <form
+        method="POST"
+        action="/api/newsletter"
+        class="flex w-full md:w-auto max-w-md bg-white/10 border border-white/15 rounded-full overflow-hidden focus-within:border-white transition"
+      >
+        <input
+          type="email"
+          name="email"
+          required
+          placeholder="votre@email.com"
+          class="flex-1 bg-transparent px-5 py-3 text-white placeholder-white/50 focus:outline-none text-[14px]"
+        />
+        <button type="submit" class="px-5 py-3 bg-vert text-white font-bold text-[13px] hover:bg-vert-light transition">
+          S'abonner
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main columns -->
+  <div class="relative z-10 container-mo py-16 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-10">
+    <!-- Logo + baseline (span 1 col on desktop 5-col grid) -->
+    <div class="col-span-2 lg:col-span-1">
+      <img
+        src="/logos/logo-marchedemo-rec.png"
+        alt="Marché de Mo'"
+        width="240"
+        height="120"
+        class="w-44 mb-5 bg-white rounded-2xl p-3"
+      />
+      <p class="text-white/70 text-[14px] leading-relaxed max-w-sm">
+        <strong class="text-white">Commerçant engagé.</strong><br/>
+        Saveurs du Monde.
+      </p>
+      <p class="text-white/50 text-[12.5px] mt-4 max-w-sm">
+        Le plus grand supermarché ethnique d'Occitanie. 10 000+ références,
+        boucherie halal, fruits et légumes exotiques, épices du monde.
+      </p>
+    </div>
+
+    <!-- Colonne 1 : Menu -->
+    <div>
+      <h4 class="font-soft font-bold text-white text-[15px] tracking-wide mb-5 uppercase">
+        Explorer
+      </h4>
+      <ul class="space-y-2.5 text-[14px] text-white/70">
+        <li><a href="/" class="hover:text-white transition">Accueil</a></li>
+        <li><a href="/notre-enseigne" class="hover:text-white transition">Notre enseigne</a></li>
+        <li><a href="/rayons" class="hover:text-white transition">Nos rayons</a></li>
+        <li><a href="/nos-engagements" class="hover:text-white transition">Nos engagements</a></li>
+        <li><a href="/magasins" class="hover:text-white transition">Magasins</a></li>
+        <li><a href="/recrutement" class="hover:text-white transition">Recrutement</a></li>
+        <li><a href="/actualites" class="hover:text-white transition">Actualités</a></li>
+        <li><a href="/programme-fidelite" class="hover:text-white transition">Programme de fidélité</a></li>
+      </ul>
+    </div>
+
+    <!-- Colonne 2 : Légal -->
+    <div>
+      <h4 class="font-soft font-bold text-white text-[15px] tracking-wide mb-5 uppercase">
+        Informations
+      </h4>
+      <ul class="space-y-2.5 text-[14px] text-white/70">
+        <li><a href="/notre-enseigne" class="hover:text-white transition">À propos</a></li>
+        <li><a href="/service-client" class="hover:text-white transition">Service client</a></li>
+        <li><a href="/politique-de-cookies" class="hover:text-white transition">Politique de cookies</a></li>
+        <li><a href="/termes-et-conditions" class="hover:text-white transition">Termes et conditions</a></li>
+        <li><a href="/mentions-legales" class="hover:text-white transition">Mentions légales</a></li>
+        <li><a href="/service-client#livraison" class="hover:text-white transition">Livraison et retours</a></li>
+      </ul>
+    </div>
+
+    <!-- Colonne 3 : Contact + réseaux -->
+    <div>
+      <h4 class="font-soft font-bold text-white text-[15px] tracking-wide mb-5 uppercase">
+        Contact
+      </h4>
+      <ul class="space-y-2.5 text-[14px] text-white/70">
+        <li>
+          <a href={`tel:${SITE.phoneE164}`} class="hover:text-white transition inline-flex items-center gap-2">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            {SITE.phone}
+          </a>
+        </li>
+        <li>
+          <a href={`mailto:${SITE.email}`} class="hover:text-white transition inline-flex items-center gap-2">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="4" width="20" height="16" rx="2"/>
+              <path d="m22 6-10 7L2 6"/>
+            </svg>
+            {SITE.email}
+          </a>
+        </li>
+      </ul>
+
+      <h4 class="font-soft font-bold text-white text-[15px] tracking-wide mt-7 mb-4 uppercase">
+        Réseaux
+      </h4>
+      <div class="flex items-center gap-2">
+        <a href={SOCIAL.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook" class="w-10 h-10 rounded-full bg-white/10 hover:bg-vert flex items-center justify-center transition">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987H7.898V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/>
+          </svg>
+        </a>
+        <a href={SOCIAL.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="w-10 h-10 rounded-full bg-white/10 hover:bg-vert flex items-center justify-center transition">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="2" width="20" height="20" rx="5"/>
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+          </svg>
+        </a>
+        <a href={SOCIAL.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" class="w-10 h-10 rounded-full bg-white/10 hover:bg-vert flex items-center justify-center transition">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452z"/>
+          </svg>
+        </a>
+        <a href={SOCIAL.tiktok} target="_blank" rel="noopener noreferrer" aria-label="TikTok" class="w-10 h-10 rounded-full bg-white/10 hover:bg-vert flex items-center justify-center transition">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5.8 20.1a6.34 6.34 0 0 0 10.86-4.43V8.62a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.84-.05z"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- Colonne 4 : Paiement -->
+    <div class="col-span-2 md:col-span-4 lg:col-span-1">
+      <h4 class="font-soft font-bold text-white text-[15px] tracking-wide mb-5 uppercase">
+        Paiement
+      </h4>
+      <div class="flex flex-wrap items-center gap-2">
+        <!-- Visa -->
+        <div class="h-8 px-2.5 bg-white rounded-md flex items-center text-[11px] font-bold font-pro text-[#1A1F71]">VISA</div>
+        <!-- Mastercard -->
+        <div class="h-8 px-2.5 bg-white rounded-md flex items-center gap-1">
+          <span class="w-3.5 h-3.5 rounded-full bg-[#EB001B]"></span>
+          <span class="w-3.5 h-3.5 rounded-full bg-[#F79E1B] -ml-1.5 mix-blend-multiply"></span>
+        </div>
+        <!-- Maestro -->
+        <div class="h-8 px-2.5 bg-white rounded-md flex items-center gap-1">
+          <span class="w-3.5 h-3.5 rounded-full bg-[#0070E0]"></span>
+          <span class="w-3.5 h-3.5 rounded-full bg-[#EB001B] -ml-1.5 mix-blend-multiply"></span>
+        </div>
+        <!-- Amex -->
+        <div class="h-8 px-2.5 bg-[#2E77BB] rounded-md flex items-center text-[9px] font-bold font-pro text-white tracking-tight">AMEX</div>
+        <!-- Apple Pay -->
+        <div class="h-8 px-2.5 bg-white rounded-md flex items-center gap-0.5 text-[11px] font-pro text-black">
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M17.72 13.34c.02 2.35 2.06 3.13 2.08 3.14-.02.05-.33 1.12-1.08 2.22-.65.95-1.32 1.9-2.37 1.92-1.04.02-1.37-.61-2.55-.61-1.18 0-1.55.6-2.53.63-1.02.04-1.79-1.02-2.44-1.97-1.33-1.92-2.35-5.45-.98-7.82.68-1.18 1.89-1.92 3.21-1.94.99-.02 1.93.67 2.54.67.6 0 1.75-.83 2.95-.71.5.02 1.91.2 2.82 1.52-.07.04-1.68.98-1.66 2.95zM14.46 6.54c.54-.65.91-1.56.81-2.47-.78.03-1.73.52-2.29 1.17-.5.58-.94 1.5-.82 2.4.88.06 1.76-.45 2.3-1.1z"/></svg>
+          Pay
+        </div>
+        <!-- Google Pay -->
+        <div class="h-8 px-2.5 bg-white rounded-md flex items-center text-[11px] font-bold font-pro text-[#4285F4]">G Pay</div>
+        <!-- PayPal -->
+        <div class="h-8 px-2.5 bg-white rounded-md flex items-center text-[11px] font-bold font-pro">
+          <span class="text-[#003087]">Pay</span><span class="text-[#009CDE]">Pal</span>
+        </div>
+        <!-- Ticket Restaurant -->
+        <div class="h-8 px-2.5 bg-gradient-to-r from-[#E2001A] to-[#009FE3] rounded-md flex items-center text-[10px] font-bold font-pro text-white">
+          TR
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mentions légales -->
+  <div class="relative z-10 border-t border-white/10">
+    <div class="container-mo py-8 text-[12px] text-white/55 leading-relaxed space-y-3">
+      <p>
+        <strong class="text-white font-bold">{SITE.legalName}</strong> · SAS (Société par Actions Simplifiée) ·
+        SIREN : {SITE.siren} · SIRET : {SITE.siret} · {SITE.rcs} ·
+        Siège social : {SITE.siege} ·
+        Email : <a href={`mailto:${SITE.email}`} class="underline hover:text-white">{SITE.email}</a> ·
+        Tél : <a href={`tel:${SITE.phoneE164}`} class="underline hover:text-white">{SITE.phone}</a>
+      </p>
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 pt-2 border-t border-white/5">
+        <p>© {SITE.foundedYear}–{new Date().getFullYear()} {SITE.name}. Tous droits réservés.</p>
+        <p class="text-white/45">
+          Fait par
+          <a
+            href={SITE.agence.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-white underline hover:text-vert-light transition ml-1"
+          >
+            {SITE.agence.nom}
+          </a>
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>

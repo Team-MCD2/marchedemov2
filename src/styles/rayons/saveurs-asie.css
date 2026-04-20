@@ -1,0 +1,39 @@
+/* DA asiatique — Saveurs d'Asie
+   Épuré, précis, espace valorisé. Esthétique japonaise / coréenne.
+   Jamais de lanterne rouge générique.                                          */
+
+[data-rayon="saveurs-asie"] {
+  --rayon-accent:       #C0392B;   /* rouge laqué */
+  --rayon-accent-dark:  #922217;
+  --rayon-accent-2:     #1A1A1A;   /* noir encre */
+  --rayon-accent-3:     #C8A951;   /* or doux */
+  --rayon-fond-section: #FAFAF7;
+  --rayon-fond-hero:    #F5F2EB;
+  --rayon-texte-hero:   #1A1A1A;
+  --rayon-font-deco:    var(--font-display);
+}
+
+[data-rayon="saveurs-asie"] .rayon-hero {
+  background:
+    radial-gradient(circle at 85% 20%, rgba(192, 57, 43, 0.08), transparent 50%),
+    linear-gradient(180deg, #FBF9F4 0%, #F5F2EB 100%);
+  color: var(--rayon-texte-hero);
+}
+
+/* Fine trame horizontale (encre & papier) */
+[data-rayon="saveurs-asie"] .rayon-motif {
+  background-image:
+    repeating-linear-gradient(0deg,
+      transparent 0 28px,
+      rgba(26, 26, 26, 0.04) 28px 29px);
+}
+
+[data-rayon="saveurs-asie"] .rayon-badge {
+  background: var(--rayon-accent);
+  color: #FBF9F4;
+}
+
+[data-rayon="saveurs-asie"] h1,
+[data-rayon="saveurs-asie"] h2 {
+  letter-spacing: -0.02em;
+}

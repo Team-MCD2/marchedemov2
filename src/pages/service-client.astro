@@ -1,0 +1,159 @@
+---
+import Layout from "@layouts/Layout.astro";
+import Breadcrumb from "@components/Breadcrumb.astro";
+import FAQAccordion from "@components/FAQAccordion.astro";
+import { SITE, SOCIAL, MAGASINS } from "@/lib/site";
+import { FAQ_HOME } from "@/lib/faqs";
+import { breadcrumbSchema } from "@/lib/schema";
+
+const bc = breadcrumbSchema([{ name: "Service client", url: "/service-client" }]);
+---
+
+<Layout
+  title={`Service client — nous contacter · ${SITE.name}`}
+  description="Une question, une suggestion, une réclamation ? Notre service client vous répond sous 48h ouvrées — par téléphone, email ou en magasin."
+  faqItems={FAQ_HOME}
+  schema={bc}
+>
+  <Breadcrumb items={[{ name: "Service client" }]} />
+
+  <!-- Hero -->
+  <section class="bg-blanc pb-8">
+    <div class="container-mo">
+      <span class="eyebrow">Service client</span>
+      <h1 class="display-xl mt-4 text-balance max-w-4xl">
+        Une question ?<br/>
+        <span class="text-vert">Nous répondons</span>.
+      </h1>
+      <p class="mt-6 max-w-2xl text-[17px] text-neutral-600 leading-relaxed">
+        Téléphone, email, réseaux sociaux ou magasin — choisissez le canal qui vous
+        convient. Nous revenons vers vous sous 48h ouvrées.
+      </p>
+    </div>
+  </section>
+
+  <!-- 4 canaux -->
+  <section class="section-sm bg-blanc">
+    <div class="container-mo grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+      <!-- Téléphone -->
+      <a href={`tel:${SITE.phoneE164}`} class="bg-creme rounded-3xl p-7 hover:bg-creme-warm transition-colors group">
+        <div class="w-12 h-12 rounded-xl bg-vert/10 text-vert flex items-center justify-center">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3 class="font-soft font-bold text-[20px] mt-5">Par téléphone</h3>
+        <p class="text-[14px] text-neutral-500 mt-1">Du lundi au samedi · 9h – 18h</p>
+        <p class="mt-4 font-soft font-bold text-[22px] text-vert group-hover:underline">{SITE.phone}</p>
+      </a>
+
+      <!-- Email -->
+      <a href={`mailto:${SITE.email}`} class="bg-creme rounded-3xl p-7 hover:bg-creme-warm transition-colors group">
+        <div class="w-12 h-12 rounded-xl bg-vert/10 text-vert flex items-center justify-center">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </div>
+        <h3 class="font-soft font-bold text-[20px] mt-5">Par email</h3>
+        <p class="text-[14px] text-neutral-500 mt-1">Réponse sous 48h ouvrées</p>
+        <p class="mt-4 font-soft font-bold text-[22px] text-vert group-hover:underline break-all">{SITE.email}</p>
+      </a>
+
+      <!-- Magasins -->
+      <a href="/magasins" class="bg-creme rounded-3xl p-7 hover:bg-creme-warm transition-colors group">
+        <div class="w-12 h-12 rounded-xl bg-vert/10 text-vert flex items-center justify-center">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 7-8 12-8 12s-8-5-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <h3 class="font-soft font-bold text-[20px] mt-5">En magasin</h3>
+        <p class="text-[14px] text-neutral-500 mt-1">Nos 2 adresses à Toulouse — 7j/7</p>
+        <p class="mt-4 font-soft font-bold text-[18px] text-vert group-hover:underline">Voir les magasins →</p>
+      </a>
+
+      <!-- Réseaux -->
+      <div class="bg-creme rounded-3xl p-7">
+        <div class="w-12 h-12 rounded-xl bg-vert/10 text-vert flex items-center justify-center">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
+        <h3 class="font-soft font-bold text-[20px] mt-5">Sur les réseaux</h3>
+        <p class="text-[14px] text-neutral-500 mt-1">Réponse rapide en DM</p>
+        <div class="mt-4 flex flex-wrap gap-2">
+          <a href={SOCIAL.instagram} target="_blank" rel="noopener noreferrer" class="pill bg-white border border-black/10 hover:border-vert hover:text-vert transition">Instagram</a>
+          <a href={SOCIAL.facebook} target="_blank" rel="noopener noreferrer" class="pill bg-white border border-black/10 hover:border-vert hover:text-vert transition">Facebook</a>
+          <a href={SOCIAL.tiktok} target="_blank" rel="noopener noreferrer" class="pill bg-white border border-black/10 hover:border-vert hover:text-vert transition">TikTok</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact form -->
+  <section class="section bg-creme">
+    <div class="container-mo grid lg:grid-cols-12 gap-10">
+      <div class="lg:col-span-5">
+        <span class="eyebrow">Formulaire</span>
+        <h2 class="display-md mt-4">Écrivez-nous directement.</h2>
+        <p class="mt-4 text-[15.5px] text-neutral-600 leading-relaxed max-w-md">
+          Pour toute question, suggestion ou réclamation, utilisez le formulaire ci-contre.
+          Nous traitons chaque message dans l'ordre d'arrivée.
+        </p>
+      </div>
+      <div class="lg:col-span-7">
+        <form method="POST" action="/api/contact" class="bg-white rounded-3xl p-6 md:p-8 shadow-card space-y-5">
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label for="prenom" class="block text-[13px] font-bold mb-1.5">Prénom *</label>
+              <input id="prenom" name="prenom" type="text" required class="input-sc" />
+            </div>
+            <div>
+              <label for="nom" class="block text-[13px] font-bold mb-1.5">Nom *</label>
+              <input id="nom" name="nom" type="text" required class="input-sc" />
+            </div>
+          </div>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label for="email" class="block text-[13px] font-bold mb-1.5">Email *</label>
+              <input id="email" name="email" type="email" required class="input-sc" />
+            </div>
+            <div>
+              <label for="sujet" class="block text-[13px] font-bold mb-1.5">Sujet *</label>
+              <select id="sujet" name="sujet" required class="input-sc">
+                <option value="">Choisir —</option>
+                <option value="produits">Question sur un produit</option>
+                <option value="commande">Commande / réservation</option>
+                <option value="recrutement">Recrutement</option>
+                <option value="b2b">Pro / B2B</option>
+                <option value="presse">Presse / partenariat</option>
+                <option value="autre">Autre</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label for="message" class="block text-[13px] font-bold mb-1.5">Votre message *</label>
+            <textarea id="message" name="message" required rows={5} class="input-sc resize-none"></textarea>
+          </div>
+          <label class="flex items-start gap-3 text-[13px] text-neutral-600">
+            <input type="checkbox" name="rgpd" required class="mt-0.5 accent-vert" />
+            <span>J'accepte que mes données soient utilisées pour me répondre. <a href="/mentions-legales" class="underline underline-offset-2 hover:text-vert">Mentions légales</a>. *</span>
+          </label>
+          <button type="submit" class="btn btn-primary w-full justify-center">Envoyer</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <FAQAccordion items={FAQ_HOME} />
+</Layout>
+
+<style>
+  .input-sc {
+    display: block;
+    width: 100%;
+    border-radius: 14px;
+    border: 1px solid rgba(0,0,0,0.12);
+    background: #F7F5F0;
+    padding: 12px 14px;
+    font-size: 14.5px;
+    font-family: var(--font-pro);
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .input-sc:focus {
+    outline: none;
+    border-color: #1C6B35;
+    box-shadow: 0 0 0 3px rgba(28,107,53,0.1);
+  }
+</style>

@@ -1,0 +1,15 @@
+{
+  "id": "promo-001",
+  "titre": "Épaule d'agneau halal entière",
+  "description": "Viande fraîche travaillée sur carcasse, arrivage du jour.",
+  "image": "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?auto=format&fit=crop&w=1200&q=80",
+  "prix_original": "18.90",
+  "prix_promo": "12.90",
+  "reduction_pct": 32,
+  "rayon": "boucherie-halal",
+  "magasin": "tous",
+  "date_debut": "2026-04-15",
+  "date_fin": "2026-04-27",
+  "mise_en_avant": true,
+  "actif": true
+}

@@ -1,0 +1,102 @@
+---
+export const prerender = false;
+
+import Layout from "@layouts/Layout.astro";
+import { SITE } from "@/lib/site";
+import { isAuthenticated } from "@/lib/auth";
+
+/* If already logged in, send straight to dashboard. */
+if (await isAuthenticated(Astro.cookies)) {
+  return Astro.redirect("/admin");
+}
+
+const error = Astro.url.searchParams.has("error");
+---
+
+<Layout
+  title={`Accès admin · ${SITE.name}`}
+  description="Connexion à l'espace d'administration du site."
+  noIndex
+  hideChrome
+>
+  <main class="min-h-screen grid lg:grid-cols-2 bg-blanc">
+    <!-- Left : visual -->
+    <aside class="hidden lg:flex relative overflow-hidden bg-noir-section items-center justify-center p-16">
+      <img
+        src="/logos/favicon-marchedemo-contourwh.png"
+        alt=""
+        aria-hidden="true"
+        class="absolute inset-0 w-full h-full object-contain opacity-[0.07]"
+      />
+      <div class="relative z-10 text-white max-w-md">
+        <img src="/logos/logo-marchedemo-rond-contourblanc.png" alt={SITE.name} class="h-16 mb-10"/>
+        <h1 class="font-soft font-bold text-[40px] leading-[0.95] text-balance">
+          Espace<br/>
+          <span class="text-vert-light">administration</span>.
+        </h1>
+        <p class="mt-6 text-white/70 text-[15px] leading-relaxed">
+          Gestion du site, des promos, des offres d'emploi et des demandes reçues.
+        </p>
+      </div>
+    </aside>
+
+    <!-- Right : form -->
+    <section class="flex items-center justify-center p-6 md:p-12">
+      <div class="w-full max-w-md">
+        <a href="/" class="inline-flex items-center gap-2 text-[13px] text-neutral-500 hover:text-vert transition">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Retour au site
+        </a>
+        <h2 class="display-md mt-6">Connexion</h2>
+        <p class="mt-3 text-[14.5px] text-neutral-500">Réservé à l'équipe administrative.</p>
+
+        <form method="POST" action="/api/login" class="mt-8 space-y-4">
+          <div>
+            <label for="password" class="block text-[13px] font-bold mb-1.5">Mot de passe</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              required
+              autocomplete="current-password"
+              autofocus
+              class="input-admin"
+            />
+          </div>
+
+          {error && (
+            <div class="bg-rouge/10 border border-rouge/20 text-rouge text-[13.5px] rounded-xl p-3">
+              Mot de passe incorrect.
+            </div>
+          )}
+
+          <button type="submit" class="btn btn-primary w-full justify-center mt-2">
+            Se connecter
+          </button>
+        </form>
+
+        <p class="mt-12 text-[12px] text-neutral-400 font-pro">
+          Accès oublié ? Contactez l'<a href={`mailto:${SITE.agence.url}`} class="text-vert underline underline-offset-2">agence</a>.
+        </p>
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  .input-admin {
+    display: block; width: 100%;
+    border-radius: 14px;
+    border: 1px solid rgba(0,0,0,0.12);
+    background: #F7F5F0;
+    padding: 14px 16px;
+    font-size: 15px;
+    font-family: var(--font-pro);
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .input-admin:focus {
+    outline: none;
+    border-color: #1C6B35;
+    box-shadow: 0 0 0 3px rgba(28,107,53,0.1);
+  }
+</style>

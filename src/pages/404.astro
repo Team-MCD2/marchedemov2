@@ -1,0 +1,42 @@
+---
+import Layout from "@layouts/Layout.astro";
+import { SITE, RAYONS_LIST } from "@/lib/site";
+---
+
+<Layout
+  title={`Page introuvable · ${SITE.name}`}
+  description="Cette page n'existe pas ou plus — explorez nos rayons ou revenez à l'accueil."
+  noIndex
+>
+  <section class="section-lg bg-blanc">
+    <div class="container-mo text-center max-w-2xl mx-auto">
+      <div class="font-soft font-bold leading-none text-vert" style="font-size: clamp(6rem, 20vw, 12rem);">404</div>
+
+      <h1 class="display-lg mt-6 text-balance">
+        Cette page s'est perdue<br/>
+        entre <span class="text-vert">2 rayons</span>.
+      </h1>
+
+      <p class="mt-6 text-[17px] text-neutral-600">
+        Elle n'existe pas — ou plus. Pas de souci, nos rayons vous attendent.
+      </p>
+
+      <div class="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
+        <a href="/" class="btn btn-primary">Retour à l'accueil</a>
+        <a href="/rayons" class="btn btn-ghost">Explorer nos rayons</a>
+      </div>
+
+      <!-- Quick links rayons -->
+      <div class="mt-16">
+        <p class="eyebrow !justify-center">Rayons populaires</p>
+        <div class="mt-5 flex flex-wrap justify-center gap-2">
+          {RAYONS_LIST.slice(0, 6).map((r) => (
+            <a href={`/rayons/${r.slug}`} class="pill bg-creme hover:bg-vert hover:text-white transition-colors">
+              {r.nomCourt}
+            </a>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>

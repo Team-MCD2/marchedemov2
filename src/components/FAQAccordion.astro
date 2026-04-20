@@ -1,0 +1,50 @@
+---
+/**
+ * FAQAccordion — expand/collapse natif via <details>.
+ * Le JSON-LD FAQPage est injecté dans le <head> par Layout.astro via faqItems prop.
+ */
+import type { FAQItem } from "@/lib/faqs";
+
+interface Props {
+  items: FAQItem[];
+  title?: string;
+  eyebrow?: string;
+  compact?: boolean;
+}
+
+const {
+  items,
+  title = "Questions fréquentes",
+  eyebrow = "FAQ",
+  compact = false,
+} = Astro.props as Props;
+---
+
+<section class={compact ? "py-12" : "section bg-blanc"}>
+  <div class="container-mo grid lg:grid-cols-12 gap-10 lg:gap-16">
+    <!-- Left : heading -->
+    <div class="lg:col-span-4">
+      <span class="eyebrow">{eyebrow}</span>
+      <h2 class="display-lg mt-4 text-balance">{title}</h2>
+      <p class="mt-4 text-neutral-600 text-[15px] leading-relaxed max-w-sm">
+        Vous ne trouvez pas votre réponse ?
+        <a href="/service-client" class="text-vert font-bold underline underline-offset-4 hover:text-vert-dark transition">
+          Contactez notre service client
+        </a>.
+      </p>
+    </div>
+    <!-- Right : accordion -->
+    <div class="lg:col-span-8">
+      <div class="divide-y divide-black/10">
+        {items.map((item, i) => (
+          <details class="faq-item" open={i === 0}>
+            <summary>
+              <span class="flex-1">{item.q}</span>
+            </summary>
+            <div class="faq-answer" set:html={item.r} />
+          </details>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>

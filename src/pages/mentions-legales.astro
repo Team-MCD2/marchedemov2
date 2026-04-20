@@ -1,0 +1,93 @@
+---
+import Layout from "@layouts/Layout.astro";
+import Breadcrumb from "@components/Breadcrumb.astro";
+import { SITE } from "@/lib/site";
+---
+
+<Layout
+  title={`Mentions légales · ${SITE.name}`}
+  description="Mentions légales du site Marché de Mo'. Informations sur l'éditeur, l'hébergement et la propriété intellectuelle."
+>
+  <Breadcrumb items={[{ name: "Mentions légales" }]} />
+
+  <section class="section bg-blanc">
+    <div class="container-mo max-w-3xl">
+      <h1 class="display-lg">Mentions légales</h1>
+
+      <div class="prose-mo mt-10">
+        <h2>Éditeur du site</h2>
+        <p>
+          Ce site est édité par <strong>{SITE.legalName}</strong> (« Marché de Mo' »), société
+          inscrite au {SITE.rcs}.<br/>
+          SIREN : {SITE.siren}<br/>
+          SIRET : {SITE.siret}<br/>
+          Siège social : {SITE.siege}<br/>
+          Représentée par {SITE.dirigeant}, dirigeant.<br/>
+          Contact : <a href={`mailto:${SITE.email}`}>{SITE.email}</a> — {SITE.phone}
+        </p>
+
+        <h2>Directeur de la publication</h2>
+        <p>{SITE.dirigeant}, en sa qualité de dirigeant.</p>
+
+        <h2>Hébergement</h2>
+        <p>
+          Le site est hébergé par <strong>Vercel Inc.</strong> — 340 S Lemon Ave #4133,
+          Walnut, CA 91789, United States — <a href="https://vercel.com" target="_blank" rel="noopener">vercel.com</a>.
+        </p>
+
+        <h2>Conception & réalisation</h2>
+        <p>
+          Site conçu et développé par <a href={SITE.agence.url} target="_blank" rel="noopener"><strong>{SITE.agence.nom}</strong></a>, agence indépendante spécialisée en sites web pour commerçants
+          engagés.
+        </p>
+
+        <h2>Propriété intellectuelle</h2>
+        <p>
+          L'ensemble des éléments présents sur le site (textes, images, logos, graphismes, code)
+          sont la propriété exclusive du Marché de Mo' et/ou de ses ayants droit. Toute
+          reproduction, représentation, modification ou exploitation totale ou partielle sans
+          l'autorisation écrite préalable est strictement interdite et constitue une contrefaçon
+          sanctionnée par le Code de la Propriété Intellectuelle.
+        </p>
+
+        <h2>Protection des données personnelles (RGPD)</h2>
+        <p>
+          Conformément au Règlement (UE) 2016/679 du 27 avril 2016 (« RGPD ») et à la loi
+          Informatique et Libertés du 6 janvier 1978 modifiée, vous disposez d'un droit d'accès,
+          de rectification, d'effacement, de portabilité, de limitation et d'opposition sur vos
+          données personnelles.
+        </p>
+        <p>
+          Pour exercer ces droits, adressez-vous à :
+          <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.
+        </p>
+        <p>
+          Les données collectées via les formulaires (contact, candidature, fidélité, newsletter)
+          sont utilisées exclusivement pour répondre à votre demande et ne sont jamais cédées ou
+          revendues à des tiers.
+        </p>
+
+        <h2>Cookies</h2>
+        <p>
+          Le site utilise des cookies strictement nécessaires à son fonctionnement et,
+          sous réserve de votre consentement, des cookies analytiques pour mesurer son audience.
+          Consultez notre <a href="/politique-de-cookies">politique de cookies</a> pour plus
+          d'informations.
+        </p>
+
+        <h2>Droit applicable</h2>
+        <p>
+          Le présent site et son utilisation sont régis par le droit français. Tout litige
+          relatif à leur utilisation sera de la compétence exclusive des tribunaux de Toulouse.
+        </p>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .prose-mo h2 { font-family: var(--font-soft); font-weight: 700; font-size: 22px; margin-top: 2rem; margin-bottom: 0.5rem; color: #0A0A0A; }
+  .prose-mo p  { font-size: 15px; line-height: 1.75; color: rgb(64, 64, 64); margin: 0.75rem 0; }
+  .prose-mo a  { color: #1C6B35; text-decoration: underline; text-underline-offset: 3px; }
+  .prose-mo strong { color: #0A0A0A; }
+</style>

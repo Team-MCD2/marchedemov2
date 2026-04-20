@@ -1,0 +1,65 @@
+---
+/**
+ * RayonCard — card vitrine d'un rayon, utilisée sur la home et /rayons.
+ */
+import type { Rayon } from "@/lib/site";
+
+interface Props {
+  rayon: Rayon;
+  large?: boolean;
+}
+
+const { rayon, large = false } = Astro.props as Props;
+const accent = rayon.accent ?? "#1C6B35";
+---
+
+<a
+  href={`/rayons/${rayon.slug}`}
+  class={`group relative overflow-hidden rounded-3xl bg-white shadow-card hover:shadow-card-hover transition-all duration-500 ${
+    large ? "md:col-span-2" : ""
+  }`}
+>
+  <div class="relative aspect-[4/3] md:aspect-[5/4] overflow-hidden">
+    <img
+      src={rayon.image}
+      alt={rayon.imageAlt}
+      loading="lazy"
+      class="w-full h-full object-cover group-hover:scale-[1.06] transition-transform duration-700"
+    />
+    <!-- Gradient overlay -->
+    <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent"></div>
+
+    <!-- Content on image -->
+    <div class="absolute inset-0 p-6 md:p-8 flex flex-col justify-between">
+      <div class="flex items-start justify-between gap-3">
+        <span
+          class="pill text-white"
+          style={`background: ${accent}`}
+        >
+          {rayon.eyebrow}
+        </span>
+        {rayon.culturel && (
+          <span class="pill pill-noir backdrop-blur bg-black/40 border border-white/20">
+            DA culturelle
+          </span>
+        )}
+      </div>
+
+      <div>
+        <h3 class="font-soft font-bold text-[28px] md:text-[32px] leading-none text-white drop-shadow-sm">
+          {rayon.nom}
+        </h3>
+        <p class="mt-2 text-white/85 text-[14px] leading-snug max-w-[34ch]">
+          {rayon.tagline}
+        </p>
+
+        <div class="mt-4 inline-flex items-center gap-2 text-white font-bold text-[13.5px] group-hover:translate-x-1 transition-transform">
+          Découvrir le rayon
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M5 12h14M13 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</a>

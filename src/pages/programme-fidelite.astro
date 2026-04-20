@@ -1,0 +1,147 @@
+---
+import Layout from "@layouts/Layout.astro";
+import Breadcrumb from "@components/Breadcrumb.astro";
+import FAQAccordion from "@components/FAQAccordion.astro";
+import NewsletterInline from "@components/NewsletterInline.astro";
+import { SITE } from "@/lib/site";
+import type { FAQItem } from "@/lib/faqs";
+import { breadcrumbSchema } from "@/lib/schema";
+
+const bc = breadcrumbSchema([{ name: "Programme fidélité", url: "/programme-fidelite" }]);
+
+const faqFidelite: FAQItem[] = [
+  { q: "Comment rejoindre le programme fidélité ?", r: "C'est gratuit et sans engagement. Inscrivez-vous en caisse ou en ligne via ce formulaire — vous recevez immédiatement votre carte numérique." },
+  { q: "Comment gagner des points ?", r: "1 € dépensé = 1 point. Les promotions de la semaine rapportent des points bonus. Les points se cumulent sur votre compte." },
+  { q: "Comment utiliser mes points ?", r: "Échangez vos points en caisse contre des remises immédiates : 100 points = 5 € de réduction. Aucun plafond — les points ne périment pas tant que votre compte reste actif." },
+  { q: "Les 2 magasins partagent-ils la carte fidélité ?", r: "Oui — votre compte est valable dans nos 2 magasins Portet-sur-Garonne et Toulouse Sud Cépière." },
+];
+---
+
+<Layout
+  title={`Programme fidélité — gagnez des points à chaque achat · ${SITE.name}`}
+  description="Carte fidélité gratuite : 1 € = 1 point. 100 points = 5 € de remise. Valable dans nos 2 magasins toulousains. Adhésion en 30 secondes."
+  faqItems={faqFidelite}
+  schema={bc}
+>
+  <Breadcrumb items={[{ name: "Programme fidélité" }]} />
+
+  <!-- Hero -->
+  <section class="bg-creme pb-8">
+    <div class="container-mo grid lg:grid-cols-12 gap-10 items-center py-10">
+      <div class="lg:col-span-7">
+        <span class="eyebrow">Programme fidélité</span>
+        <h1 class="display-xl mt-4 text-balance">
+          1 € dépensé,<br/>
+          <span class="text-vert">1 point gagné</span>.
+        </h1>
+        <p class="mt-6 max-w-xl text-[17px] text-neutral-600 leading-relaxed">
+          Gratuite, sans engagement, valable dans nos 2 magasins. Cumulez des points
+          à chaque passage en caisse — <strong>100 points = 5 € de remise immédiate</strong>.
+        </p>
+        <div class="mt-8">
+          <a href="#adhesion" class="btn btn-primary">Adhérer gratuitement</a>
+        </div>
+      </div>
+      <div class="lg:col-span-5">
+        <!-- Carte fidélité visuelle -->
+        <div class="relative aspect-[1.586/1] max-w-[420px] mx-auto rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-vert-dark via-vert to-vert-light text-white p-7 rotate-[-3deg] hover:rotate-0 transition-transform duration-500">
+          <div class="flex items-start justify-between">
+            <img src="/logos/logo-marchedemo-rond-contourblanc.png" alt="" class="h-12 opacity-95" aria-hidden="true"/>
+            <span class="text-[10px] uppercase tracking-[0.2em] font-bold opacity-70">Fidélité</span>
+          </div>
+          <div class="absolute bottom-7 left-7 right-7">
+            <p class="font-soft font-bold text-[24px] leading-tight">Marché de Mo'</p>
+            <p class="text-[11px] uppercase tracking-[0.15em] opacity-75 mt-1">Carte fidélité — 2026</p>
+            <div class="mt-4 font-mono text-[14px] tracking-widest opacity-90">•••• •••• •••• 2026</div>
+          </div>
+          <img src="/logos/favicon-marchedemo-contourwh.png" alt="" aria-hidden="true" class="absolute -right-10 top-8 w-40 opacity-15" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Comment ça marche -->
+  <section class="section bg-blanc">
+    <div class="container-mo">
+      <span class="eyebrow">En 3 étapes</span>
+      <h2 class="display-md mt-4 text-balance max-w-2xl">C'est aussi simple que ça.</h2>
+      <div class="mt-12 grid md:grid-cols-3 gap-5">
+        {[
+          { n: "01", t: "Adhérez", d: "En magasin ou en ligne, en 30 secondes." },
+          { n: "02", t: "Cumulez", d: "1 € dépensé = 1 point, sur tous vos achats." },
+          { n: "03", t: "Profitez", d: "100 points = 5 € de réduction en caisse." },
+        ].map((step) => (
+          <div class="bg-creme rounded-3xl p-7">
+            <div class="font-soft font-bold text-[48px] leading-none text-vert">{step.n}</div>
+            <h3 class="font-soft font-bold text-[22px] mt-4">{step.t}</h3>
+            <p class="mt-2 text-[14.5px] text-neutral-600">{step.d}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Formulaire adhésion -->
+  <section id="adhesion" class="section bg-noir-section text-white">
+    <div class="container-mo grid lg:grid-cols-12 gap-10">
+      <div class="lg:col-span-5">
+        <span class="eyebrow !text-vert-light">Adhésion</span>
+        <h2 class="display-md mt-4 text-balance !text-white">Créer ma carte fidélité.</h2>
+        <p class="mt-5 text-white/75 leading-relaxed">
+          L'adhésion est gratuite, sans engagement, désinscription en un clic à tout moment.
+          Vous recevez votre carte numérique par email dans la foulée.
+        </p>
+      </div>
+      <div class="lg:col-span-7">
+        <form method="POST" action="/api/fidelite" class="bg-white text-noir rounded-3xl p-6 md:p-8 space-y-5">
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label for="fid-prenom" class="block text-[13px] font-bold mb-1.5">Prénom *</label>
+              <input id="fid-prenom" name="prenom" type="text" required class="input-sc" />
+            </div>
+            <div>
+              <label for="fid-nom" class="block text-[13px] font-bold mb-1.5">Nom *</label>
+              <input id="fid-nom" name="nom" type="text" required class="input-sc" />
+            </div>
+          </div>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label for="fid-email" class="block text-[13px] font-bold mb-1.5">Email *</label>
+              <input id="fid-email" name="email" type="email" required class="input-sc" />
+            </div>
+            <div>
+              <label for="fid-tel" class="block text-[13px] font-bold mb-1.5">Téléphone</label>
+              <input id="fid-tel" name="telephone" type="tel" class="input-sc" />
+            </div>
+          </div>
+          <div>
+            <label for="fid-magasin" class="block text-[13px] font-bold mb-1.5">Magasin favori</label>
+            <select id="fid-magasin" name="magasin" class="input-sc">
+              <option value="tous">Peu importe</option>
+              <option value="portet">Portet-sur-Garonne</option>
+              <option value="toulouse-sud">Toulouse Sud — Cépière</option>
+            </select>
+          </div>
+          <label class="flex items-start gap-3 text-[13px] text-neutral-600">
+            <input type="checkbox" name="rgpd" required class="mt-0.5 accent-vert" />
+            <span>J'accepte de recevoir des emails promotionnels et que mes données soient traitées dans le cadre du programme. <a href="/mentions-legales" class="underline underline-offset-2">Mentions légales</a>. *</span>
+          </label>
+          <button type="submit" class="btn btn-primary w-full justify-center">Créer ma carte fidélité</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <NewsletterInline />
+  <FAQAccordion items={faqFidelite} title="FAQ — Programme fidélité" />
+</Layout>
+
+<style>
+  .input-sc {
+    display: block; width: 100%; border-radius: 14px;
+    border: 1px solid rgba(0,0,0,0.12); background: #F7F5F0;
+    padding: 12px 14px; font-size: 14.5px; font-family: var(--font-pro);
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .input-sc:focus { outline: none; border-color: #1C6B35; box-shadow: 0 0 0 3px rgba(28,107,53,0.1); }
+</style>

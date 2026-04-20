@@ -1,0 +1,207 @@
+---
+import Layout from "@layouts/Layout.astro";
+import Breadcrumb from "@components/Breadcrumb.astro";
+import PromoCard from "@components/PromoCard.astro";
+import FAQAccordion from "@components/FAQAccordion.astro";
+import NewsletterInline from "@components/NewsletterInline.astro";
+import TikTokEmbed from "@components/islands/TikTokEmbed.jsx";
+import { getCollection } from "astro:content";
+import { RAYONS, RAYONS_LIST, SITE, type RayonSlug } from "@/lib/site";
+import { faqsForRayon } from "@/lib/faqs";
+import { breadcrumbSchema } from "@/lib/schema";
+
+export async function getStaticPaths() {
+  return Object.values(RAYONS).map((r) => ({ params: { slug: r.slug } }));
+}
+
+const { slug } = Astro.params as { slug: RayonSlug };
+const rayon = RAYONS[slug];
+if (!rayon) throw new Error(`Rayon non trouvé : ${slug}`);
+
+const isCulturel = rayon.culturel;
+const accent = rayon.accent ?? "#1C6B35";
+
+/* Promos du rayon */
+const promos = (await getCollection("promos"))
+  .filter((p) => p.data.actif && p.data.rayon === slug);
+
+/* Videos du rayon */
+const videos = (await getCollection("videos"))
+  .filter((v) => v.data.actif && v.data.rayon === slug)
+  .sort((a, b) => a.data.ordre - b.data.ordre);
+
+/* Other rayons pour cross-linking */
+const otherRayons = RAYONS_LIST.filter((r) => r.slug !== slug).slice(0, 4);
+
+const bc = breadcrumbSchema([
+  { name: "Nos rayons", url: "/rayons" },
+  { name: rayon.nom, url: `/rayons/${slug}` },
+]);
+
+const faqItems = faqsForRayon(slug);
+---
+
+<Layout
+  title={`${rayon.nom} · Marché de Mo' — ${rayon.keywords[0]}`}
+  description={rayon.description}
+  faqItems={faqItems}
+  schema={bc}
+  bodyDataRayon={isCulturel ? slug : undefined}
+>
+  <!-- Breadcrumb (dark if cultural hero dark) -->
+  <Breadcrumb
+    items={[
+      { name: "Nos rayons", href: "/rayons" },
+      { name: rayon.nom },
+    ]}
+  />
+
+  <!-- HERO -->
+  <section
+    class={`rayon-hero relative overflow-hidden ${isCulturel ? "" : "bg-blanc"}`}
+    style={!isCulturel ? `background: linear-gradient(180deg, #fff 0%, ${accent}12 100%)` : undefined}
+  >
+    <div class={`${isCulturel ? "rayon-motif" : ""} absolute inset-0 pointer-events-none`}></div>
+
+    <div class="container-mo relative z-10 py-14 md:py-20 grid lg:grid-cols-12 gap-10 items-center">
+      <div class="lg:col-span-7">
+        <span class="eyebrow" style={`color: ${isCulturel ? "currentColor" : accent}`}>
+          {rayon.eyebrow}
+        </span>
+        <h1
+          class="display-xl mt-4 text-balance"
+          style={isCulturel ? "color: var(--rayon-texte-hero)" : undefined}
+        >
+          {rayon.nom}
+        </h1>
+        <p
+          class={`mt-6 text-[18px] md:text-[20px] leading-snug max-w-2xl ${isCulturel ? "opacity-80" : "text-neutral-700"}`}
+        >
+          {rayon.tagline}
+        </p>
+        <p class={`mt-4 text-[15px] leading-relaxed max-w-2xl ${isCulturel ? "opacity-70" : "text-neutral-600"}`}>
+          {rayon.longDescription}
+        </p>
+
+        <div class="mt-8 flex flex-wrap gap-2">
+          {rayon.featured.map((f) => (
+            <span
+              class="pill"
+              style={`background: ${accent}18; color: ${isCulturel ? "var(--rayon-texte-hero)" : accent}`}
+            >
+              {f}
+            </span>
+          ))}
+        </div>
+
+        <div class="mt-10 flex flex-col sm:flex-row gap-3">
+          <a href="/magasins" class="btn btn-primary" style={`background: ${accent}`}>
+            Trouver un magasin
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M5 12h14M13 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+          {promos.length > 0 && (
+            <a href="#promos" class="btn btn-ghost" style={isCulturel ? "color: currentColor; border-color: currentColor; opacity:0.8" : undefined}>
+              Voir les {promos.length} promo{promos.length > 1 ? "s" : ""}
+            </a>
+          )}
+        </div>
+      </div>
+
+      <div class="lg:col-span-5">
+        <div class="relative aspect-[4/5] rounded-[40px] overflow-hidden shadow-2xl">
+          <img
+            src={rayon.image}
+            alt={rayon.imageAlt}
+            class="w-full h-full object-cover"
+            fetchpriority="high"
+            width="800"
+            height="1000"
+          />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROMOS du rayon -->
+  {promos.length > 0 && (
+    <section id="promos" class="section bg-blanc">
+      <div class="container-mo">
+        <span class="eyebrow !text-rouge">Promos {rayon.nomCourt}</span>
+        <h2 class="display-md mt-4 max-w-2xl text-balance">Les offres du rayon cette semaine.</h2>
+
+        <div class="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {promos.map((p) => (
+            <PromoCard
+              titre={p.data.titre}
+              description={p.data.description}
+              image={p.data.image}
+              prix_original={p.data.prix_original}
+              prix_promo={p.data.prix_promo}
+              reduction_pct={p.data.reduction_pct}
+              rayon={p.data.rayon}
+              magasin={p.data.magasin}
+              date_fin={p.data.date_fin}
+              featured={p.data.mise_en_avant}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- VIDEOS du rayon -->
+  {videos.length > 0 && (
+    <section class="section bg-creme">
+      <div class="container-mo">
+        <span class="eyebrow">En vidéo</span>
+        <h2 class="display-md mt-4 max-w-2xl text-balance">Découvrez le rayon en images.</h2>
+
+        <div class="mt-10 grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl">
+          {videos.map((v) => (
+            <TikTokEmbed
+              client:visible
+              url={v.data.url_tiktok}
+              title={v.data.titre}
+              thumbnail={v.data.thumbnail}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- AUTRES RAYONS -->
+  <section class="section bg-blanc border-t border-black/5">
+    <div class="container-mo">
+      <span class="eyebrow">Continuer l'exploration</span>
+      <h2 class="display-md mt-4 max-w-2xl text-balance">Autres rayons à découvrir.</h2>
+
+      <div class="mt-10 grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+        {otherRayons.map((r) => (
+          <a
+            href={`/rayons/${r.slug}`}
+            class="group relative rounded-2xl overflow-hidden aspect-[4/5] bg-noir"
+          >
+            <img
+              src={r.image}
+              alt={r.imageAlt}
+              loading="lazy"
+              class="absolute inset-0 w-full h-full object-cover opacity-75 group-hover:opacity-90 group-hover:scale-[1.06] transition-all duration-500"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
+            <div class="absolute inset-x-0 bottom-0 p-4 md:p-5">
+              <h3 class="font-soft font-bold text-white text-[16px] md:text-[20px] leading-tight">
+                {r.nomCourt}
+              </h3>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <NewsletterInline />
+  <FAQAccordion items={faqItems} title={`FAQ — ${rayon.nomCourt}`} />
+</Layout>

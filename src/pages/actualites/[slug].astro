@@ -1,0 +1,81 @@
+---
+import Layout from "@layouts/Layout.astro";
+import Breadcrumb from "@components/Breadcrumb.astro";
+import NewsletterInline from "@components/NewsletterInline.astro";
+import { getCollection } from "astro:content";
+import { SITE } from "@/lib/site";
+import { breadcrumbSchema } from "@/lib/schema";
+
+export async function getStaticPaths() {
+  const articles = await getCollection("articles");
+  return articles.map((a) => ({ params: { slug: a.slug }, props: { article: a } }));
+}
+
+const { article } = Astro.props;
+const { Content } = await article.render();
+
+const bc = breadcrumbSchema([
+  { name: "Actualités", url: "/actualites" },
+  { name: article.data.titre, url: `/actualites/${article.slug}` },
+]);
+
+const dateStr = new Date(article.data.date_publication).toLocaleDateString("fr-FR", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+});
+---
+
+<Layout
+  title={`${article.data.titre} · ${SITE.name}`}
+  description={article.data.resume}
+  schema={bc}
+>
+  <Breadcrumb
+    items={[
+      { name: "Actualités", href: "/actualites" },
+      { name: article.data.titre },
+    ]}
+  />
+
+  <!-- Hero -->
+  <article class="bg-blanc">
+    <div class="container-mo py-8">
+      <span class="eyebrow">{article.data.categorie}</span>
+      <h1 class="display-xl mt-4 text-balance max-w-4xl">{article.data.titre}</h1>
+      <div class="mt-6 flex items-center gap-4 text-[13.5px] text-neutral-500">
+        <span>{article.data.auteur}</span>
+        <span>·</span>
+        <time datetime={article.data.date_publication.toISOString()}>{dateStr}</time>
+      </div>
+    </div>
+
+    <div class="container-mo max-w-5xl">
+      <div class="aspect-[16/9] rounded-3xl overflow-hidden shadow-card">
+        <img src={article.data.image} alt={article.data.titre} class="w-full h-full object-cover" fetchpriority="high" />
+      </div>
+    </div>
+
+    <div class="container-mo max-w-3xl py-12 md:py-16">
+      <p class="font-soft text-[22px] md:text-[26px] leading-snug text-balance text-neutral-800">
+        {article.data.resume}
+      </p>
+      <div class="mt-10 prose-mo">
+        <Content />
+      </div>
+    </div>
+  </article>
+
+  <NewsletterInline />
+</Layout>
+
+<style>
+  .prose-mo { font-family: var(--font-pro); }
+  .prose-mo h2 { font-family: var(--font-soft); font-weight: 700; font-size: 24px; margin-top: 2.5rem; margin-bottom: 0.75rem; color: #0A0A0A; }
+  .prose-mo h3 { font-family: var(--font-soft); font-weight: 700; font-size: 20px; margin-top: 1.75rem; margin-bottom: 0.5rem; color: #0A0A0A; }
+  .prose-mo p  { font-size: 16px; line-height: 1.8; color: rgb(64, 64, 64); margin: 0.9rem 0; }
+  .prose-mo ul { margin: 0.75rem 0 1rem 1.25rem; }
+  .prose-mo ul li { font-size: 16px; line-height: 1.8; list-style: disc; margin: 0.25rem 0; color: rgb(64, 64, 64); }
+  .prose-mo strong { color: #0A0A0A; }
+  .prose-mo a { color: #1C6B35; text-decoration: underline; text-underline-offset: 3px; }
+</style>

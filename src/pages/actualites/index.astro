@@ -1,0 +1,103 @@
+---
+import Layout from "@layouts/Layout.astro";
+import Breadcrumb from "@components/Breadcrumb.astro";
+import NewsletterInline from "@components/NewsletterInline.astro";
+import { getCollection } from "astro:content";
+import { SITE } from "@/lib/site";
+import { breadcrumbSchema } from "@/lib/schema";
+
+const articles = (await getCollection("articles", (a) => a.data.actif))
+  .sort((a, b) =>
+    new Date(b.data.date_publication).getTime() - new Date(a.data.date_publication).getTime()
+  );
+
+const featured = articles[0];
+const others = articles.slice(1);
+
+const bc = breadcrumbSchema([{ name: "Actualités", url: "/actualites" }]);
+---
+
+<Layout
+  title={`Actualités & événements · ${SITE.name}`}
+  description="Les actualités du Marché de Mo' — ouvertures, partenariats, engagements, événements. Suivez la vie de nos magasins toulousains."
+  schema={bc}
+>
+  <Breadcrumb items={[{ name: "Actualités" }]} />
+
+  <!-- Hero -->
+  <section class="bg-blanc pb-8">
+    <div class="container-mo">
+      <span class="eyebrow">Actualités</span>
+      <h1 class="display-xl mt-4 text-balance max-w-4xl">
+        La vie du <span class="text-vert">Marché de Mo'</span>.
+      </h1>
+      <p class="mt-6 max-w-2xl text-[17px] text-neutral-600 leading-relaxed">
+        Nos ouvertures, nos partenariats, nos événements. Tout ce qui fait l'actualité
+        de vos magasins préférés à Toulouse.
+      </p>
+    </div>
+  </section>
+
+  <!-- Featured article -->
+  {featured && (
+    <section class="section-sm bg-blanc">
+      <div class="container-mo">
+        <a href={`/actualites/${featured.slug}`} class="group grid lg:grid-cols-2 gap-8 lg:gap-14 items-center">
+          <div class="aspect-[4/3] lg:aspect-[5/4] overflow-hidden rounded-3xl bg-creme">
+            <img
+              src={featured.data.image}
+              alt={featured.data.titre}
+              class="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700"
+              loading="eager"
+            />
+          </div>
+          <div>
+            <span class="eyebrow">À la une — {featured.data.categorie}</span>
+            <h2 class="display-md mt-4 text-balance group-hover:text-vert transition-colors">
+              {featured.data.titre}
+            </h2>
+            <p class="mt-4 text-[15.5px] text-neutral-600 leading-relaxed max-w-lg">{featured.data.resume}</p>
+            <div class="mt-6 flex items-center gap-4 text-[13px] text-neutral-500">
+              <span>{featured.data.auteur}</span>
+              <span>·</span>
+              <time>{new Date(featured.data.date_publication).toLocaleDateString("fr-FR", { day:"numeric", month:"long", year:"numeric" })}</time>
+            </div>
+            <span class="mt-8 inline-flex items-center gap-2 font-bold text-[14px] text-vert group-hover:translate-x-1 transition-transform">
+              Lire l'article →
+            </span>
+          </div>
+        </a>
+      </div>
+    </section>
+  )}
+
+  <!-- Grid -->
+  {others.length > 0 && (
+    <section class="section bg-creme">
+      <div class="container-mo">
+        <h2 class="display-md text-balance max-w-2xl">Tous les articles.</h2>
+        <div class="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {others.map((a) => (
+            <a href={`/actualites/${a.slug}`} class="group bg-white rounded-3xl overflow-hidden shadow-card hover:shadow-card-hover transition-all">
+              <div class="aspect-[4/3] overflow-hidden">
+                <img src={a.data.image} alt={a.data.titre} class="w-full h-full object-cover group-hover:scale-[1.06] transition-transform duration-500" loading="lazy"/>
+              </div>
+              <div class="p-6">
+                <span class="pill pill-vert">{a.data.categorie}</span>
+                <h3 class="font-soft font-bold text-[19px] leading-tight mt-3 group-hover:text-vert transition-colors">
+                  {a.data.titre}
+                </h3>
+                <p class="mt-2 text-[13.5px] text-neutral-500 line-clamp-2">{a.data.resume}</p>
+                <time class="text-[12px] text-neutral-400 mt-3 block">
+                  {new Date(a.data.date_publication).toLocaleDateString("fr-FR", { day:"numeric", month:"short", year:"numeric" })}
+                </time>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <NewsletterInline />
+</Layout>

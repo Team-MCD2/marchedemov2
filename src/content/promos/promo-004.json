@@ -1,0 +1,15 @@
+{
+  "id": "promo-004",
+  "titre": "Kimchi fermenté — bocal 500 g",
+  "description": "Fermentation lactique lente, import direct Séoul.",
+  "image": "https://images.unsplash.com/photo-1583224964978-2359dc1d8270?auto=format&fit=crop&w=1200&q=80",
+  "prix_original": "8.90",
+  "prix_promo": "5.49",
+  "reduction_pct": 38,
+  "rayon": "saveurs-asie",
+  "magasin": "toulouse-sud",
+  "date_debut": "2026-04-18",
+  "date_fin": "2026-04-30",
+  "mise_en_avant": false,
+  "actif": true
+}

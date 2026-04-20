@@ -1,0 +1,66 @@
+---
+import Layout from "@layouts/Layout.astro";
+import Breadcrumb from "@components/Breadcrumb.astro";
+import FAQAccordion from "@components/FAQAccordion.astro";
+import NewsletterInline from "@components/NewsletterInline.astro";
+import { SITE, ENGAGEMENTS } from "@/lib/site";
+import { FAQ_HOME } from "@/lib/faqs";
+import { breadcrumbSchema } from "@/lib/schema";
+
+const bc = breadcrumbSchema([{ name: "Nos engagements", url: "/nos-engagements" }]);
+---
+
+<Layout
+  title={`Nos 4 engagements — Responsabilité & inclusion · ${SITE.name}`}
+  description="Qualité, halal certifié, inclusion à l'embauche, lutte contre la précarité alimentaire. 4 engagements qui font du Marché de Mo' un commerçant pas comme les autres."
+  faqItems={FAQ_HOME}
+  schema={bc}
+>
+  <Breadcrumb items={[{ name: "Nos engagements" }]} />
+
+  <!-- Hero -->
+  <section class="bg-blanc pb-12">
+    <div class="container-mo">
+      <span class="eyebrow !text-rouge">Nos 4 engagements</span>
+      <h1 class="display-xl mt-4 text-balance max-w-5xl">
+        <span class="text-rouge">Commerçants</span>.<br/>
+        Mais pas <span class="text-neutral-400">n'importe</span> comment.
+      </h1>
+      <p class="mt-6 max-w-2xl text-[17px] text-neutral-600 leading-relaxed">
+        Un supermarché, c'est un lieu de passage. Un lieu de lien. Un lieu qui dit
+        quelque chose du monde. Voici les 4 engagements qui nous guident chaque jour.
+      </p>
+    </div>
+  </section>
+
+  <!-- Grande liste des 4 engagements -->
+  <section class="section-sm bg-blanc">
+    <div class="container-mo divide-y divide-black/10">
+      {ENGAGEMENTS.map((e, i) => (
+        <div class="py-12 md:py-16 grid lg:grid-cols-12 gap-8 items-start">
+          <div class="lg:col-span-2">
+            <div class="font-soft font-bold text-[52px] leading-none text-vert">0{i + 1}</div>
+          </div>
+          <div class="lg:col-span-6">
+            <span class="eyebrow">{e.resume}</span>
+            <h2 class="display-md mt-3 text-balance">{e.titre}</h2>
+            <p class="mt-5 text-[16px] text-neutral-700 leading-relaxed">{e.description}</p>
+          </div>
+          <div class="lg:col-span-4 lg:pl-8">
+            <div class="bg-creme rounded-2xl p-5">
+              {e.icone === "heart" && <svg class="w-8 h-8 text-vert" viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>}
+              {e.icone === "people" && <svg class="w-8 h-8 text-vert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>}
+              {e.icone === "trophy" && <svg class="w-8 h-8 text-vert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>}
+              {e.icone === "care" && <svg class="w-8 h-8 text-vert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/><path d="M12 7v4M9 9h6"/></svg>}
+              <p class="font-soft font-bold text-[18px] mt-3">{e.titre}</p>
+              <p class="text-[13.5px] text-neutral-500 mt-1">{e.resume}</p>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <NewsletterInline variant="dark" />
+  <FAQAccordion items={FAQ_HOME} />
+</Layout>

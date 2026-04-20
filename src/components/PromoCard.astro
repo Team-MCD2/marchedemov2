@@ -1,0 +1,103 @@
+---
+/**
+ * PromoCard — carte unique pour toutes les promos (home, /promos, pages rayon).
+ * Layout : image dominante + infos tassées, badge rouge -X%.
+ */
+import { RAYONS } from "@/lib/site";
+
+interface Props {
+  titre: string;
+  description?: string;
+  image: string;
+  prix_original: string;
+  prix_promo: string;
+  reduction_pct: number;
+  rayon: string;
+  magasin: "tous" | "portet" | "toulouse-sud";
+  date_fin: string;
+  featured?: boolean;
+}
+
+const {
+  titre,
+  description = "",
+  image,
+  prix_original,
+  prix_promo,
+  reduction_pct,
+  rayon,
+  magasin,
+  date_fin,
+  featured = false,
+} = Astro.props as Props;
+
+const rayonData = (RAYONS as any)[rayon];
+const rayonNom = rayonData?.nomCourt ?? rayon;
+const rayonSlug = rayonData?.slug ?? rayon;
+
+const magasinLabel =
+  magasin === "tous"
+    ? "Les 2 magasins"
+    : magasin === "portet"
+    ? "Portet"
+    : "Toulouse Sud";
+
+const fin = new Date(date_fin);
+const finStr = isNaN(fin.getTime())
+  ? date_fin
+  : fin.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+---
+
+<article class={`promo-card group ${featured ? "ring-2 ring-rouge/20" : ""}`}>
+  <!-- Image -->
+  <a href={`/rayons/${rayonSlug}`} class="relative block aspect-[4/3] overflow-hidden bg-creme">
+    <img
+      src={image}
+      alt={titre}
+      loading="lazy"
+      class="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500"
+    />
+    <!-- Badge réduction -->
+    <div class="absolute top-4 left-4 badge-promo">
+      -{reduction_pct}%
+    </div>
+    <!-- Pill rayon -->
+    <div class="absolute bottom-4 left-4">
+      <span class="pill pill-vert bg-white/95">{rayonNom}</span>
+    </div>
+  </a>
+
+  <!-- Infos -->
+  <div class="p-5 md:p-6 flex-1 flex flex-col">
+    <h3 class="font-soft font-bold text-[18px] md:text-[20px] leading-snug text-noir text-balance">
+      {titre}
+    </h3>
+    {description && (
+      <p class="text-[13.5px] text-neutral-500 mt-1.5 line-clamp-2">{description}</p>
+    )}
+
+    <div class="mt-4 flex items-end gap-2">
+      <span class="font-soft font-bold text-[28px] md:text-[32px] text-vert leading-none">
+        {prix_promo} €
+      </span>
+      <span class="text-[15px] text-neutral-400 line-through pb-1">{prix_original} €</span>
+    </div>
+
+    <div class="mt-4 pt-4 border-t border-black/5 flex items-center justify-between text-[12px] text-neutral-500">
+      <span class="inline-flex items-center gap-1.5">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 10c0 7-8 12-8 12s-8-5-8-12a8 8 0 0 1 16 0z"/>
+          <circle cx="12" cy="10" r="3"/>
+        </svg>
+        {magasinLabel}
+      </span>
+      <span class="inline-flex items-center gap-1.5">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        jusqu'au {finStr}
+      </span>
+    </div>
+  </div>
+</article>

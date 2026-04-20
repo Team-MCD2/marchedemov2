@@ -1,0 +1,142 @@
+---
+export const prerender = false;
+
+import Layout from "@layouts/Layout.astro";
+import { SITE } from "@/lib/site";
+import { isAuthenticated } from "@/lib/auth";
+import { getCollection } from "astro:content";
+
+if (!(await isAuthenticated(Astro.cookies))) {
+  return Astro.redirect("/admin/login");
+}
+
+/* Content counts for the dashboard. */
+const promos = await getCollection("promos");
+const videos = await getCollection("videos");
+const postes = await getCollection("postes");
+const articles = await getCollection("articles");
+
+const activePromos = promos.filter((p) => p.data.actif).length;
+const activeVideos = videos.filter((v) => v.data.actif).length;
+const activePostes = postes.filter((p) => p.data.actif).length;
+const activeArticles = articles.filter((a) => a.data.actif).length;
+
+const stats = [
+  { label: "Promos actives", count: activePromos, total: promos.length, href: "/promos", color: "rouge" },
+  { label: "Vidéos TikTok", count: activeVideos, total: videos.length, href: "/", color: "noir" },
+  { label: "Offres d'emploi", count: activePostes, total: postes.length, href: "/recrutement", color: "vert" },
+  { label: "Articles", count: activeArticles, total: articles.length, href: "/actualites", color: "neutral" },
+];
+---
+
+<Layout
+  title={`Tableau de bord · ${SITE.name} — Admin`}
+  description="Tableau de bord d'administration du site."
+  noIndex
+  hideChrome
+>
+  <div class="min-h-screen bg-creme">
+    <!-- Topbar -->
+    <header class="sticky top-0 z-40 bg-white border-b border-black/5 backdrop-blur">
+      <div class="container-mo flex items-center justify-between h-16">
+        <div class="flex items-center gap-3">
+          <img src="/logos/favicon-marchedemo.png" alt="" class="h-7" aria-hidden="true"/>
+          <div>
+            <p class="text-[11px] uppercase tracking-[0.15em] font-bold text-neutral-400">Admin</p>
+            <p class="font-soft font-bold text-[15px] leading-tight">{SITE.name}</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <a href="/" class="text-[13px] text-neutral-600 hover:text-vert transition hidden sm:block">Voir le site →</a>
+          <a href="/api/logout" class="pill bg-noir text-white hover:bg-noir-softer transition">Déconnexion</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="container-mo py-8 md:py-12">
+      <!-- Hero -->
+      <section class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-10">
+        <div>
+          <span class="eyebrow">Tableau de bord</span>
+          <h1 class="display-md mt-3">Bienvenue.</h1>
+          <p class="mt-2 text-[14.5px] text-neutral-500">
+            Gérez vos promos, offres d'emploi, vidéos et articles depuis cette interface.
+          </p>
+        </div>
+        <div class="text-[13px] text-neutral-500">
+          <span class="inline-flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-vert animate-pulse"></span>
+            Site en ligne
+          </span>
+        </div>
+      </section>
+
+      <!-- Stats -->
+      <section class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
+        {stats.map((s) => (
+          <a href={s.href} class="bg-white rounded-3xl p-6 shadow-card hover:shadow-card-hover transition-all hover:-translate-y-0.5 group">
+            <p class="text-[12px] uppercase tracking-wider text-neutral-500 font-bold">{s.label}</p>
+            <div class="flex items-baseline gap-2 mt-3">
+              <span class="font-soft font-bold text-[42px] leading-none text-noir">{s.count}</span>
+              <span class="text-[13px] text-neutral-400">/ {s.total}</span>
+            </div>
+            <div class="mt-3 inline-flex items-center gap-2 text-[13px] text-neutral-500 group-hover:text-vert transition-colors font-bold">
+              Gérer →
+            </div>
+          </a>
+        ))}
+      </section>
+
+      <!-- Workflow note -->
+      <section class="mt-12 bg-white rounded-3xl p-6 md:p-8 border border-black/5 shadow-card">
+        <h2 class="eyebrow">Comment ajouter / modifier du contenu</h2>
+        <p class="mt-4 text-[14.5px] text-neutral-700 leading-relaxed max-w-3xl">
+          Le site utilise <strong>Astro Content Collections</strong> — chaque promo, vidéo,
+          offre d'emploi et article vit dans un fichier dans le dossier <code class="bg-creme px-1.5 py-0.5 rounded text-[13px]">src/content/</code>
+          et est déployé automatiquement à chaque commit Git.
+        </p>
+        <ul class="mt-4 space-y-1.5 text-[13.5px] text-neutral-600">
+          <li>• <strong>Promos</strong> : <code class="bg-creme px-1.5 py-0.5 rounded text-[12.5px]">src/content/promos/*.json</code></li>
+          <li>• <strong>Offres d'emploi</strong> : <code class="bg-creme px-1.5 py-0.5 rounded text-[12.5px]">src/content/postes/*.md</code></li>
+          <li>• <strong>Vidéos</strong> : <code class="bg-creme px-1.5 py-0.5 rounded text-[12.5px]">src/content/videos/*.json</code></li>
+          <li>• <strong>Articles</strong> : <code class="bg-creme px-1.5 py-0.5 rounded text-[12.5px]">src/content/articles/*.md</code></li>
+        </ul>
+        <p class="mt-5 text-[13.5px] text-neutral-500">
+          Une interface CRUD complète (création / édition / suppression en ligne) est prévue en V2
+          pour permettre les modifications sans passer par Git.
+        </p>
+      </section>
+
+      <!-- Recent activity -->
+      <section class="mt-12 grid lg:grid-cols-2 gap-6">
+        <div class="bg-white rounded-3xl p-6 shadow-card">
+          <h3 class="eyebrow">Dernières promos</h3>
+          <ul class="mt-4 divide-y divide-black/5">
+            {promos.slice(0, 5).map((p) => (
+              <li class="py-3 flex items-center justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="font-bold text-[14px] truncate">{p.data.titre}</p>
+                  <p class="text-[12px] text-neutral-500">-{p.data.reduction_pct}% · {p.data.magasin}</p>
+                </div>
+                <span class={`pill ${p.data.actif ? 'pill-vert' : 'bg-neutral-100 text-neutral-500'}`}>
+                  {p.data.actif ? "Active" : "Inactive"}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div class="bg-white rounded-3xl p-6 shadow-card">
+          <h3 class="eyebrow">Dernières candidatures reçues</h3>
+          <p class="text-[13px] text-neutral-500 mt-4">
+            Les candidatures sont envoyées par email sur <strong>{SITE.email}</strong>.<br/>
+            Une intégration future permettra de les consulter ici.
+          </p>
+          <div class="mt-6 p-4 bg-creme rounded-xl text-[13px] text-neutral-600">
+            <strong>À venir</strong> — journal des candidatures, archivage CV, statuts.
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</Layout>

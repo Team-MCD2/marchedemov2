@@ -1,0 +1,81 @@
+---
+import Layout from "@layouts/Layout.astro";
+import Breadcrumb from "@components/Breadcrumb.astro";
+import { SITE } from "@/lib/site";
+---
+
+<Layout
+  title={`Politique de cookies · ${SITE.name}`}
+  description="Politique de cookies du Marché de Mo' — quels cookies, pourquoi, comment les contrôler."
+>
+  <Breadcrumb items={[{ name: "Politique de cookies" }]} />
+
+  <section class="section bg-blanc">
+    <div class="container-mo max-w-3xl">
+      <h1 class="display-lg">Politique de cookies</h1>
+      <p class="mt-4 text-[13px] text-neutral-500 font-pro">Dernière mise à jour : avril 2026</p>
+
+      <div class="prose-mo mt-10">
+        <h2>Qu'est-ce qu'un cookie ?</h2>
+        <p>
+          Un cookie est un petit fichier texte déposé par un site web sur votre navigateur lors
+          de votre visite. Il permet de mémoriser des informations relatives à votre navigation
+          (langue, préférences, connexion) ou de mesurer l'audience du site.
+        </p>
+
+        <h2>Cookies utilisés sur ce site</h2>
+
+        <h3>Cookies strictement nécessaires</h3>
+        <p>
+          Ces cookies sont indispensables au bon fonctionnement du site et ne peuvent pas être
+          désactivés. Ils ne contiennent aucune donnée personnelle identifiable.
+        </p>
+        <ul>
+          <li><strong>session</strong> — identifie votre session (1 heure)</li>
+          <li><strong>cookie_consent</strong> — mémorise votre choix sur les cookies (13 mois)</li>
+        </ul>
+
+        <h3>Cookies analytiques (optionnels)</h3>
+        <p>
+          Sous réserve de votre consentement explicite, nous utilisons un outil d'analyse
+          respectueux de la vie privée (Plausible Analytics, hébergé en UE) pour mesurer
+          l'audience du site. Aucune donnée personnelle identifiable n'est collectée : pas
+          d'IP, pas de cookies tiers, pas de profil publicitaire.
+        </p>
+
+        <h3>Pas de cookies publicitaires</h3>
+        <p>
+          Nous n'utilisons <strong>aucun cookie publicitaire</strong>, aucun pixel Meta, TikTok
+          ou Google Ads sur ce site. Votre navigation ne sert à aucun profilage commercial.
+        </p>
+
+        <h2>Gérer vos préférences</h2>
+        <p>
+          Vous pouvez à tout moment modifier vos préférences via le bandeau de consentement
+          en bas de votre écran, ou en supprimant les cookies dans les paramètres de votre navigateur.
+        </p>
+        <ul>
+          <li><a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener">Gérer les cookies sur Chrome</a></li>
+          <li><a href="https://support.mozilla.org/fr/kb/cookies-informations-sites-enregistrent" target="_blank" rel="noopener">Gérer les cookies sur Firefox</a></li>
+          <li><a href="https://support.apple.com/fr-fr/guide/safari/sfri11471/mac" target="_blank" rel="noopener">Gérer les cookies sur Safari</a></li>
+        </ul>
+
+        <h2>Contact</h2>
+        <p>
+          Pour toute question relative aux cookies ou à vos données personnelles, écrivez-nous
+          à <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.
+        </p>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .prose-mo h2 { font-family: var(--font-soft); font-weight: 700; font-size: 22px; margin-top: 2rem; margin-bottom: 0.5rem; color: #0A0A0A; }
+  .prose-mo h3 { font-family: var(--font-soft); font-weight: 700; font-size: 17px; margin-top: 1.5rem; margin-bottom: 0.5rem; color: #0A0A0A; }
+  .prose-mo p  { font-size: 15px; line-height: 1.75; color: rgb(64, 64, 64); margin: 0.75rem 0; }
+  .prose-mo ul { margin: 0.75rem 0 1rem 1.25rem; }
+  .prose-mo ul li { font-size: 15px; line-height: 1.75; list-style: disc; color: rgb(64, 64, 64); margin: 0.25rem 0; }
+  .prose-mo a  { color: #1C6B35; text-decoration: underline; text-underline-offset: 3px; }
+  .prose-mo strong { color: #0A0A0A; }
+</style>
