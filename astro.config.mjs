@@ -10,7 +10,10 @@ export default defineConfig({
   site: 'https://marchedemo.vercel.app',
   output: 'hybrid',
   adapter: vercel({
-    webAnalytics: { enabled: true },
+    // webAnalytics est désactivé car non activé côté Vercel dashboard
+    // (génère sinon un 404 sur /_vercel/insights/script.js).
+    // Repasser à `enabled: true` après activation dans Vercel → Project → Analytics.
+    webAnalytics: { enabled: false },
     imageService: true,
   }),
   integrations: [
