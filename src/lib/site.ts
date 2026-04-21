@@ -207,11 +207,11 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
     nom: "Boucherie Halal",
     nomCourt: "Boucherie",
     eyebrow: "Rayon signature",
-    tagline: "La viande, travaillée directement sur carcasse.",
+    tagline: "La viande sur carcasse, le prix du supermarché.",
     description:
       "Viandes, volailles et charcuteries 100% halal certifiées, sans électronarcose. Arrivage quotidien, traçabilité rigoureuse.",
     longDescription:
-      "Marché de Mo' s'invite à votre table avec une sélection de viandes fraîches de qualité. La traçabilité rigoureuse vous assure des viandes, volailles et charcuteries de toute première fraîcheur, au meilleur prix du marché. Nous travaillons directement les carcasses afin de garantir une fraîcheur maximale. L'ensemble de nos viandes sont halal, certifiées et abattues sans électronarcose.",
+      "Toutes nos viandes sont halal certifiées, abattues sans électronarcose. On travaille les carcasses en interne : vous n'achetez que ce qui a été découpé du jour. Agneau, bœuf, volaille, charcuterie — traçabilité complète et prix affichés, week-end compris.",
     image: "/images/rayons/boucherie-halal.jpg",
     imageAlt:
       "Boucherie halal Marché de Mo' Toulouse — viande fraîche travaillée sur carcasse",
@@ -237,11 +237,11 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
     nom: "Fruits & Légumes",
     nomCourt: "Primeurs",
     eyebrow: "Fraîcheur absolue",
-    tagline: "120+ références exotiques, arrivage quotidien.",
+    tagline: "120 références exotiques. Arrivage chaque matin.",
     description:
       "Primeurs sélectionnés chaque matin. Bananes plantains, ignames, manioc, mangues, épices fraîches — le rayon le plus complet de l'agglomération toulousaine.",
     longDescription:
-      "La fraîcheur absolue. Un arrivage quotidien de primeurs sélectionnés. Bananes plantains, ignames, manioc, mangues, épices fraîches — plus de 120 références exotiques fournies via les MIN (Rungis) et marchés directs internationaux.",
+      "Livraison tous les matins depuis Rungis et les marchés directs internationaux. Bananes plantains, ignames, manioc, mangues, feuilles de manioc, piments frais — 120 références exotiques qu'on ne trouve pas en grande surface classique, au prix du marché.",
     image: "/images/rayons/fruits-legumes.jpg",
     imageAlt: "Rayon fruits et légumes Marché de Mo' Toulouse — primeurs exotiques",
     heroSlideshow: [
@@ -267,11 +267,11 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
     nom: "Épices du Monde",
     nomCourt: "Épices",
     eyebrow: "Voyage sensoriel",
-    tagline: "Mélanges artisanaux & thés rares.",
+    tagline: "Mélanges artisanaux, thés rares, prix de gros.",
     description:
       "Une offre d'épices et de thés sans équivalent dans la région toulousaine. Mélanges signatures, épices rares, thés sélectionnés.",
     longDescription:
-      "Un voyage sensoriel intense. Mélanges artisanaux, épices rares, sélections de thés inédits. Une offre d'épices et de thés sans équivalent dans la région toulousaine.",
+      "Ras el hanout, za'atar, curry de Madras, piment berbère, safran iranien, cardamome verte — mélanges montés chez nous, épices rares importées en direct. Thés du Maghreb, de Turquie et d'Asie. L'offre la plus complète de l'agglomération, sans la marge d'une épicerie fine.",
     image: "/images/rayons/epices-du-monde.jpg",
     imageAlt: "Rayon épices du monde Marché de Mo' Toulouse — curry, za'atar, ras el hanout",
     heroSlideshow: [
@@ -297,11 +297,11 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
     nom: "Saveurs d'Afrique & Créole",
     nomCourt: "Afrique & Créole",
     eyebrow: "Rayon culturel",
-    tagline: "La cuisine africaine, enfin complète à Toulouse.",
+    tagline: "La cuisine du continent, au complet — enfin à Toulouse.",
     description:
       "Produits de la gastronomie africaine et créole : plats cuisinés, conserves, condiments, boissons et spécialités introuvables ailleurs.",
     longDescription:
-      "Retrouvez les produits de la gastronomie africaine et créole : plats cuisinés, conserves, condiments, boissons et spécialités que vous ne trouverez nulle part ailleurs à Toulouse.",
+      "Afrique de l'Ouest, Afrique centrale, Maghreb, Antilles. Gombo, fufu, sauce graine, attiéké, bissap, ginger beer, plantain précuit, huile de palme rouge, poisson fumé — les produits qu'il fallait aller chercher à Paris sont maintenant à Toulouse, au prix juste.",
     image: "/images/rayons/saveurs-afrique.jpg",
     heroSlideshow: [
       "/images/rayons/saveurs-afrique.jpg",
@@ -328,11 +328,11 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
     nom: "Saveurs d'Asie",
     nomCourt: "Asie",
     eyebrow: "Rayon culturel",
-    tagline: "Japon · Corée · Thaïlande · Chine · Vietnam.",
+    tagline: "Japon, Corée, Thaïlande, Chine, Vietnam — un seul rayon.",
     description:
       "Épicerie asiatique complète : sauces, pâtes, riz, nouilles, produits frais asiatiques. Authenticité et packaging d'origine.",
     longDescription:
-      "Épicerie asiatique complète : Japon, Corée, Thaïlande, Chine, Vietnam. Sauces, pâtes, riz, nouilles, produits frais asiatiques.",
+      "Sauce soja Kikkoman, nuoc-mam, sambal oelek, gochujang, sauce d'huître, pâte de miso, riz jasmin, nouilles udon fraîches, kimchi, galettes de riz, feuilles de nori. Import direct, emballages d'origine — donc des prix plus bas que les épiceries spécialisées du centre-ville.",
     image: "/images/rayons/saveurs-asie.jpg",
     heroSlideshow: [
       "/images/rayons/saveurs-asie.jpg",
@@ -358,11 +358,11 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
     nom: "Saveur Méditerranéenne",
     nomCourt: "Méditerranée",
     eyebrow: "Rayon culturel",
-    tagline: "De Provence au Levant, la lumière du sud.",
+    tagline: "De Provence au Levant, sous le même toit.",
     description:
       "Olives de Provence et du Maghreb, produits orientaux, turcs, levantins. L'épicerie méditerranéenne dans toute sa richesse.",
     longDescription:
-      "Olives de Provence et du Maghreb, aromatisées au safran ou aux épices. Produits orientaux, turcs, levantins et du pourtour méditerranéen.",
+      "Olives du Maghreb et de Provence, huiles d'olive vierges extra, harissa, couscous, semoule fine et moyenne, feuilles de brick, pâtes de dattes, confitures de coing, fromages levantins. La Méditerranée entière, au prix du supermarché.",
     image: "/images/rayons/saveur-mediterranee.jpg",
     imageAlt: "Rayon saveur méditerranéenne Marché de Mo' Toulouse — olives, huile d'olive, épices",
     heroSlideshow: [
@@ -386,11 +386,11 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
     nom: "Saveur Sud-Américaine",
     nomCourt: "Sud-Amérique",
     eyebrow: "Rayon culturel",
-    tagline: "Brésil · Colombie · Mexique · Argentine.",
+    tagline: "Brésil, Colombie, Mexique, Argentine — les saveurs Latinas.",
     description:
       "Épicerie, conserves, boissons et spécialités d'Amérique Latine. Fruits exotiques et piments colorés de la région.",
     longDescription:
-      "Brésil, Colombie, Mexique, Argentine. Épicerie, conserves, boissons et spécialités d'Amérique Latine.",
+      "Arepas précuites, dulce de leche, tortillas de maïs, haricots noirs, piments habanero et chipotle, farine de manioc, maté, guaraná, yerba. Les ingrédients qu'il faut pour cuisiner latino à la maison — sans faire le tour de Toulouse.",
     // DÉVIATION : le Wix officiel marchedemo.com n'a aucune image authentique
     // pour le rayon Sud-Américain (les 2 photos scrapées étaient « produits
     // de nettoyage » et « ménage », hors-sujet). Exception validée par le
@@ -418,11 +418,11 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
     nom: "Balkans & Turques",
     nomCourt: "Balkans & Turquie",
     eyebrow: "Rayon culturel",
-    tagline: "Constantinople & les Balkans modernisés.",
+    tagline: "Istanbul, Sofia, Sarajevo — le rayon au complet.",
     description:
       "Épiceries, fromages, charcuteries halal, conserves et boissons des Balkans et de Turquie.",
     longDescription:
-      "Épiceries, fromages, charcuteries halal, conserves et boissons des Balkans et de Turquie.",
+      "Ayran, kefir, fromage blanc turc, feta bulgare, pastırma halal, soudjouk, börek, baklava, lokoum, café turc, délices de rose. L'épicerie balkano-turque qui manquait à Toulouse, avec les vrais emballages d'origine.",
     image: "/images/rayons/balkans-turques.jpg",
     imageAlt:
       "Rayon Balkans et Turquie Marché de Mo' Toulouse — Adana kebab, börek, fromages blancs",
@@ -443,11 +443,11 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
     nom: "Produits Courants Discounts",
     nomCourt: "Discounts",
     eyebrow: "Prix cassés",
-    tagline: "Le quotidien au meilleur prix.",
+    tagline: "Le quotidien, au prix le plus bas du magasin.",
     description:
       "Prix cassés sur les produits du quotidien. Notre espace déstockage propose des réductions significatives pour tous les budgets.",
     longDescription:
-      "Prix cassés sur les produits du quotidien. Notre espace déstockage propose des réductions significatives pour tous les budgets.",
+      "Notre espace déstockage : produits d'entretien, hygiène, épicerie sucrée et salée — aux prix les plus bas du magasin. Fin de série, fin de stock ou arrivage exceptionnel : les bonnes affaires changent chaque semaine.",
     image: "/images/rayons/produits-courants.jpg",
     imageAlt: "Rayon produits courants discount Marché de Mo' Toulouse",
     culturel: false,
@@ -469,7 +469,7 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
     description:
       "Large sélection de surgelés du monde entier : plats cuisinés ethniques, viandes halal surgelées, légumes et snacking.",
     longDescription:
-      "Large sélection de surgelés du monde entier : plats cuisinés ethniques, viandes halal surgelées, légumes et snacking.",
+      "Samoussas, bricks, nems, keftas halal, poulet yassa, mafé, rouleaux de printemps, naans au fromage, pizzas halal, légumes vapeur, glaces du monde. Le rayon qui dépanne quand il n'y a pas le temps — sans transiger sur l'origine.",
     image: "/images/rayons/surgeles.jpg",
     imageAlt: "Rayon surgelés Marché de Mo' Toulouse — plats ethniques surgelés",
     heroSlideshow: [
