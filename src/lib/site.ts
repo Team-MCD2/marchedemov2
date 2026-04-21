@@ -187,6 +187,12 @@ export interface Rayon {
   image: string;
   imageAlt: string;
   heroImage?: string;
+  /**
+   * Liste ordonnée de 2 à 4 images qui alternent en crossfade sur la RayonCard
+   * (home + /rayons). La 1ʳᵉ = image principale (même fichier que `image`).
+   * Si absent ou <2 items, la card affiche simplement `image` (statique).
+   */
+  heroSlideshow?: string[];
   culturel: boolean;
   ordre: number;
   icone: string;
@@ -209,6 +215,11 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
     image: "/images/rayons/boucherie-halal.jpg",
     imageAlt:
       "Boucherie halal Marché de Mo' Toulouse — viande fraîche travaillée sur carcasse",
+    heroSlideshow: [
+      "/images/rayons/boucherie-halal.jpg",
+      "/images/rayons/boucherie-halal/11062b-603fa6aa568c43e08182a6e546211812f000.jpg",
+      "/images/rayons/boucherie-halal/image-de-cindie-hansen.jpg",
+    ],
     culturel: false,
     ordre: 1,
     icone: "meat",
@@ -256,7 +267,13 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
     longDescription:
       "Un voyage sensoriel intense. Mélanges artisanaux, épices rares, sélections de thés inédits. Une offre d'épices et de thés sans équivalent dans la région toulousaine.",
     image: "/images/rayons/epices-du-monde.jpg",
-    imageAlt: "Épices du monde Marché de Mo' Toulouse — curcuma, paprika, cumin",
+    imageAlt: "Rayon épices du monde Marché de Mo' Toulouse — curry, za'atar, ras el hanout",
+    heroSlideshow: [
+      "/images/rayons/epices-du-monde.jpg",
+      "/images/rayons/epices-du-monde/marche-aux-epices-dubai.jpg",
+      "/images/rayons/epices-du-monde/11062b-430368cba3be40c8b0065e900753a781f000.jpg",
+      "/images/rayons/epices-du-monde/716c51-f9304.jpg",
+    ],
     culturel: false,
     ordre: 3,
     icone: "spice",
@@ -280,6 +297,12 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
     longDescription:
       "Retrouvez les produits de la gastronomie africaine et créole : plats cuisinés, conserves, condiments, boissons et spécialités que vous ne trouverez nulle part ailleurs à Toulouse.",
     image: "/images/rayons/saveurs-afrique.jpg",
+    heroSlideshow: [
+      "/images/rayons/saveurs-afrique.jpg",
+      "/images/rayons/saveurs-afrique/image-de-annie-spratt.jpg",
+      "/images/rayons/saveurs-afrique/11062b-9138c0db6e6443b7a1e1d02e0163279ff000.jpg",
+      "/images/rayons/saveurs-afrique/slide-02-homepage-maceo-groupe-distributeur-produits-creole-.webp",
+    ],
     imageAlt:
       "Rayon saveurs africaines et créoles Marché de Mo' Toulouse — produits du continent africain",
     culturel: true,
@@ -305,6 +328,12 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
     longDescription:
       "Épicerie asiatique complète : Japon, Corée, Thaïlande, Chine, Vietnam. Sauces, pâtes, riz, nouilles, produits frais asiatiques.",
     image: "/images/rayons/saveurs-asie.jpg",
+    heroSlideshow: [
+      "/images/rayons/saveurs-asie.jpg",
+      "/images/rayons/saveurs-asie/image-de-jason-leung.jpg",
+      "/images/rayons/saveurs-asie/image-de-arnie-chou.jpg",
+      "/images/rayons/saveurs-asie/curry-de-poulet-indien.jpg",
+    ],
     imageAlt: "Rayon saveurs d'Asie Marché de Mo' Toulouse — produits japonais, coréens, thaïlandais",
     culturel: true,
     ordre: 5,

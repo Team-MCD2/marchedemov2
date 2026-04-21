@@ -1,6 +1,17 @@
 ---
 /**
  * RayonCard — card vitrine d'un rayon, utilisée sur la home et /rayons.
+ *
+ * Aspect ratios :
+ *   - mobile : 4/3 (landscape stacké)
+ *   - desktop small (1 col) : 4/5 (portrait)
+ *   - desktop large (2 cols) : 8/5 (landscape, MÊME hauteur que small → grid aligné)
+ *   Math : small h = w × 5/4 ; large h = 2w × 5/8 = 1.25 w. ✓
+ *
+ * Slideshow :
+ *   - Si `rayon.heroSlideshow` contient ≥ 2 entrées → crossfade CSS automatique
+ *     (clés .rayon-slideshow dans global.css, 4 s par image + 0.5 s fade).
+ *   - Sinon → `<img>` statique.
  */
 import type { Rayon } from "@/lib/site";
 
@@ -11,24 +22,49 @@ interface Props {
 
 const { rayon, large = false } = Astro.props as Props;
 const accent = rayon.accent ?? "#1C6B35";
+
+/* Filtrer heroSlideshow : ≥ 2 entrées uniques → activer carousel */
+const uniqueSlides = Array.from(new Set(rayon.heroSlideshow ?? []));
+const slideshowActive = uniqueSlides.length >= 2;
+const slideCount = Math.min(uniqueSlides.length, 4);
 ---
 
 <a
   href={`/rayons/${rayon.slug}`}
   class={`group relative overflow-hidden rounded-3xl bg-white shadow-card hover:shadow-card-hover transition-all duration-500 ${
-    large ? "md:col-span-2" : ""
-  }`}
+    large ? "md:col-span-2 md:aspect-[8/5]" : "md:aspect-[4/5]"
+  } aspect-[4/3]`}
 >
-  <div class="relative aspect-[4/3] md:aspect-[5/4] overflow-hidden">
-    <img
-      src={rayon.image}
-      alt={rayon.imageAlt}
-      loading="lazy"
-      decoding="async"
-      width="1280"
-      height="1024"
-      class="w-full h-full object-cover group-hover:scale-[1.06] transition-transform duration-700"
-    />
+  <div class="absolute inset-0 overflow-hidden">
+    {slideshowActive ? (
+      <div
+        class="rayon-slideshow absolute inset-0 w-full h-full group-hover:scale-[1.04] transition-transform duration-700"
+        data-slides={slideCount}
+      >
+        {uniqueSlides.slice(0, 4).map((src, i) => (
+          <img
+            src={src}
+            alt={i === 0 ? rayon.imageAlt : ""}
+            aria-hidden={i > 0 ? "true" : undefined}
+            loading="lazy"
+            decoding="async"
+            width="1280"
+            height="1600"
+            class="rayon-slide"
+          />
+        ))}
+      </div>
+    ) : (
+      <img
+        src={rayon.image}
+        alt={rayon.imageAlt}
+        loading="lazy"
+        decoding="async"
+        width="1280"
+        height="1600"
+        class="w-full h-full object-cover group-hover:scale-[1.06] transition-transform duration-700"
+      />
+    )}
     <!-- Gradient overlay -->
     <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent"></div>
 
