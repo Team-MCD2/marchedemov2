@@ -279,7 +279,7 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
       "Produits de la gastronomie africaine et créole : plats cuisinés, conserves, condiments, boissons et spécialités introuvables ailleurs.",
     longDescription:
       "Retrouvez les produits de la gastronomie africaine et créole : plats cuisinés, conserves, condiments, boissons et spécialités que vous ne trouverez nulle part ailleurs à Toulouse.",
-    image: "/images/rayons/saveurs-afrique.webp",
+    image: "/images/rayons/saveurs-afrique.jpg",
     imageAlt:
       "Rayon saveurs africaines et créoles Marché de Mo' Toulouse — produits du continent africain",
     culturel: true,
@@ -304,7 +304,7 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
       "Épicerie asiatique complète : sauces, pâtes, riz, nouilles, produits frais asiatiques. Authenticité et packaging d'origine.",
     longDescription:
       "Épicerie asiatique complète : Japon, Corée, Thaïlande, Chine, Vietnam. Sauces, pâtes, riz, nouilles, produits frais asiatiques.",
-    image: "/images/rayons/saveurs-asie.webp",
+    image: "/images/rayons/saveurs-asie.jpg",
     imageAlt: "Rayon saveurs d'Asie Marché de Mo' Toulouse — produits japonais, coréens, thaïlandais",
     culturel: true,
     ordre: 5,
@@ -378,7 +378,7 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
       "Épiceries, fromages, charcuteries halal, conserves et boissons des Balkans et de Turquie.",
     image: "/images/rayons/balkans-turques.jpg",
     imageAlt:
-      "Rayon Balkans et Turquie Marché de Mo' Toulouse — börek, fromages blancs, ayran",
+      "Rayon Balkans et Turquie Marché de Mo' Toulouse — Adana kebab, börek, fromages blancs",
     culturel: true,
     ordre: 8,
     icone: "ottoman",

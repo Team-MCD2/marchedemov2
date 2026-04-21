@@ -1,0 +1,62 @@
+[
+  {
+    "url": "https://www.marchedemo.com/boucherie-halal",
+    "slug": "boucherie-halal",
+    "label": "Boucherie Halal",
+    "expectedInTitle": ["Boucherie", "Halal"]
+  },
+  {
+    "url": "https://www.marchedemo.com/copie-de-nouvelle-page",
+    "slug": "saveurs-afrique",
+    "label": "Saveurs d'Afrique & Créole",
+    "expectedInTitle": ["Afrique", "Cr\u00e9ole"]
+  },
+  {
+    "url": "https://www.marchedemo.com/copie-de-boulangerie",
+    "slug": "epices-du-monde",
+    "label": "\u00c9pices du Monde",
+    "expectedInTitle": ["\u00e9pices"]
+  },
+  {
+    "url": "https://www.marchedemo.com/copie-de-epicerie-sucr%C3%A9-et-sal%C3%A9",
+    "slug": "saveurs-asie",
+    "label": "Saveurs d'Asie",
+    "expectedInTitle": ["Asie"]
+  },
+  {
+    "url": "https://www.marchedemo.com/fruits-et-l%C3%A9gumes",
+    "slug": "fruits-legumes",
+    "label": "Fruits & Légumes",
+    "expectedInTitle": ["Fruits"]
+  },
+  {
+    "url": "https://www.marchedemo.com/copie-de-frais",
+    "slug": "saveur-mediterranee",
+    "label": "Saveur M\u00e9diterran\u00e9enne",
+    "expectedInTitle": ["M\u00e9diterran"]
+  },
+  {
+    "url": "https://www.marchedemo.com/copie-de-boisson",
+    "slug": "saveur-sud-amer",
+    "label": "Saveur Sud-Am\u00e9ricaine",
+    "expectedInTitle": ["Sud", "Americ"]
+  },
+  {
+    "url": "https://www.marchedemo.com/copie-de-produits-courants",
+    "slug": "balkans-turques",
+    "label": "Balkans & Turques",
+    "expectedInTitle": ["Balkan", "Turq"]
+  },
+  {
+    "url": "https://www.marchedemo.com/copie-de-surgel%C3%A9",
+    "slug": "produits-courants",
+    "label": "Produits Courants Discounts",
+    "expectedInTitle": ["Produits", "Courants"]
+  },
+  {
+    "url": "https://www.marchedemo.com/copie-de-boissons",
+    "slug": "surgeles",
+    "label": "Surgel\u00e9",
+    "expectedInTitle": ["Surgel"]
+  }
+]
