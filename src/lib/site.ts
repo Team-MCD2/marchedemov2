@@ -352,8 +352,16 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
       "Épicerie, conserves, boissons et spécialités d'Amérique Latine. Fruits exotiques et piments colorés de la région.",
     longDescription:
       "Brésil, Colombie, Mexique, Argentine. Épicerie, conserves, boissons et spécialités d'Amérique Latine.",
+    // DÉVIATION : le Wix officiel marchedemo.com n'a aucune image authentique
+    // pour le rayon Sud-Américain (les 2 photos scrapées étaient « produits
+    // de nettoyage » et « ménage », hors-sujet). Exception validée par le
+    // client pour utiliser une photo Unsplash libre de droits.
+    // Crédit : Alexandra Tran (@alexgoesglobal), slug Unsplash KjOy1JVwamI.
+    // Voir CREDITS.md. À remplacer dès qu'une vraie photo du rayon en magasin
+    // est fournie.
     image: "/images/rayons/saveur-sud-amer.jpg",
-    imageAlt: "Rayon saveur sud-américaine Marché de Mo' Toulouse — produits Latam",
+    imageAlt:
+      "Plateau d'ingrédients latino-américains : plantain, avocat, arepa, orange, salsa et coriandre",
     culturel: true,
     ordre: 7,
     icone: "tropical",
