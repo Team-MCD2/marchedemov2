@@ -17,17 +17,38 @@
   color: var(--rayon-texte-hero);
 }
 
-/* Motif géométrie andine — triangles & rayures */
+/* Motif géométrie andine — rayures verticales + triangles en rythme */
 [data-rayon="saveur-sud-amer"] .rayon-motif {
   background-image:
     repeating-linear-gradient(90deg,
       transparent 0 22px,
-      rgba(230, 57, 70, 0.08) 22px 26px,
+      rgba(230, 57, 70, 0.16) 22px 26px,
       transparent 26px 48px,
-      rgba(244, 196, 48, 0.07) 48px 52px);
+      rgba(244, 196, 48, 0.12) 48px 52px,
+      transparent 52px 80px,
+      rgba(42, 157, 143, 0.10) 80px 84px);
+}
+
+/* Bande andine colorée en bas du hero */
+[data-rayon="saveur-sud-amer"] .rayon-hero::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 8px;
+  background:
+    repeating-linear-gradient(90deg,
+      #E63946 0 20px, #F4C430 20px 40px,
+      #2A9D8F 40px 60px, #FFF9EC 60px 64px);
+  opacity: 0.85;
 }
 
 [data-rayon="saveur-sud-amer"] .rayon-badge {
   background: var(--rayon-accent);
   color: #FFF9EC;
+}
+
+[data-rayon="saveur-sud-amer"] .rayon-pill {
+  background: rgba(255, 249, 236, 0.12);
+  color: var(--rayon-texte-hero);
+  border: 1px solid rgba(255, 249, 236, 0.22);
 }

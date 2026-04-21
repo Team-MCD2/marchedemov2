@@ -1,0 +1,23 @@
+/* DA Surgelés — glacial, bleu clair, efficacité. */
+
+[data-rayon="surgeles"] {
+  --rayon-accent:       #2A7AB3;
+  --rayon-accent-dark:  #1E5680;
+  --rayon-accent-2:     #6FAFD9;
+  --rayon-accent-3:     #E9F3FB;
+  --rayon-fond-section: #F2F8FC;
+  --rayon-fond-hero:    #FFFFFF;
+  --rayon-texte-hero:   #0F0F0F;
+}
+
+[data-rayon="surgeles"] .rayon-hero {
+  background:
+    radial-gradient(circle at 80% 0%, rgba(42, 122, 179, 0.08), transparent 55%),
+    linear-gradient(180deg, #FFFFFF 0%, #F2F8FC 100%);
+}
+
+[data-rayon="surgeles"] .rayon-motif {
+  background-image:
+    radial-gradient(circle at 50% 50%, rgba(42, 122, 179, 0.08) 1.5px, transparent 2.5px);
+  background-size: 26px 26px;
+}

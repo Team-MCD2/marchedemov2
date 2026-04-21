@@ -2,7 +2,7 @@
 titre: "Partenariat renforcé avec la Banque Alimentaire de Haute-Garonne"
 categorie: "engagements"
 resume: "Le Marché de Mo' formalise son engagement contre la précarité alimentaire avec des dons réguliers et une distribution mensuelle."
-image: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=1600&q=80"
+image: "/images/articles/banque-alimentaire.jpg"
 auteur: "L'équipe Marché de Mo'"
 date_publication: 2026-02-20
 actif: true

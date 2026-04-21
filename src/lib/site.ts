@@ -60,6 +60,8 @@ export interface Magasin {
   telE164: string;
   mapsEmbed: string;
   mapsLink: string;
+  /** Precise coordinates (WGS84) — used for cookieless OSM embed and schema.org geo. */
+  coords: { lat: number; lon: number };
   photo: string;
   description: string;
   accroche: string;
@@ -94,12 +96,12 @@ export const MAGASINS: Record<MagasinSlug, Magasin> = {
     ],
     telephone: "05 82 95 82 52",
     telE164: "+33582958252",
+    coords: { lat: 43.5377, lon: 1.4094 },
     mapsEmbed:
-      "https://www.google.com/maps?q=8+All%C3%A9e+Pablo+Picasso+31120+Portet-sur-Garonne&output=embed",
+      "https://www.openstreetmap.org/export/embed.html?bbox=1.4044%2C43.5347%2C1.4144%2C43.5407&layer=mapnik&marker=43.5377%2C1.4094",
     mapsLink:
       "https://maps.google.com/?q=8+All%C3%A9e+Pablo+Picasso+31120+Portet-sur-Garonne",
-    // TODO: replace with real storefront photo at /magasins/portet.jpg
-    photo: "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&w=1600&q=80",
+    photo: "/images/magasins/portet.jpg",
     badge: "Magasin historique",
     accroche: "Le magasin fondateur — 1 200 m² de saveurs du monde à Portet-sur-Garonne.",
     dateOuverture: "Août 2024",
@@ -138,12 +140,12 @@ export const MAGASINS: Record<MagasinSlug, Magasin> = {
     ],
     telephone: "05 82 95 82 52",
     telE164: "+33582958252",
+    coords: { lat: 43.5842, lon: 1.4042 },
     mapsEmbed:
-      "https://www.google.com/maps?q=5+rue+Joachim+du+Bellay+31100+Toulouse&output=embed",
+      "https://www.openstreetmap.org/export/embed.html?bbox=1.3992%2C43.5812%2C1.4092%2C43.5872&layer=mapnik&marker=43.5842%2C1.4042",
     mapsLink:
       "https://maps.google.com/?q=5+rue+Joachim+du+Bellay+31100+Toulouse",
-    // TODO: replace with real storefront photo at /magasins/toulouse-sud.jpg
-    photo: "https://images.unsplash.com/photo-1580913428023-02c695666d61?auto=format&fit=crop&w=1600&q=80",
+    photo: "/images/magasins/toulouse-sud.jpg",
     badge: "Dernier-né du groupe",
     accroche: "Le second magasin du Groupe, au cœur de Toulouse Sud Cépière.",
     dateOuverture: "Avril 2026",
@@ -204,8 +206,7 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
       "Viandes, volailles et charcuteries 100% halal certifiées, sans électronarcose. Arrivage quotidien, traçabilité rigoureuse.",
     longDescription:
       "Marché de Mo' s'invite à votre table avec une sélection de viandes fraîches de qualité. La traçabilité rigoureuse vous assure des viandes, volailles et charcuteries de toute première fraîcheur, au meilleur prix du marché. Nous travaillons directement les carcasses afin de garantir une fraîcheur maximale. L'ensemble de nos viandes sont halal, certifiées et abattues sans électronarcose.",
-    image:
-      "https://static.wixstatic.com/media/716c51_b14f281522684d928503531bd2aa49f8~mv2.jpg",
+    image: "/images/rayons/boucherie-halal.jpg",
     imageAlt:
       "Boucherie halal Marché de Mo' Toulouse — viande fraîche travaillée sur carcasse",
     culturel: false,
@@ -230,13 +231,13 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
       "Primeurs sélectionnés chaque matin. Bananes plantains, ignames, manioc, mangues, épices fraîches — le rayon le plus complet de l'agglomération toulousaine.",
     longDescription:
       "La fraîcheur absolue. Un arrivage quotidien de primeurs sélectionnés. Bananes plantains, ignames, manioc, mangues, épices fraîches — plus de 120 références exotiques fournies via les MIN (Rungis) et marchés directs internationaux.",
-    image:
-      "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1600&q=80",
+    image: "/images/rayons/fruits-legumes.jpg",
     imageAlt: "Rayon fruits et légumes Marché de Mo' Toulouse — primeurs exotiques",
     culturel: false,
     ordre: 2,
     icone: "leaf",
     featured: ["Plantain", "Manioc", "Igname", "Mangues"],
+    accent: "#2E8B4A",
     keywords: [
       "fruits exotiques Toulouse",
       "légumes africains Toulouse",
@@ -254,13 +255,13 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
       "Une offre d'épices et de thés sans équivalent dans la région toulousaine. Mélanges signatures, épices rares, thés sélectionnés.",
     longDescription:
       "Un voyage sensoriel intense. Mélanges artisanaux, épices rares, sélections de thés inédits. Une offre d'épices et de thés sans équivalent dans la région toulousaine.",
-    image:
-      "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=1600&q=80",
+    image: "/images/rayons/epices-du-monde.jpg",
     imageAlt: "Épices du monde Marché de Mo' Toulouse — curcuma, paprika, cumin",
     culturel: false,
     ordre: 3,
     icone: "spice",
     featured: ["Ras el hanout", "Curcuma", "Piment berbère", "Thés du monde"],
+    accent: "#C0812B",
     keywords: [
       "épices du monde Toulouse",
       "épices rares Toulouse",
@@ -278,8 +279,7 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
       "Produits de la gastronomie africaine et créole : plats cuisinés, conserves, condiments, boissons et spécialités introuvables ailleurs.",
     longDescription:
       "Retrouvez les produits de la gastronomie africaine et créole : plats cuisinés, conserves, condiments, boissons et spécialités que vous ne trouverez nulle part ailleurs à Toulouse.",
-    image:
-      "https://images.unsplash.com/photo-1604329760661-e71dc83f8f26?auto=format&fit=crop&w=1600&q=80",
+    image: "/images/rayons/saveurs-afrique.webp",
     imageAlt:
       "Rayon saveurs africaines et créoles Marché de Mo' Toulouse — produits du continent africain",
     culturel: true,
@@ -304,8 +304,7 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
       "Épicerie asiatique complète : sauces, pâtes, riz, nouilles, produits frais asiatiques. Authenticité et packaging d'origine.",
     longDescription:
       "Épicerie asiatique complète : Japon, Corée, Thaïlande, Chine, Vietnam. Sauces, pâtes, riz, nouilles, produits frais asiatiques.",
-    image:
-      "https://images.unsplash.com/photo-1617196034183-421b4917c92d?auto=format&fit=crop&w=1600&q=80",
+    image: "/images/rayons/saveurs-asie.webp",
     imageAlt: "Rayon saveurs d'Asie Marché de Mo' Toulouse — produits japonais, coréens, thaïlandais",
     culturel: true,
     ordre: 5,
@@ -329,8 +328,7 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
       "Olives de Provence et du Maghreb, produits orientaux, turcs, levantins. L'épicerie méditerranéenne dans toute sa richesse.",
     longDescription:
       "Olives de Provence et du Maghreb, aromatisées au safran ou aux épices. Produits orientaux, turcs, levantins et du pourtour méditerranéen.",
-    image:
-      "https://images.unsplash.com/photo-1599909533730-3ee32c2902c2?auto=format&fit=crop&w=1600&q=80",
+    image: "/images/rayons/saveur-mediterranee.jpg",
     imageAlt: "Rayon saveur méditerranéenne Marché de Mo' Toulouse — olives, huile d'olive, épices",
     culturel: true,
     ordre: 6,
@@ -354,8 +352,7 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
       "Épicerie, conserves, boissons et spécialités d'Amérique Latine. Fruits exotiques et piments colorés de la région.",
     longDescription:
       "Brésil, Colombie, Mexique, Argentine. Épicerie, conserves, boissons et spécialités d'Amérique Latine.",
-    image:
-      "https://images.unsplash.com/photo-1572441713132-51c75654db73?auto=format&fit=crop&w=1600&q=80",
+    image: "/images/rayons/saveur-sud-amer.jpg",
     imageAlt: "Rayon saveur sud-américaine Marché de Mo' Toulouse — produits Latam",
     culturel: true,
     ordre: 7,
@@ -379,15 +376,14 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
       "Épiceries, fromages, charcuteries halal, conserves et boissons des Balkans et de Turquie.",
     longDescription:
       "Épiceries, fromages, charcuteries halal, conserves et boissons des Balkans et de Turquie.",
-    image:
-      "https://images.unsplash.com/photo-1585238342024-78d387f4a707?auto=format&fit=crop&w=1600&q=80",
+    image: "/images/rayons/balkans-turques.jpg",
     imageAlt:
       "Rayon Balkans et Turquie Marché de Mo' Toulouse — börek, fromages blancs, ayran",
     culturel: true,
     ordre: 8,
     icone: "ottoman",
     featured: ["Börek", "Ayran", "Fromage blanc", "Baklava"],
-    accent: "#C0392B",
+    accent: "#8B2500",
     keywords: [
       "épicerie turque Toulouse",
       "produits balkans Toulouse",
@@ -405,8 +401,7 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
       "Prix cassés sur les produits du quotidien. Notre espace déstockage propose des réductions significatives pour tous les budgets.",
     longDescription:
       "Prix cassés sur les produits du quotidien. Notre espace déstockage propose des réductions significatives pour tous les budgets.",
-    image:
-      "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&w=1600&q=80",
+    image: "/images/rayons/produits-courants.jpg",
     imageAlt: "Rayon produits courants discount Marché de Mo' Toulouse",
     culturel: false,
     ordre: 9,
@@ -428,13 +423,13 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
       "Large sélection de surgelés du monde entier : plats cuisinés ethniques, viandes halal surgelées, légumes et snacking.",
     longDescription:
       "Large sélection de surgelés du monde entier : plats cuisinés ethniques, viandes halal surgelées, légumes et snacking.",
-    image:
-      "https://images.unsplash.com/photo-1551782450-17144efb9c50?auto=format&fit=crop&w=1600&q=80",
+    image: "/images/rayons/surgeles.jpg",
     imageAlt: "Rayon surgelés Marché de Mo' Toulouse — plats ethniques surgelés",
     culturel: false,
     ordre: 10,
     icone: "snow",
     featured: ["Samoussas", "Bricks", "Nems", "Viande halal surgelée"],
+    accent: "#2A7AB3",
     keywords: [
       "surgelés ethniques Toulouse",
       "plats surgelés halal Toulouse",

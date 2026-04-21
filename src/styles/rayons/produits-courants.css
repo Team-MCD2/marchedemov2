@@ -1,0 +1,22 @@
+/* DA Produits Courants — sobre, efficace, discount assumé. */
+
+[data-rayon="produits-courants"] {
+  --rayon-accent:       #1C6B35;
+  --rayon-accent-dark:  #14502A;
+  --rayon-accent-2:     #8B1919;
+  --rayon-accent-3:     #F4F4F2;
+  --rayon-fond-section: #F7F7F5;
+  --rayon-fond-hero:    #FFFFFF;
+  --rayon-texte-hero:   #0F0F0F;
+}
+
+[data-rayon="produits-courants"] .rayon-hero {
+  background: linear-gradient(180deg, #FFFFFF 0%, #F4F4F2 100%);
+}
+
+[data-rayon="produits-courants"] .rayon-motif {
+  background-image:
+    linear-gradient(0deg, rgba(28, 107, 53, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(28, 107, 53, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+}

@@ -56,6 +56,11 @@ export function grocerySchema(m: Magasin) {
     servesCuisine: ["Halal", "Africain", "Asiatique", "Méditerranéen", "Sud-Américain", "Balkans"],
     priceRange: "€€",
     hasMap: m.mapsLink,
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: m.coords.lat,
+      longitude: m.coords.lon,
+    },
     url: `${SITE.url}/magasins/${m.slug}`,
     parentOrganization: { "@type": "Organization", name: SITE.name },
   };

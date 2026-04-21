@@ -2,7 +2,7 @@
 titre: "Ouverture du Marché de Mo' Toulouse Sud — Cépière"
 categorie: "evenements"
 resume: "Le Groupe Marché de Mo' ouvre son second magasin dans l'ancien hypermarché du centre commercial L'Hippodrome, à la sortie 27 de la rocade."
-image: "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&w=1600&q=80"
+image: "/images/articles/ouverture-cepiere.jpg"
 auteur: "L'équipe Marché de Mo'"
 date_publication: 2026-03-15
 actif: true

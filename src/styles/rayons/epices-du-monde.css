@@ -1,0 +1,25 @@
+/* DA Épices du Monde — safran + paprika, ambiance souk. */
+
+[data-rayon="epices-du-monde"] {
+  --rayon-accent:       #C0812B;
+  --rayon-accent-dark:  #8E5E1C;
+  --rayon-accent-2:     #C1440E;
+  --rayon-accent-3:     #5A3A1A;
+  --rayon-fond-section: #FCF6EB;
+  --rayon-fond-hero:    #FFFFFF;
+  --rayon-texte-hero:   #0F0F0F;
+}
+
+[data-rayon="epices-du-monde"] .rayon-hero {
+  background:
+    radial-gradient(circle at 85% 80%, rgba(193, 68, 14, 0.08), transparent 50%),
+    radial-gradient(circle at 15% 10%, rgba(192, 129, 43, 0.08), transparent 50%),
+    linear-gradient(180deg, #FFFFFF 0%, #FCF6EB 100%);
+}
+
+[data-rayon="epices-du-monde"] .rayon-motif {
+  background-image:
+    repeating-radial-gradient(circle at 0 0,
+      rgba(192, 129, 43, 0.06) 0 2px,
+      transparent 2px 14px);
+}

@@ -29,6 +29,7 @@ const dateStr = new Date(article.data.date_publication).toLocaleDateString("fr-F
 <Layout
   title={`${article.data.titre} · ${SITE.name}`}
   description={article.data.resume}
+  heroImage={article.data.image}
   schema={bc}
 >
   <Breadcrumb

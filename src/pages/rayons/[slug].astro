@@ -9,6 +9,7 @@ import { getCollection } from "astro:content";
 import { RAYONS, RAYONS_LIST, SITE, type RayonSlug } from "@/lib/site";
 import { faqsForRayon } from "@/lib/faqs";
 import { breadcrumbSchema } from "@/lib/schema";
+import tiktokEmbeds from "@/generated/tiktok-embeds.json";
 
 export async function getStaticPaths() {
   return Object.values(RAYONS).map((r) => ({ params: { slug: r.slug } }));
@@ -19,7 +20,8 @@ const rayon = RAYONS[slug];
 if (!rayon) throw new Error(`Rayon non trouvé : ${slug}`);
 
 const isCulturel = rayon.culturel;
-const accent = rayon.accent ?? "#1C6B35";
+/* Cultural heroes use dark backgrounds with light text; non-cultural stay on light bg. */
+const heroTheme = isCulturel ? "rayon-hero--dark" : "rayon-hero--light";
 
 /* Promos du rayon */
 const promos = (await getCollection("promos"))
@@ -46,7 +48,8 @@ const faqItems = faqsForRayon(slug);
   description={rayon.description}
   faqItems={faqItems}
   schema={bc}
-  bodyDataRayon={isCulturel ? slug : undefined}
+  heroImage={rayon.image}
+  bodyDataRayon={slug}
 >
   <!-- Breadcrumb (dark if cultural hero dark) -->
   <Breadcrumb
@@ -57,52 +60,40 @@ const faqItems = faqsForRayon(slug);
   />
 
   <!-- HERO -->
-  <section
-    class={`rayon-hero relative overflow-hidden ${isCulturel ? "" : "bg-blanc"}`}
-    style={!isCulturel ? `background: linear-gradient(180deg, #fff 0%, ${accent}12 100%)` : undefined}
-  >
-    <div class={`${isCulturel ? "rayon-motif" : ""} absolute inset-0 pointer-events-none`}></div>
+  <section class={`rayon-hero ${heroTheme} relative overflow-hidden`}>
+    <!-- Motif culturel (pattern via CSS var par rayon) -->
+    <div class="rayon-motif absolute inset-0 pointer-events-none"></div>
 
     <div class="container-mo relative z-10 py-14 md:py-20 grid lg:grid-cols-12 gap-10 items-center">
       <div class="lg:col-span-7">
-        <span class="eyebrow" style={`color: ${isCulturel ? "currentColor" : accent}`}>
+        <span class="eyebrow rayon-eyebrow">
           {rayon.eyebrow}
         </span>
-        <h1
-          class="display-xl mt-4 text-balance"
-          style={isCulturel ? "color: var(--rayon-texte-hero)" : undefined}
-        >
+        <h1 class="display-xl mt-4 text-balance rayon-title">
           {rayon.nom}
         </h1>
-        <p
-          class={`mt-6 text-[18px] md:text-[20px] leading-snug max-w-2xl ${isCulturel ? "opacity-80" : "text-neutral-700"}`}
-        >
+        <p class="mt-6 text-[18px] md:text-[20px] leading-snug max-w-2xl rayon-tagline">
           {rayon.tagline}
         </p>
-        <p class={`mt-4 text-[15px] leading-relaxed max-w-2xl ${isCulturel ? "opacity-70" : "text-neutral-600"}`}>
+        <p class="mt-4 text-[15px] leading-relaxed max-w-2xl rayon-lead">
           {rayon.longDescription}
         </p>
 
         <div class="mt-8 flex flex-wrap gap-2">
           {rayon.featured.map((f) => (
-            <span
-              class="pill"
-              style={`background: ${accent}18; color: ${isCulturel ? "var(--rayon-texte-hero)" : accent}`}
-            >
-              {f}
-            </span>
+            <span class="pill rayon-pill">{f}</span>
           ))}
         </div>
 
         <div class="mt-10 flex flex-col sm:flex-row gap-3">
-          <a href="/magasins" class="btn btn-primary" style={`background: ${accent}`}>
+          <a href="/magasins" class="btn rayon-btn-primary">
             Trouver un magasin
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <path d="M5 12h14M13 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </a>
           {promos.length > 0 && (
-            <a href="#promos" class="btn btn-ghost" style={isCulturel ? "color: currentColor; border-color: currentColor; opacity:0.8" : undefined}>
+            <a href="#promos" class="btn rayon-btn-ghost">
               Voir les {promos.length} promo{promos.length > 1 ? "s" : ""}
             </a>
           )}
@@ -110,7 +101,7 @@ const faqItems = faqsForRayon(slug);
       </div>
 
       <div class="lg:col-span-5">
-        <div class="relative aspect-[4/5] rounded-[40px] overflow-hidden shadow-2xl">
+        <div class="relative aspect-[4/5] rounded-[40px] overflow-hidden shadow-2xl ring-1 ring-black/5">
           <img
             src={rayon.image}
             alt={rayon.imageAlt}
@@ -118,7 +109,10 @@ const faqItems = faqsForRayon(slug);
             fetchpriority="high"
             width="800"
             height="1000"
+            decoding="async"
           />
+          <!-- Overlay subtil couleur accent -->
+          <div class="rayon-img-overlay absolute inset-0 pointer-events-none"></div>
         </div>
       </div>
     </div>
@@ -159,14 +153,18 @@ const faqItems = faqsForRayon(slug);
         <h2 class="display-md mt-4 max-w-2xl text-balance">Découvrez le rayon en images.</h2>
 
         <div class="mt-10 grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl">
-          {videos.map((v) => (
-            <TikTokEmbed
-              client:visible
-              url={v.data.url_tiktok}
-              title={v.data.titre}
-              thumbnail={v.data.thumbnail}
-            />
-          ))}
+          {videos.map((v) => {
+            const cached = tiktokEmbeds[v.data.id];
+            return (
+              <TikTokEmbed
+                client:visible
+                url={v.data.url_tiktok}
+                title={v.data.titre}
+                thumbnail={cached?.thumbnail ?? v.data.thumbnail}
+                embedHtml={cached?.html}
+              />
+            );
+          })}
         </div>
       </div>
     </section>

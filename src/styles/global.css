@@ -1,12 +1,19 @@
 /* Global styles — Marché de Mo' V2 */
 @import "./tokens.css";
 
-/* Cultural DA tokens per rayon — activated via body[data-rayon="..."] */
+/* DA tokens per rayon — activated via body[data-rayon="..."] */
+/* 5 culturels (hero dark + motif typé) */
 @import "./rayons/saveurs-afrique.css";
 @import "./rayons/saveurs-asie.css";
 @import "./rayons/saveur-mediterranee.css";
 @import "./rayons/saveur-sud-amer.css";
 @import "./rayons/balkans-turques.css";
+/* 5 non-culturels (hero clair teinté + motif discret) */
+@import "./rayons/boucherie-halal.css";
+@import "./rayons/fruits-legumes.css";
+@import "./rayons/epices-du-monde.css";
+@import "./rayons/produits-courants.css";
+@import "./rayons/surgeles.css";
 
 @tailwind base;
 @tailwind components;
@@ -249,6 +256,66 @@
   .promo-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 20px 50px rgba(0, 0, 0, 0.12);
+  }
+
+  /* ------------------------------------------------------------
+     Rayons — utilitaires pilotés par les CSS vars [data-rayon="..."]
+     ------------------------------------------------------------ */
+  .rayon-hero {
+    position: relative;
+    background: linear-gradient(180deg, #fff 0%,
+      color-mix(in srgb, var(--rayon-accent) 7%, #fff) 100%);
+  }
+  .rayon-hero--light .rayon-title        { color: var(--color-noir); }
+  .rayon-hero--light .rayon-tagline      { color: #3a3a3a; }
+  .rayon-hero--light .rayon-lead         { color: #666666; }
+  .rayon-hero--dark  .rayon-title        { color: var(--rayon-texte-hero); }
+  .rayon-hero--dark  .rayon-tagline      { color: var(--rayon-texte-hero); opacity: 0.82; }
+  .rayon-hero--dark  .rayon-lead         { color: var(--rayon-texte-hero); opacity: 0.66; }
+
+  .rayon-eyebrow { color: var(--rayon-accent); }
+
+  .rayon-pill {
+    background: color-mix(in srgb, var(--rayon-accent) 12%, transparent);
+    color: var(--rayon-accent-dark, var(--rayon-accent));
+    border: 1px solid color-mix(in srgb, var(--rayon-accent) 24%, transparent);
+  }
+
+  .rayon-btn-primary {
+    background: var(--rayon-accent);
+    color: #ffffff;
+  }
+  .rayon-btn-primary:hover {
+    background: var(--rayon-accent-dark, var(--rayon-accent));
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--rayon-accent) 35%, transparent);
+  }
+
+  .rayon-btn-ghost {
+    background: transparent;
+    color: var(--color-noir);
+    border: 2px solid color-mix(in srgb, var(--color-noir) 12%, transparent);
+  }
+  .rayon-btn-ghost:hover {
+    border-color: var(--rayon-accent);
+    color: var(--rayon-accent);
+  }
+  .rayon-hero--dark .rayon-btn-ghost {
+    color: var(--rayon-texte-hero);
+    border-color: color-mix(in srgb, var(--rayon-texte-hero) 30%, transparent);
+  }
+  .rayon-hero--dark .rayon-btn-ghost:hover {
+    background: color-mix(in srgb, var(--rayon-texte-hero) 10%, transparent);
+    border-color: var(--rayon-texte-hero);
+    color: var(--rayon-texte-hero);
+  }
+
+  .rayon-img-overlay {
+    background: linear-gradient(160deg,
+      transparent 0%,
+      transparent 55%,
+      color-mix(in srgb, var(--rayon-accent) 22%, transparent) 100%);
+    mix-blend-mode: multiply;
   }
 
   /* Header elevated on scroll */

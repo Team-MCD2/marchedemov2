@@ -2,7 +2,7 @@
   "id": "promo-002",
   "titre": "Bananes plantains mûres",
   "description": "Filet de 1 kg, arrivage Rungis du matin.",
-  "image": "https://images.unsplash.com/photo-1603833665858-e61d17a86224?auto=format&fit=crop&w=1200&q=80",
+  "image": "/images/promos/bananes-plantain.jpg",
   "prix_original": "3.90",
   "prix_promo": "2.49",
   "reduction_pct": 36,

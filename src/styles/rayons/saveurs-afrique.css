@@ -18,18 +18,40 @@
   color: var(--rayon-texte-hero);
 }
 
-/* Motif Kente stylisé — trame discrète */
+/* Motif Kente stylisé — trame tissée, rayures Adinkra */
 [data-rayon="saveurs-afrique"] .rayon-motif {
   background-image:
     repeating-linear-gradient(45deg,
       transparent 0 14px,
-      rgba(200, 117, 26, 0.08) 14px 16px),
+      rgba(200, 117, 26, 0.14) 14px 16px),
     repeating-linear-gradient(-45deg,
       transparent 0 14px,
-      rgba(193, 68, 14, 0.06) 14px 16px);
+      rgba(193, 68, 14, 0.10) 14px 16px),
+    repeating-linear-gradient(90deg,
+      transparent 0 80px,
+      rgba(45, 106, 31, 0.08) 80px 82px);
+}
+
+/* Bande décorative Kente en bas du hero */
+[data-rayon="saveurs-afrique"] .rayon-hero::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 10px;
+  background:
+    repeating-linear-gradient(90deg,
+      #C8751A 0 24px, #C1440E 24px 48px,
+      #2D6A1F 48px 60px, #C8A951 60px 72px);
+  opacity: 0.85;
 }
 
 [data-rayon="saveurs-afrique"] .rayon-badge {
   background: var(--rayon-accent);
   color: #1F1A12;
+}
+
+[data-rayon="saveurs-afrique"] .rayon-pill {
+  background: rgba(251, 244, 236, 0.12);
+  color: var(--rayon-texte-hero);
+  border: 1px solid rgba(251, 244, 236, 0.22);
 }

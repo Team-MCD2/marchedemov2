@@ -20,6 +20,10 @@ interface Props {
   canonical?: string;
   /** Image for social sharing (path from root or absolute). */
   ogImage?: string;
+  /** Hero image to preload for LCP (absolute path starting with /). */
+  heroImage?: string;
+  /** Type hint for hero image preload (e.g. "image/webp", "image/jpeg"). */
+  heroImageType?: string;
   /** Accordion FAQ items. If provided, injects FAQPage JSON-LD automatically. */
   faqItems?: FAQItem[];
   /** Extra schema.org objects (Organization, GroceryStore, Offer, etc.). */
@@ -38,6 +42,8 @@ const {
   description,
   canonical,
   ogImage = "/logos/logo-marchedemo-rond-contourgreen.png",
+  heroImage,
+  heroImageType,
   faqItems,
   schema,
   noIndex,
@@ -45,6 +51,17 @@ const {
   bodyDataRayon,
   hideChrome,
 } = Astro.props as Props;
+
+function inferImageType(path?: string): string | undefined {
+  if (!path) return undefined;
+  const ext = path.split("?")[0].split(".").pop()?.toLowerCase();
+  if (ext === "jpg" || ext === "jpeg") return "image/jpeg";
+  if (ext === "png") return "image/png";
+  if (ext === "webp") return "image/webp";
+  if (ext === "avif") return "image/avif";
+  return undefined;
+}
+const heroType = heroImageType ?? inferImageType(heroImage);
 
 const canonicalUrl = canonical ?? new URL(Astro.url.pathname, SITE.url).toString();
 const absoluteOgImage = ogImage.startsWith("http") ? ogImage : `${SITE.url}${ogImage}`;
@@ -75,6 +92,16 @@ const schemas = Array.isArray(schema) ? schema : schema ? [schema] : [];
       type="image/png"
       fetchpriority="high"
     />
+
+    {heroImage && (
+      <link
+        rel="preload"
+        as="image"
+        href={heroImage}
+        type={heroType}
+        fetchpriority="high"
+      />
+    )}
 
     <!-- SEO -->
     <title>{title}</title>

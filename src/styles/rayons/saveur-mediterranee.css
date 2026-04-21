@@ -19,18 +19,37 @@
   color: var(--rayon-texte-hero);
 }
 
-/* Motif Zellige simplifié — losanges & carreaux */
+/* Motif Zellige — losanges & carreaux bleus */
 [data-rayon="saveur-mediterranee"] .rayon-motif {
   background-image:
-    linear-gradient(45deg, rgba(42, 101, 153, 0.06) 25%, transparent 25%),
-    linear-gradient(-45deg, rgba(42, 101, 153, 0.06) 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, rgba(42, 101, 153, 0.06) 75%),
-    linear-gradient(-45deg, transparent 75%, rgba(42, 101, 153, 0.06) 75%);
-  background-size: 24px 24px;
-  background-position: 0 0, 0 12px, 12px -12px, -12px 0;
+    linear-gradient(45deg, rgba(42, 101, 153, 0.10) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(42, 101, 153, 0.10) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(42, 101, 153, 0.10) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(42, 101, 153, 0.10) 75%);
+  background-size: 28px 28px;
+  background-position: 0 0, 0 14px, 14px -14px, -14px 0;
+}
+
+/* Rayures olive discrètes en haut du hero */
+[data-rayon="saveur-mediterranee"] .rayon-hero::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 6px;
+  background: repeating-linear-gradient(90deg,
+    var(--rayon-accent) 0 32px,
+    var(--rayon-accent-2) 32px 40px,
+    var(--rayon-accent) 40px 72px);
+  opacity: 0.5;
 }
 
 [data-rayon="saveur-mediterranee"] .rayon-badge {
   background: var(--rayon-accent);
   color: #FFFFFF;
+}
+
+[data-rayon="saveur-mediterranee"] .rayon-pill {
+  background: color-mix(in srgb, var(--rayon-accent) 10%, transparent);
+  color: var(--rayon-accent-dark);
+  border: 1px solid color-mix(in srgb, var(--rayon-accent) 22%, transparent);
 }

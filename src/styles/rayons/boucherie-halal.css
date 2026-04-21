@@ -1,0 +1,24 @@
+/* DA Boucherie Halal — rouge sang profond, rigueur. Non-culturel mais identitaire. */
+
+[data-rayon="boucherie-halal"] {
+  --rayon-accent:       #8B1919;
+  --rayon-accent-dark:  #6B0F0F;
+  --rayon-accent-2:     #1A1A1A;
+  --rayon-accent-3:     #F7F0E8;
+  --rayon-fond-section: #FBF6F3;
+  --rayon-fond-hero:    #FFFFFF;
+  --rayon-texte-hero:   #0F0F0F;
+}
+
+[data-rayon="boucherie-halal"] .rayon-hero {
+  background:
+    radial-gradient(circle at 90% 10%, rgba(139, 25, 25, 0.08), transparent 55%),
+    linear-gradient(180deg, #FFFFFF 0%, #FBF6F3 100%);
+}
+
+[data-rayon="boucherie-halal"] .rayon-motif {
+  background-image:
+    repeating-linear-gradient(-30deg,
+      transparent 0 34px,
+      rgba(139, 25, 25, 0.05) 34px 36px);
+}

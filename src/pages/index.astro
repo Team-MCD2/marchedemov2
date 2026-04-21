@@ -11,6 +11,10 @@ import { getCollection } from "astro:content";
 import { RAYONS_LIST, ENGAGEMENTS, MAGASINS, SITE } from "@/lib/site";
 import { FAQ_HOME } from "@/lib/faqs";
 import { organizationSchema, websiteSchema, allMagasinsSchema, offerSchema } from "@/lib/schema";
+import tiktokEmbedsRaw from "@/generated/tiktok-embeds.json";
+
+type TikTokCacheEntry = { thumbnail?: string; html?: string };
+const tiktokEmbeds = tiktokEmbedsRaw as Record<string, TikTokCacheEntry>;
 
 /* Promos featured + toutes les promos actives */
 const allPromos = await getCollection("promos", (p) => p.data.actif);
@@ -34,6 +38,7 @@ const schemas = [
   description={SITE.shortPitch + ". Boucherie halal, fruits & légumes exotiques, épices du monde — 2 magasins à Toulouse."}
   faqItems={FAQ_HOME}
   schema={schemas}
+  heroImage="/images/rayons/fruits-legumes.jpg"
 >
   {/* ====================== 1 · HERO ====================== */}
   <section class="relative overflow-hidden bg-gradient-to-br from-white via-creme to-[#F7F5F0]">
@@ -79,7 +84,7 @@ const schemas = [
       <div class="lg:col-span-5 relative">
         <div class="relative aspect-[4/5] rounded-[48px] overflow-hidden shadow-[0_30px_80px_rgba(0,0,0,0.2)]">
           <img
-            src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1200&q=85"
+            src="/images/rayons/fruits-legumes.jpg"
             alt="Fruits et légumes exotiques au Marché de Mo' Toulouse"
             class="w-full h-full object-cover"
             fetchpriority="high"
@@ -201,13 +206,16 @@ const schemas = [
       </div>
 
       <div class="lg:col-span-5">
-        <div class="relative aspect-square rounded-full overflow-hidden bg-vert-dark/30 ring-4 ring-white/10">
+        <div class="relative aspect-square rounded-full overflow-hidden bg-gradient-to-br from-vert-dark/40 to-black/60 ring-4 ring-white/10">
           <img
-            src="https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&w=800&q=80"
-            alt="L'équipe Marché de Mo' Toulouse"
-            class="w-full h-full object-cover"
+            src="/images/home/fondateur-mo.png"
+            alt="Mohammed — le père, patriarche de la famille fondatrice du Marché de Mo'"
+            class="absolute inset-0 w-full h-full object-contain object-bottom p-6"
+            width="900"
+            height="900"
             loading="lazy"
           />
+          <div class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/40 to-transparent"></div>
         </div>
       </div>
     </div>
@@ -277,14 +285,18 @@ const schemas = [
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {videos.slice(0, 3).map((v) => (
-            <TikTokEmbed
-              client:visible
-              url={v.data.url_tiktok}
-              title={v.data.titre}
-              thumbnail={v.data.thumbnail}
-            />
-          ))}
+          {videos.slice(0, 3).map((v) => {
+            const cached = tiktokEmbeds[v.data.id];
+            return (
+              <TikTokEmbed
+                client:visible
+                url={v.data.url_tiktok}
+                title={v.data.titre}
+                thumbnail={cached?.thumbnail ?? v.data.thumbnail}
+                embedHtml={cached?.html}
+              />
+            );
+          })}
         </div>
       </div>
     </section>
@@ -347,9 +359,11 @@ const schemas = [
           >
             <div class="aspect-[16/10] relative overflow-hidden bg-noir-softer">
               <img
-                src={m.photo || "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&w=1200&q=80"}
+                src={m.photo || "/images/magasins/portet.jpg"}
                 alt={`${m.nom} — extérieur`}
                 loading="lazy"
+                width="1200"
+                height="750"
                 class="w-full h-full object-cover opacity-70 group-hover:opacity-85 group-hover:scale-[1.05] transition-all duration-700"
                 onerror="this.style.opacity='0.3'"
               />

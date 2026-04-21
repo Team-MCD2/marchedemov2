@@ -20,17 +20,36 @@
   color: var(--rayon-texte-hero);
 }
 
-/* Fine trame horizontale (encre & papier) */
+/* Trame horizontale (encre & papier) + point rouge soleil */
 [data-rayon="saveurs-asie"] .rayon-motif {
   background-image:
     repeating-linear-gradient(0deg,
       transparent 0 28px,
-      rgba(26, 26, 26, 0.04) 28px 29px);
+      rgba(26, 26, 26, 0.06) 28px 29px);
+}
+
+/* Soleil rouge laqué en haut-droite */
+[data-rayon="saveurs-asie"] .rayon-hero::before {
+  content: "";
+  position: absolute;
+  top: 8%; right: 6%;
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  background: var(--rayon-accent);
+  opacity: 0.10;
+  filter: blur(2px);
+  pointer-events: none;
 }
 
 [data-rayon="saveurs-asie"] .rayon-badge {
   background: var(--rayon-accent);
   color: #FBF9F4;
+}
+
+[data-rayon="saveurs-asie"] .rayon-pill {
+  background: color-mix(in srgb, var(--rayon-accent) 12%, transparent);
+  color: var(--rayon-accent);
+  border: 1px solid color-mix(in srgb, var(--rayon-accent) 22%, transparent);
 }
 
 [data-rayon="saveurs-asie"] h1,

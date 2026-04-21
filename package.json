@@ -7,6 +7,8 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
+    "sync:tiktok": "node ./scripts/fetch-tiktok-thumbs.mjs",
+    "prebuild": "node ./scripts/fetch-tiktok-thumbs.mjs",
     "build": "astro build",
     "postbuild": "node ./scripts/fix-vercel-runtime.mjs",
     "preview": "astro preview",

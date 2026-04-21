@@ -1,0 +1,23 @@
+/* DA Fruits & Légumes — vert frais, primeur matinal. */
+
+[data-rayon="fruits-legumes"] {
+  --rayon-accent:       #2E8B4A;
+  --rayon-accent-dark:  #1C6B35;
+  --rayon-accent-2:     #C8A951;
+  --rayon-accent-3:     #FFF9EA;
+  --rayon-fond-section: #F4F9F2;
+  --rayon-fond-hero:    #FFFFFF;
+  --rayon-texte-hero:   #0F0F0F;
+}
+
+[data-rayon="fruits-legumes"] .rayon-hero {
+  background:
+    radial-gradient(circle at 10% 20%, rgba(46, 139, 74, 0.1), transparent 55%),
+    linear-gradient(180deg, #FFFFFF 0%, #F4F9F2 100%);
+}
+
+[data-rayon="fruits-legumes"] .rayon-motif {
+  background-image:
+    radial-gradient(circle at 50% 50%, rgba(46, 139, 74, 0.06) 1.5px, transparent 2px);
+  background-size: 32px 32px;
+}
