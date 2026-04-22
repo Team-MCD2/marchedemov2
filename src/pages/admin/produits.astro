@@ -1,0 +1,75 @@
+---
+export const prerender = false;
+
+import Layout from "@layouts/Layout.astro";
+import AdminTopbar from "@components/admin/AdminTopbar.astro";
+import ProduitsManager from "@components/islands/admin/ProduitsManager.jsx";
+import { SITE, RAYONS_LIST } from "@/lib/site";
+import { isAuthenticated } from "@/lib/auth";
+import { supabaseAdmin } from "@/lib/supabase";
+
+if (!(await isAuthenticated(Astro.cookies))) {
+  return Astro.redirect("/admin/login");
+}
+
+let initialProduits: any[] = [];
+let errorMsg: string | null = null;
+
+if (!supabaseAdmin) {
+  errorMsg =
+    "SUPABASE_SERVICE_ROLE_KEY non configurée. Ajoutez-la dans .env.local (dev) ou dans Vercel Environment Variables (prod) puis redémarrez.";
+} else {
+  const { data, error } = await supabaseAdmin
+    .from("produits")
+    .select("*")
+    .order("rayon", { ascending: true })
+    .order("ordre", { ascending: true })
+    .order("nom", { ascending: true });
+  if (error) errorMsg = `Supabase : ${error.message}`;
+  else initialProduits = data ?? [];
+}
+
+const rayonsOptions = RAYONS_LIST.map((r) => ({
+  slug: r.slug,
+  nom: r.nomCourt ?? r.nom,
+}));
+---
+
+<Layout
+  title={`Catalogue produits · ${SITE.name} — Admin`}
+  description="Administration du catalogue de produits."
+  noIndex
+  hideChrome
+>
+  <div class="min-h-screen bg-creme">
+    <AdminTopbar current="produits" />
+
+    <main class="container-mo py-8 md:py-12">
+      <section class="mb-8">
+        <span class="eyebrow">Catalogue</span>
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mt-3">
+          <h1 class="display-sm leading-tight">
+            Produits & catalogue
+          </h1>
+          <p class="text-[13px] text-neutral-500 max-w-md md:text-right">
+            Catalogue vitrine (pas de prix de vente public). Stocké dans
+            <code class="bg-white px-1.5 py-0.5 rounded text-[12px]">public.produits</code>.
+          </p>
+        </div>
+      </section>
+
+      {errorMsg ? (
+        <div class="bg-rouge/5 border border-rouge/30 text-rouge rounded-3xl p-6 md:p-8">
+          <p class="font-bold text-[15px]">⚠ Supabase indisponible</p>
+          <p class="text-[14px] mt-2 whitespace-pre-line">{errorMsg}</p>
+        </div>
+      ) : (
+        <ProduitsManager
+          client:load
+          initialProduits={initialProduits}
+          rayonsOptions={rayonsOptions}
+        />
+      )}
+    </main>
+  </div>
+</Layout>

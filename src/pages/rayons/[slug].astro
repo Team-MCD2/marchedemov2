@@ -9,6 +9,7 @@ import { getCollection } from "astro:content";
 import { RAYONS, RAYONS_LIST, SITE, type RayonSlug } from "@/lib/site";
 import { faqsForRayon } from "@/lib/faqs";
 import { breadcrumbSchema } from "@/lib/schema";
+import { supabase } from "@/lib/supabase";
 import tiktokEmbeds from "@/generated/tiktok-embeds.json";
 
 export async function getStaticPaths() {
@@ -31,6 +32,54 @@ const promos = (await getCollection("promos"))
 const videos = (await getCollection("videos"))
   .filter((v) => v.data.actif && v.data.rayon === slug)
   .sort((a, b) => a.data.ordre - b.data.ordre);
+
+/* Catalogue (Supabase) — fetched at build time for this rayon.
+   Public anon key enforces RLS : only actif=true rows are returned.
+   Field list kept minimal to keep the payload small. */
+type CatalogueRow = {
+  id: string;
+  slug: string;
+  nom: string;
+  image_url: string | null;
+  badge: string | null;
+  origine: string | null;
+  unite: string | null;
+  description: string | null;
+};
+
+let catalogue: CatalogueRow[] = [];
+try {
+  const { data, error } = await supabase
+    .from("produits")
+    .select("id, slug, nom, image_url, badge, origine, unite, description")
+    .eq("rayon", slug)
+    .order("ordre", { ascending: true })
+    .order("nom", { ascending: true });
+  if (error) {
+    console.warn(`[rayon ${slug}] Supabase produits error :`, error.message);
+  } else {
+    catalogue = data ?? [];
+  }
+} catch (e: any) {
+  console.warn(`[rayon ${slug}] Supabase unreachable :`, e?.message || e);
+}
+
+/* Group by badge (sub-category) so the catalogue is scannable by family.
+   Produits without a badge are grouped under "Autres". */
+const catalogueGroups = (() => {
+  const m = new Map<string, CatalogueRow[]>();
+  for (const p of catalogue) {
+    const key = p.badge?.trim() || "Autres";
+    if (!m.has(key)) m.set(key, []);
+    m.get(key)!.push(p);
+  }
+  /* Stable order : named sub-categories by fr-FR locale, "Autres" last. */
+  return Array.from(m.entries()).sort((a, b) => {
+    if (a[0] === "Autres") return 1;
+    if (b[0] === "Autres") return -1;
+    return a[0].localeCompare(b[0], "fr");
+  });
+})();
 
 /* Other rayons pour cross-linking */
 const otherRayons = RAYONS_LIST.filter((r) => r.slug !== slug).slice(0, 4);
@@ -102,6 +151,11 @@ const slideCount = Math.min(uniqueSlides.length, 4);
               Voir les {promos.length} promo{promos.length > 1 ? "s" : ""}
             </a>
           )}
+          {catalogue.length > 0 && (
+            <a href="#catalogue" class="btn rayon-btn-ghost">
+              Voir le catalogue ({catalogue.length})
+            </a>
+          )}
         </div>
       </div>
 
@@ -164,6 +218,87 @@ const slideCount = Math.min(uniqueSlides.length, 4);
             />
           ))}
         </div>
+      </div>
+    </section>
+  )}
+
+  <!-- CATALOGUE du rayon — groupé par sous-catégorie (badge) -->
+  {catalogue.length > 0 && (
+    <section id="catalogue" class="section bg-creme">
+      <div class="container-mo">
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-10">
+          <div class="max-w-2xl">
+            <span class="eyebrow">Notre offre</span>
+            <h2 class="display-md mt-4 text-balance">
+              {catalogue.length} produits représentatifs<br/>
+              <span class="text-vert">au rayon {rayon.nomCourt}.</span>
+            </h2>
+            <p class="mt-3 text-[15px] text-neutral-600 leading-relaxed">
+              Aperçu non-exhaustif. Les prix sont affichés en rayon, à l'euro près.
+              {promos.length > 0 && (
+                <span> Voir les <a href="#promos" class="underline hover:text-rouge">{promos.length} promo{promos.length > 1 ? "s" : ""}</a> en cours.</span>
+              )}
+            </p>
+          </div>
+          <div class="flex items-center gap-2 text-[13px] text-neutral-500">
+            <span class="inline-flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-vert animate-pulse" aria-hidden="true"></span>
+              Mis à jour en temps réel
+            </span>
+          </div>
+        </div>
+
+        <div class="space-y-6">
+          {catalogueGroups.map(([badge, items]) => (
+            <article class="bg-white rounded-3xl shadow-card overflow-hidden">
+              <header class="px-5 md:px-6 py-4 border-b border-black/5 flex items-baseline justify-between gap-4 flex-wrap">
+                <h3 class="font-soft font-bold text-[18px] md:text-[20px] text-noir">
+                  {badge}
+                </h3>
+                <span class="text-[12px] text-neutral-400 font-pro">
+                  {items.length} produit{items.length > 1 ? "s" : ""}
+                </span>
+              </header>
+              <ul class="divide-y divide-black/5">
+                {items.map((p) => (
+                  <li class="px-5 md:px-6 py-3 flex items-center gap-4 hover:bg-creme/50 transition">
+                    {p.image_url ? (
+                      <img
+                        src={p.image_url}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                        width="64"
+                        height="64"
+                        class="w-12 h-12 rounded-lg object-cover ring-1 ring-black/5 shrink-0"
+                      />
+                    ) : (
+                      <div class="w-12 h-12 rounded-lg bg-creme flex items-center justify-center text-neutral-300 shrink-0" aria-hidden="true">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8 12 3 7 8M12 3v12" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </div>
+                    )}
+                    <div class="flex-1 min-w-0">
+                      <p class="font-bold text-noir truncate">{p.nom}</p>
+                      <p class="text-[12px] text-neutral-500 truncate">
+                        {p.origine && <span>{p.origine}</span>}
+                        {p.origine && p.unite && <span> · </span>}
+                        {p.unite && <span>{p.unite}</span>}
+                        {p.description && (p.origine || p.unite) && <span> · </span>}
+                        {p.description && <span class="text-neutral-400">{p.description}</span>}
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </div>
+
+        <p class="mt-8 text-[12px] text-neutral-400 leading-relaxed max-w-3xl">
+          <strong class="text-neutral-600">Note :</strong> ce catalogue présente des produits représentatifs du rayon. La disponibilité réelle peut varier selon le magasin et l'arrivage. Pour une demande spécifique ou un produit que vous ne voyez pas ici, contactez-nous via le chat en bas à droite.
+        </p>
       </div>
     </section>
   )}
