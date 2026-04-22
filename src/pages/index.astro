@@ -82,17 +82,18 @@ const schemas = [
 >
   {/* ====================== 1 · HERO ====================== */}
   <section class="relative overflow-hidden bg-gradient-to-br from-white via-creme to-[#F7F5F0]">
-    <!-- Watermark Mo' -->
+    <!-- Watermark Mo' — parallax léger pour feel "profondeur" -->
     <img
       src="/logos/favicon-marchedemo.png"
       alt=""
       aria-hidden="true"
+      data-parallax="0.45"
       class="absolute -right-20 top-10 w-[640px] max-w-[70%] opacity-[0.045] pointer-events-none select-none"
     />
     <div class="container-mo relative z-10 pt-12 lg:pt-20 pb-20 lg:pb-28 grid lg:grid-cols-12 gap-10 items-center">
       <div class="lg:col-span-7">
         <span class="eyebrow">Supermarché ethnique · Toulouse</span>
-        <h1 class="display-xl mt-6 text-balance">
+        <h1 class="display-xl mt-6 text-balance" data-split-reveal>
           <span class="text-vert">Saveurs</span> du monde.<br/>
           Prix de <span class="text-rouge">quartier</span>.
         </h1>

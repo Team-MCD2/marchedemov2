@@ -471,6 +471,87 @@
   }
 
   /* ------------------------------------------------------------
+     Scroll progress bar — fixed at top of viewport.
+     Rendered at the top of <body> in Layout.astro.
+     ------------------------------------------------------------ */
+  .scroll-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    z-index: 9999;
+    pointer-events: none;
+    background: transparent;
+  }
+  .scroll-progress::after {
+    content: "";
+    display: block;
+    height: 100%;
+    width: var(--scroll-progress, 0%);
+    background: linear-gradient(90deg, var(--color-vert, #1C6B35), var(--color-rouge, #C53030));
+    box-shadow: 0 0 8px 0 rgba(28, 107, 53, 0.3);
+    transition: width 0.08s linear;
+  }
+
+  /* ------------------------------------------------------------
+     Parallax — scroll-linked translation.
+     Applied via [data-parallax="0.3"], JS sets --parallax-y var.
+     Inline element expected (image, SVG, decorative layer).
+     ------------------------------------------------------------ */
+  [data-parallax] {
+    transform: translate3d(0, var(--parallax-y, 0), 0);
+    will-change: transform;
+  }
+
+  /* ------------------------------------------------------------
+     Tilt 3D — mouse-follow perspective rotation on cards.
+     Apply [data-tilt] on the OUTER wrapper; JS updates
+     --tilt-x / --tilt-y CSS vars on mouse move.
+     Inner elements can scale slightly for parallax-tilt combo.
+     ------------------------------------------------------------ */
+  [data-tilt] {
+    transform-style: preserve-3d;
+    transform: perspective(1000px)
+               rotateX(var(--tilt-x, 0deg))
+               rotateY(var(--tilt-y, 0deg));
+    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
+  }
+  [data-tilt]:hover {
+    transition: transform 0.1s ease-out;
+  }
+
+  /* ------------------------------------------------------------
+     Split reveal — words fade+rise on entry.
+     Apply [data-split-reveal] on headline (h1, h2, p).
+     Script in Layout wraps text nodes in <span class="split-word">
+     then toggles .is-revealed when visible. Uses --split-delay for stagger.
+     ------------------------------------------------------------ */
+  .split-word {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(0.45em);
+    transition:
+      opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: var(--split-delay, 0ms);
+    will-change: opacity, transform;
+  }
+  .split-word.is-revealed {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Respect reduced motion for all new animation primitives */
+  @media (prefers-reduced-motion: reduce) {
+    [data-parallax]     { transform: none !important; }
+    [data-tilt]         { transform: none !important; transition: none !important; }
+    .split-word         { opacity: 1 !important; transform: none !important; transition: none !important; }
+    .scroll-progress::after { transition: none !important; }
+  }
+
+  /* ------------------------------------------------------------
      Badge "effet tampon" — entrée scale+rotation.
      Ajouter class="badge-stamp" sur le badge promo. Déclenchée
      automatiquement à l'apparition (IntersectionObserver .reveal

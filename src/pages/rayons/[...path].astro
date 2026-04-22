@@ -253,7 +253,7 @@ const pageDesc = (() => {
         <span class="eyebrow rayon-eyebrow">
           {rayon.eyebrow}
         </span>
-        <h1 class={`${heroCompact ? "display-md" : "display-xl"} mt-3 text-balance rayon-title`}>
+        <h1 class={`${heroCompact ? "display-md" : "display-xl"} mt-3 text-balance rayon-title`} data-split-reveal>
           {level === 3 ? subLabel : level === 2 ? catLabel : rayon.nom}
         </h1>
         {level === 1 && (
@@ -303,7 +303,7 @@ const pageDesc = (() => {
       <div class={heroCompact ? "lg:col-span-4" : "lg:col-span-5"}>
         <div class={`relative rounded-[40px] overflow-hidden shadow-2xl ring-1 ring-black/5 ${heroCompact ? "aspect-[4/3]" : "aspect-[4/5]"}`}>
           {slideshowActive ? (
-            <div class="rayon-slideshow absolute inset-0" data-slides={slideCount}>
+            <div class="rayon-slideshow absolute inset-0" data-slides={slideCount} data-parallax="0.25">
               {uniqueSlides.slice(0, 4).map((src, i) => (
                 <img
                   src={src}
@@ -322,6 +322,7 @@ const pageDesc = (() => {
             <img
               src={rayon.image}
               alt={rayon.imageAlt}
+              data-parallax="0.25"
               class="w-full h-full object-cover"
               fetchpriority="high"
               width="800"

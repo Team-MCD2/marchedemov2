@@ -31,6 +31,8 @@ const slideCount = Math.min(uniqueSlides.length, 4);
 
 <a
   href={`/rayons/${rayon.slug}`}
+  data-tilt
+  data-tilt-max="4"
   class={`group relative overflow-hidden rounded-3xl bg-white shadow-card hover:shadow-card-hover transition-all duration-500 ${
     large ? "md:col-span-2 md:aspect-[8/5]" : "md:aspect-[4/5]"
   } aspect-[4/3]`}

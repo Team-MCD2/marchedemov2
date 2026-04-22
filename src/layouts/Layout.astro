@@ -150,6 +150,10 @@ const schemas = Array.isArray(schema) ? schema : schema ? [schema] : [];
     class={`min-h-screen flex flex-col bg-white text-[color:var(--color-texte)] font-pro antialiased ${bodyClass}`}
     data-rayon={bodyDataRayon}
   >
+    {/* Scroll progress bar — always at the very top of viewport.
+        Width driven by `--scroll-progress` CSS variable updated from scroll handler. */}
+    <div class="scroll-progress" aria-hidden="true"></div>
+
     {!hideChrome && (
       <>
         <TickerBanner />
@@ -240,6 +244,177 @@ const schemas = Array.isArray(schema) ? schema : schema ? [schema] : [];
         };
 
         document.addEventListener("astro:page-load", mount);
+        if (document.readyState !== "loading") mount();
+        else document.addEventListener("DOMContentLoaded", mount);
+      })();
+    </script>
+
+    <!--
+      Animations FULL — parallax / tilt / split-reveal / scroll progress.
+      All features opt-in via data attributes, zero impact on markup
+      that doesn't use them. Single rAF loop for scroll-linked effects
+      to avoid perf hit. Respect prefers-reduced-motion.
+
+      Usage :
+        [data-parallax="0.3"]    → translate Y proportional to scroll progress
+                                    (0.3 = slow, 0.6 = faster, negative = reversed)
+        [data-tilt]              → 3D tilt on mouse move (desktop only)
+        [data-tilt-max="8"]      → max rotation angle (default 6deg)
+        [data-split-reveal]      → split children in words, fade+rise each
+                                    with stagger delay on entry
+    -->
+    <script is:inline>
+      (function () {
+        const prefersReduced =
+          window.matchMedia &&
+          window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+        /* ---------------------- SCROLL PROGRESS BAR ---------------------- */
+        const progressEl = document.querySelector(".scroll-progress");
+        const onScrollProgress = () => {
+          if (!progressEl) return;
+          const h = document.documentElement;
+          const max = h.scrollHeight - h.clientHeight;
+          const p = max > 0 ? (h.scrollTop / max) * 100 : 0;
+          progressEl.style.setProperty("--scroll-progress", p + "%");
+        };
+
+        /* ---------------------- PARALLAX (scroll-linked) ---------------------- */
+        /* Single rAF tick updates all [data-parallax] elements based on
+           their viewport position. `speed` in (-1, 1), typically 0.2 - 0.5. */
+        let parallaxEls = [];
+        const collectParallax = () => {
+          parallaxEls = Array.from(document.querySelectorAll("[data-parallax]")).map((el) => ({
+            el,
+            speed: parseFloat(el.dataset.parallax) || 0.3,
+          }));
+        };
+        const updateParallax = () => {
+          if (prefersReduced) return;
+          const wH = window.innerHeight;
+          parallaxEls.forEach(({ el, speed }) => {
+            const rect = el.getBoundingClientRect();
+            const elCenter = rect.top + rect.height / 2;
+            const viewCenter = wH / 2;
+            /* Delta from viewport center in px. Further away = more offset. */
+            const delta = elCenter - viewCenter;
+            el.style.setProperty("--parallax-y", (delta * speed * -0.3).toFixed(1) + "px");
+          });
+        };
+
+        /* Throttled rAF for scroll-linked effects */
+        let rafScheduled = false;
+        const onScrollFrame = () => {
+          if (rafScheduled) return;
+          rafScheduled = true;
+          requestAnimationFrame(() => {
+            onScrollProgress();
+            updateParallax();
+            rafScheduled = false;
+          });
+        };
+
+        /* ---------------------- TILT (mouse-follow 3D) ---------------------- */
+        const mountTilt = () => {
+          if (prefersReduced) return;
+          /* Only on devices with fine pointer (no touch/tablet) */
+          if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+
+          document.querySelectorAll("[data-tilt]").forEach((el) => {
+            if (el.__tiltMounted) return;
+            el.__tiltMounted = true;
+
+            const maxAngle = parseFloat(el.dataset.tiltMax || "6");
+            const onMove = (e) => {
+              const rect = el.getBoundingClientRect();
+              const x = (e.clientX - rect.left) / rect.width - 0.5;
+              const y = (e.clientY - rect.top) / rect.height - 0.5;
+              /* Flip Y so cursor-up = rotate-up (intuitive) */
+              el.style.setProperty("--tilt-x", (y * -maxAngle).toFixed(2) + "deg");
+              el.style.setProperty("--tilt-y", (x * maxAngle).toFixed(2) + "deg");
+            };
+            const onLeave = () => {
+              el.style.setProperty("--tilt-x", "0deg");
+              el.style.setProperty("--tilt-y", "0deg");
+            };
+            el.addEventListener("mousemove", onMove);
+            el.addEventListener("mouseleave", onLeave);
+          });
+        };
+
+        /* ---------------------- SPLIT REVEAL (word-by-word) ---------------------- */
+        const mountSplitReveal = () => {
+          document.querySelectorAll("[data-split-reveal]:not([data-split-done])").forEach((el) => {
+            el.setAttribute("data-split-done", "true");
+
+            /* Walk child nodes, wrap only text nodes (preserves <span class="text-vert">
+               and other inner markup like line breaks). */
+            const wrap = (node) => {
+              if (node.nodeType === Node.TEXT_NODE) {
+                const text = node.textContent || "";
+                if (!text.trim()) return;
+                const frag = document.createDocumentFragment();
+                const words = text.split(/(\s+)/);
+                words.forEach((w) => {
+                  if (!w.trim()) {
+                    frag.appendChild(document.createTextNode(w));
+                    return;
+                  }
+                  const span = document.createElement("span");
+                  span.className = "split-word";
+                  span.textContent = w;
+                  frag.appendChild(span);
+                });
+                node.parentNode.replaceChild(frag, node);
+              } else if (node.nodeType === Node.ELEMENT_NODE) {
+                /* Recurse into element children (e.g. <span class="text-vert">) */
+                Array.from(node.childNodes).forEach(wrap);
+              }
+            };
+            Array.from(el.childNodes).forEach(wrap);
+
+            /* Apply stagger delays */
+            const words = el.querySelectorAll(".split-word");
+            words.forEach((w, i) => {
+              w.style.setProperty("--split-delay", Math.min(i * 50, 800) + "ms");
+            });
+
+            /* Observe entry and reveal */
+            if (prefersReduced) {
+              words.forEach((w) => w.classList.add("is-revealed"));
+              return;
+            }
+            if (!("IntersectionObserver" in window)) {
+              words.forEach((w) => w.classList.add("is-revealed"));
+              return;
+            }
+            const io = new IntersectionObserver(
+              (entries) => {
+                entries.forEach((entry) => {
+                  if (entry.isIntersecting) {
+                    words.forEach((w) => w.classList.add("is-revealed"));
+                    io.unobserve(entry.target);
+                  }
+                });
+              },
+              { threshold: 0.2 }
+            );
+            io.observe(el);
+          });
+        };
+
+        /* ---------------------- MOUNT + CLEANUP ---------------------- */
+        const mount = () => {
+          collectParallax();
+          mountTilt();
+          mountSplitReveal();
+          onScrollFrame(); /* initial paint */
+        };
+
+        window.addEventListener("scroll", onScrollFrame, { passive: true });
+        window.addEventListener("resize", onScrollFrame, { passive: true });
+        document.addEventListener("astro:page-load", mount);
+
         if (document.readyState !== "loading") mount();
         else document.addEventListener("DOMContentLoaded", mount);
       })();
