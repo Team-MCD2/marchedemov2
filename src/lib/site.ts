@@ -207,7 +207,7 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
     nom: "Boucherie Halal",
     nomCourt: "Boucherie",
     eyebrow: "Rayon signature",
-    tagline: "La viande sur carcasse, le prix du supermarché.",
+    tagline: "Taillée sur carcasse. Prix de supermarché.",
     description:
       "Viandes, volailles et charcuteries 100% halal certifiées, sans électronarcose. Arrivage quotidien, traçabilité rigoureuse.",
     longDescription:
@@ -237,7 +237,7 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
     nom: "Fruits & Légumes",
     nomCourt: "Primeurs",
     eyebrow: "Fraîcheur absolue",
-    tagline: "120 références exotiques. Arrivage chaque matin.",
+    tagline: "120 exotiques. Arrivés ce matin.",
     description:
       "Primeurs sélectionnés chaque matin. Bananes plantains, ignames, manioc, mangues, épices fraîches — le rayon le plus complet de l'agglomération toulousaine.",
     longDescription:
@@ -267,7 +267,7 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
     nom: "Épices du Monde",
     nomCourt: "Épices",
     eyebrow: "Voyage sensoriel",
-    tagline: "Mélanges artisanaux, thés rares, prix de gros.",
+    tagline: "L'atelier sensoriel du monde.",
     description:
       "Une offre d'épices et de thés sans équivalent dans la région toulousaine. Mélanges signatures, épices rares, thés sélectionnés.",
     longDescription:
@@ -297,7 +297,7 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
     nom: "Saveurs d'Afrique & Créole",
     nomCourt: "Afrique & Créole",
     eyebrow: "Rayon culturel",
-    tagline: "La cuisine du continent, au complet — enfin à Toulouse.",
+    tagline: "Dakar. Lagos. Abidjan. Ici.",
     description:
       "Produits de la gastronomie africaine et créole : plats cuisinés, conserves, condiments, boissons et spécialités introuvables ailleurs.",
     longDescription:
@@ -328,7 +328,7 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
     nom: "Saveurs d'Asie",
     nomCourt: "Asie",
     eyebrow: "Rayon culturel",
-    tagline: "Japon, Corée, Thaïlande, Chine, Vietnam — un seul rayon.",
+    tagline: "Tokyo, Séoul, Bangkok. Un rayon.",
     description:
       "Épicerie asiatique complète : sauces, pâtes, riz, nouilles, produits frais asiatiques. Authenticité et packaging d'origine.",
     longDescription:
@@ -358,7 +358,7 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
     nom: "Saveur Méditerranéenne",
     nomCourt: "Méditerranée",
     eyebrow: "Rayon culturel",
-    tagline: "De Provence au Levant, sous le même toit.",
+    tagline: "Provence. Levant. Rien entre.",
     description:
       "Olives de Provence et du Maghreb, produits orientaux, turcs, levantins. L'épicerie méditerranéenne dans toute sa richesse.",
     longDescription:
@@ -386,7 +386,7 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
     nom: "Saveur Sud-Américaine",
     nomCourt: "Sud-Amérique",
     eyebrow: "Rayon culturel",
-    tagline: "Brésil, Colombie, Mexique, Argentine — les saveurs Latinas.",
+    tagline: "Rio. Mexico. Bogotá. Sur votre table.",
     description:
       "Épicerie, conserves, boissons et spécialités d'Amérique Latine. Fruits exotiques et piments colorés de la région.",
     longDescription:
@@ -418,7 +418,7 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
     nom: "Balkans & Turques",
     nomCourt: "Balkans & Turquie",
     eyebrow: "Rayon culturel",
-    tagline: "Istanbul, Sofia, Sarajevo — le rayon au complet.",
+    tagline: "Istanbul à portée de fourchette.",
     description:
       "Épiceries, fromages, charcuteries halal, conserves et boissons des Balkans et de Turquie.",
     longDescription:
@@ -443,7 +443,7 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
     nom: "Produits Courants Discounts",
     nomCourt: "Discounts",
     eyebrow: "Prix cassés",
-    tagline: "Le quotidien, au prix le plus bas du magasin.",
+    tagline: "Le quotidien, prix plancher.",
     description:
       "Prix cassés sur les produits du quotidien. Notre espace déstockage propose des réductions significatives pour tous les budgets.",
     longDescription:
@@ -465,7 +465,7 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
     nom: "Surgelé",
     nomCourt: "Surgelés",
     eyebrow: "Praticité",
-    tagline: "Les saveurs du monde, prêtes en 10 minutes.",
+    tagline: "Le monde. En 10 minutes.",
     description:
       "Large sélection de surgelés du monde entier : plats cuisinés ethniques, viandes halal surgelées, légumes et snacking.",
     longDescription:

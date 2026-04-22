@@ -9,6 +9,7 @@ import FAQAccordion from "@components/FAQAccordion.astro";
 import NewsletterInline from "@components/NewsletterInline.astro";
 import TikTokEmbed from "@components/islands/TikTokEmbed.jsx";
 import PromoCarousel from "@components/PromoCarousel.astro";
+import PromoHero, { type ExtraSlide } from "@components/PromoHero.astro";
 import { getCollection } from "astro:content";
 import { RAYONS_LIST, ENGAGEMENTS, MAGASINS, SITE } from "@/lib/site";
 import { RECETTES_HOME } from "@/lib/recettes";
@@ -26,6 +27,36 @@ const tiktokEmbeds = tiktokEmbedsRaw as Record<string, TikTokCacheEntry>;
 const allPromos = await getActivePromos();
 const featuredPromo = allPromos.find((p) => p.data.mise_en_avant) ?? allPromos[0];
 const promosHome = allPromos.slice(0, 6);
+const promosHero = allPromos.filter((p) => p.data.mise_en_avant).slice(0, 4);
+
+/* Editorial slides for PromoHero — non-promo narratives (app, fidelity,
+   new store). Shown after the mise_en_avant promos. */
+const heroEditorialSlides: ExtraSlide[] = [
+  {
+    kind: "editorial",
+    eyebrow: "Dernier-né du Groupe",
+    titre: "Toulouse Sud Cépière. Ouvert.",
+    description:
+      "1 200 m² d'espace de vente, rayon Saveurs d'Asie étendu, espace traiteur halal sur place. Votre nouveau rendez-vous au cœur de l'Hippodrome.",
+    image: "/images/magasins/toulouse-sud.jpg",
+    imageAlt: "Nouveau magasin Marché de Mo' Toulouse Sud Cépière",
+    ctaLabel: "Découvrir le magasin",
+    ctaHref: "/magasins/toulouse-sud",
+    accent: "#1C6B35",
+  },
+  {
+    kind: "editorial",
+    eyebrow: "Programme fidélité",
+    titre: "5€ offerts à chaque 100€.",
+    description:
+      "La carte Marché de Mo' : un avantage direct, sans condition. Vous faites vos courses, on vous remercie.",
+    image: "/images/rayons/fruits-legumes.jpg",
+    imageAlt: "Carte fidélité Marché de Mo'",
+    ctaLabel: "Rejoindre le programme",
+    ctaHref: "/fidelite",
+    accent: "#C53030",
+  },
+];
 
 /* Produits vedettes : Supabase-first (ordre asc), fallback static list. */
 const PRODUITS_VEDETTES = await getProduitsVedettes(8);
@@ -169,7 +200,16 @@ const schemas = [
     </div>
   </section>
 
-  {/* ====================== 2 · PROMO BANNER ====================== */}
+  {/* ====================== 2 · PROMO HERO (banner carousel full-width) ====================== */}
+  {/* Full-width hero-style carousel : featured promos + editorial slides.
+      One slide visible at a time with auto-advance, drag, dots. */}
+  <PromoHero
+    promos={promosHero}
+    extraSlides={heroEditorialSlides}
+    autoAdvanceMs={6000}
+  />
+
+  {/* ====================== 3 · TICKER PROMO (urgency strip) ====================== */}
   {featuredPromo && (
     <section class="relative overflow-hidden bg-rouge text-white">
       <div class="container-mo py-4 md:py-5 flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] md:text-[14px] font-pro">

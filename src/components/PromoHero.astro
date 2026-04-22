@@ -1,0 +1,632 @@
+---
+/**
+ * PromoHero — full-width banner carousel, one slide at a time.
+ *
+ * Inspired by Grand Frais / Picard top-of-home banner. Distinct from
+ * `PromoCarousel` (which shows a row of 3-4 cards at once, scrollable).
+ *
+ * Interactions (all simultaneously) :
+ *   1. Auto-advance every 6s (pause on hover/focus/touch, resume after 8s)
+ *   2. Swipe on touch devices (CSS Scroll Snap native)
+ *   3. Pointer drag (click + drag) on desktop
+ *   4. Prev/Next arrow buttons
+ *   5. Indicator dots (click = jump to slide)
+ *   6. Keyboard : ArrowLeft / ArrowRight when focused
+ *
+ * Accessibility :
+ *   - aria-roledescription="carousel" on container
+ *   - aria-live="polite" on status announcement area
+ *   - Dots are real buttons with aria-current
+ *   - prefers-reduced-motion : auto-advance disabled, all other
+ *     interactions remain
+ *
+ * Slides can come from 2 sources :
+ *   - Dynamic : promos mise_en_avant (passed as `promos`)
+ *   - Static  : editorial slides (passed as `extraSlides`) — fidelity
+ *               card promo, new store opening, app download, etc.
+ */
+import type { PromoEntry } from "@/lib/promos-repo";
+
+/* Local magasinLabel helper (pas encore extrait dans un lib/) */
+const magasinLabel = (m: string): string =>
+  m === "tous" ? "Les 2 magasins" :
+  m === "portet" ? "Portet-sur-Garonne" :
+  m === "toulouse-sud" ? "Toulouse Sud — Cépière" : m;
+
+export interface ExtraSlide {
+  kind: "editorial";
+  eyebrow: string;
+  titre: string;
+  description: string;
+  image: string;
+  imageAlt?: string;
+  ctaLabel: string;
+  ctaHref: string;
+  /** Background accent (CSS color) for overlay tint. Default : vert. */
+  accent?: string;
+}
+
+interface Props {
+  /** Active & featured promos. Limit = 5 auto-enforced. */
+  promos?: PromoEntry[];
+  /** Editorial slides (app download, fidelity card, new stores, etc.) */
+  extraSlides?: ExtraSlide[];
+  /** Auto-advance delay in ms. Default 6000. Set 0 to disable. */
+  autoAdvanceMs?: number;
+}
+
+const { promos = [], extraSlides = [], autoAdvanceMs = 6000 } = Astro.props as Props;
+
+/* Build slides array — promos first, editorial after. Max 5 total. */
+const promoSlides = promos.slice(0, 5).map((p) => ({
+  kind: "promo" as const,
+  titre: p.data.titre,
+  description: p.data.description || `${p.data.prix_promo}€ au lieu de ${p.data.prix_original}€`,
+  eyebrow: `Promo · ${magasinLabel(p.data.magasin)}`,
+  image: p.data.image,
+  imageAlt: p.data.titre,
+  ctaLabel: "Voir la promo →",
+  ctaHref: "/promos",
+  accent: "#C53030",
+  prixPromo: p.data.prix_promo,
+  prixOriginal: p.data.prix_original,
+  reductionPct: p.data.reduction_pct,
+}));
+
+const editorialSlides = extraSlides.map((s) => ({
+  kind: "editorial" as const,
+  titre: s.titre,
+  description: s.description,
+  eyebrow: s.eyebrow,
+  image: s.image,
+  imageAlt: s.imageAlt ?? s.titre,
+  ctaLabel: s.ctaLabel,
+  ctaHref: s.ctaHref,
+  accent: s.accent ?? "#1C6B35",
+  prixPromo: null as number | null,
+  prixOriginal: null as number | null,
+  reductionPct: null as number | null,
+}));
+
+const slides = [...promoSlides, ...editorialSlides].slice(0, 6);
+const hasSlides = slides.length > 0;
+---
+
+{hasSlides && (
+  <section
+    class="promo-hero"
+    data-auto-ms={autoAdvanceMs}
+    aria-roledescription="carousel"
+    aria-label="Promotions et annonces"
+  >
+    {/* Track : horizontal scroll with snap */}
+    <div class="promo-hero-track" data-promo-hero-track tabindex="0" role="region">
+      {slides.map((slide, i) => (
+        <article
+          class="promo-hero-slide"
+          role="group"
+          aria-roledescription="diapositive"
+          aria-label={`${i + 1} sur ${slides.length} : ${slide.titre}`}
+          data-slide-index={i}
+        >
+          <div class="promo-hero-slide-image-wrap">
+            <img
+              src={slide.image}
+              alt={slide.imageAlt}
+              loading={i === 0 ? "eager" : "lazy"}
+              fetchpriority={i === 0 ? "high" : undefined}
+              decoding="async"
+              class="promo-hero-slide-image"
+              width="1920"
+              height="820"
+            />
+            <div
+              class="promo-hero-slide-overlay"
+              style={`--accent: ${slide.accent}`}
+            ></div>
+          </div>
+
+          <div class="promo-hero-slide-content">
+            <div class="container-mo promo-hero-slide-inner">
+              <span class="promo-hero-eyebrow">{slide.eyebrow}</span>
+              <h2 class="promo-hero-title text-balance">{slide.titre}</h2>
+              <p class="promo-hero-desc">{slide.description}</p>
+
+              {slide.kind === "promo" && slide.prixPromo != null && (
+                <div class="promo-hero-price">
+                  <span class="promo-hero-price-now">{slide.prixPromo}€</span>
+                  {slide.prixOriginal != null && (
+                    <span class="promo-hero-price-before">{slide.prixOriginal}€</span>
+                  )}
+                  {slide.reductionPct != null && (
+                    <span class="promo-hero-price-pct">−{slide.reductionPct}%</span>
+                  )}
+                </div>
+              )}
+
+              <a
+                href={slide.ctaHref}
+                class="promo-hero-cta btn-sheen"
+                style={`--accent: ${slide.accent}`}
+              >
+                {slide.ctaLabel}
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                  <path d="M5 12h14M13 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+
+    {/* Prev / Next buttons */}
+    <button type="button" class="promo-hero-nav promo-hero-nav-prev" data-promo-hero-prev aria-label="Diapositive précédente">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+        <path d="m15 18-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <button type="button" class="promo-hero-nav promo-hero-nav-next" data-promo-hero-next aria-label="Diapositive suivante">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+        <path d="m9 18 6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+
+    {/* Dots indicator */}
+    <div class="promo-hero-dots" role="tablist" aria-label="Sélectionner une diapositive">
+      {slides.map((_, i) => (
+        <button
+          type="button"
+          class="promo-hero-dot"
+          data-promo-hero-dot={i}
+          role="tab"
+          aria-label={`Diapositive ${i + 1} sur ${slides.length}`}
+          aria-current={i === 0 ? "true" : undefined}
+        ></button>
+      ))}
+    </div>
+
+    {/* Screen-reader status */}
+    <div class="sr-only" data-promo-hero-status aria-live="polite" aria-atomic="true"></div>
+  </section>
+)}
+
+<style>
+  .promo-hero {
+    position: relative;
+    width: 100%;
+    background: #0F0F0F;
+    overflow: hidden;
+    isolation: isolate;
+    border-radius: 0;
+  }
+
+  .promo-hero-track {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .promo-hero-track::-webkit-scrollbar { display: none; }
+  .promo-hero-track.is-dragging { cursor: grabbing; scroll-behavior: auto; }
+  .promo-hero-track:focus { outline: none; }
+
+  .promo-hero-slide {
+    flex: 0 0 100%;
+    width: 100%;
+    position: relative;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    aspect-ratio: 21/9;
+    min-height: 400px;
+  }
+  @media (max-width: 768px) {
+    .promo-hero-slide {
+      aspect-ratio: 4/5;
+      min-height: 520px;
+    }
+  }
+
+  .promo-hero-slide-image-wrap {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+  .promo-hero-slide-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transform: scale(1.08);
+    transition: transform 8s ease-out;
+  }
+  /* Ken-Burns : every slide image slowly drifts when it's the active one.
+     We toggle .is-active via JS once the slide is centered in view. */
+  .promo-hero-slide.is-active .promo-hero-slide-image {
+    transform: scale(1);
+  }
+
+  .promo-hero-slide-overlay {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.55) 60%, rgba(0,0,0,0.85) 100%),
+      linear-gradient(90deg, color-mix(in srgb, var(--accent, #1C6B35) 35%, transparent) 0%, transparent 60%);
+  }
+
+  .promo-hero-slide-content {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: flex-end;
+    padding-bottom: clamp(40px, 7vw, 100px);
+  }
+  .promo-hero-slide-inner {
+    color: white;
+    max-width: 640px;
+    /* Staggered fade-in when this slide becomes active */
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease-out 0.15s, transform 0.7s cubic-bezier(0.22,1,0.36,1) 0.15s;
+  }
+  .promo-hero-slide.is-active .promo-hero-slide-inner {
+    opacity: 1;
+    transform: none;
+  }
+
+  .promo-hero-eyebrow {
+    display: inline-block;
+    font-family: var(--font-pro, inherit);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    background: color-mix(in srgb, var(--accent, #1C6B35) 85%, white 15%);
+    padding: 6px 14px;
+    border-radius: 999px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    margin-bottom: 18px;
+  }
+
+  .promo-hero-title {
+    font-family: var(--font-soft, inherit);
+    font-weight: 900;
+    font-size: clamp(32px, 6vw, 64px);
+    line-height: 0.98;
+    letter-spacing: -0.025em;
+    margin: 0 0 18px;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.3);
+  }
+  .promo-hero-desc {
+    font-size: clamp(16px, 1.8vw, 20px);
+    line-height: 1.45;
+    max-width: 520px;
+    margin: 0 0 28px;
+    color: rgba(255,255,255,0.92);
+    text-shadow: 0 1px 8px rgba(0,0,0,0.4);
+  }
+
+  .promo-hero-price {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .promo-hero-price-now {
+    font-family: var(--font-soft, inherit);
+    font-weight: 900;
+    font-size: clamp(36px, 5vw, 52px);
+    line-height: 1;
+    color: white;
+  }
+  .promo-hero-price-before {
+    font-size: 18px;
+    text-decoration: line-through;
+    opacity: 0.65;
+  }
+  .promo-hero-price-pct {
+    font-family: var(--font-pro, inherit);
+    font-weight: 800;
+    font-size: 14px;
+    background: white;
+    color: #C53030;
+    padding: 4px 10px;
+    border-radius: 6px;
+    letter-spacing: 0.02em;
+  }
+
+  .promo-hero-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 28px;
+    background: white;
+    color: #0F0F0F;
+    font-family: var(--font-pro, inherit);
+    font-weight: 700;
+    font-size: 15px;
+    border-radius: 999px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    transition: transform 0.25s cubic-bezier(0.22,1,0.36,1),
+                box-shadow 0.25s ease,
+                background 0.25s ease,
+                color 0.25s ease;
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .promo-hero-cta:hover,
+  .promo-hero-cta:focus-visible {
+    transform: translateY(-2px);
+    background: var(--accent, #1C6B35);
+    color: white;
+    box-shadow: 0 14px 36px rgba(0,0,0,0.4);
+    outline: none;
+  }
+
+  /* --- Nav arrows --- */
+  .promo-hero-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 5;
+    width: 52px;
+    height: 52px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.92);
+    color: #0F0F0F;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+    transition: background 0.2s, transform 0.2s, opacity 0.2s;
+    cursor: pointer;
+    border: none;
+  }
+  .promo-hero-nav svg { width: 22px; height: 22px; }
+  .promo-hero-nav:hover {
+    background: white;
+    transform: translateY(-50%) scale(1.06);
+  }
+  .promo-hero-nav:focus-visible {
+    outline: 3px solid white;
+    outline-offset: 2px;
+  }
+  .promo-hero-nav-prev { left: clamp(12px, 3vw, 40px); }
+  .promo-hero-nav-next { right: clamp(12px, 3vw, 40px); }
+  @media (max-width: 640px) {
+    .promo-hero-nav { display: none; }
+  }
+
+  /* --- Dots --- */
+  .promo-hero-dots {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5;
+    display: flex;
+    gap: 8px;
+    padding: 8px 14px;
+    background: rgba(0,0,0,0.3);
+    backdrop-filter: blur(8px);
+    border-radius: 999px;
+  }
+  .promo-hero-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.4);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: background 0.3s, width 0.3s ease;
+  }
+  .promo-hero-dot[aria-current="true"] {
+    background: white;
+    width: 28px;
+  }
+  .promo-hero-dot:hover { background: rgba(255,255,255,0.7); }
+  .promo-hero-dot:focus-visible {
+    outline: 2px solid white;
+    outline-offset: 2px;
+  }
+
+  /* Reduced motion : no Ken Burns, no slide stagger, no auto-advance */
+  @media (prefers-reduced-motion: reduce) {
+    .promo-hero-slide-image,
+    .promo-hero-slide.is-active .promo-hero-slide-image {
+      transition: none;
+      transform: none;
+    }
+    .promo-hero-slide-inner {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+    .promo-hero-track { scroll-behavior: auto; }
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>
+
+<script>
+  function mountPromoHero() {
+    const heroes = document.querySelectorAll<HTMLElement>(".promo-hero");
+    heroes.forEach((hero) => {
+      if ((hero as any).__promoHeroMounted) return;
+      (hero as any).__promoHeroMounted = true;
+
+      const track = hero.querySelector<HTMLElement>("[data-promo-hero-track]");
+      const prev = hero.querySelector<HTMLButtonElement>("[data-promo-hero-prev]");
+      const next = hero.querySelector<HTMLButtonElement>("[data-promo-hero-next]");
+      const dots = Array.from(hero.querySelectorAll<HTMLButtonElement>("[data-promo-hero-dot]"));
+      const status = hero.querySelector<HTMLElement>("[data-promo-hero-status]");
+      const slides = Array.from(hero.querySelectorAll<HTMLElement>(".promo-hero-slide"));
+      if (!track || slides.length === 0) return;
+
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const autoMs = Math.max(0, Number(hero.dataset.autoMs) || 0);
+
+      let activeIndex = 0;
+      let paused = reduced;
+      let pauseUntil = 0;
+      let autoTimer: number | null = null;
+
+      const getSlideWidth = () => track.clientWidth || 1;
+
+      const markActive = (idx: number) => {
+        activeIndex = idx;
+        slides.forEach((s, i) => s.classList.toggle("is-active", i === idx));
+        dots.forEach((d, i) => {
+          if (i === idx) d.setAttribute("aria-current", "true");
+          else d.removeAttribute("aria-current");
+        });
+        if (status) {
+          const slide = slides[idx];
+          status.textContent = slide?.getAttribute("aria-label") ?? "";
+        }
+      };
+      markActive(0);
+
+      const goTo = (idx: number, smooth = true) => {
+        const clamped = ((idx % slides.length) + slides.length) % slides.length;
+        track.scrollTo({
+          left: clamped * getSlideWidth(),
+          behavior: smooth ? "smooth" : "auto",
+        });
+      };
+
+      const nudgePause = (ms = 8000) => {
+        pauseUntil = performance.now() + ms;
+      };
+
+      /* IntersectionObserver on each slide to know which is centered in view */
+      if ("IntersectionObserver" in window) {
+        const io = new IntersectionObserver(
+          (entries) => {
+            let best = { ratio: 0, idx: activeIndex };
+            entries.forEach((e) => {
+              const idx = Number((e.target as HTMLElement).dataset.slideIndex || 0);
+              if (e.intersectionRatio > best.ratio) {
+                best = { ratio: e.intersectionRatio, idx };
+              }
+            });
+            if (best.ratio > 0.55) markActive(best.idx);
+          },
+          { root: track, threshold: [0.3, 0.55, 0.8, 1] }
+        );
+        slides.forEach((s) => io.observe(s));
+      } else {
+        track.addEventListener("scroll", () => {
+          const idx = Math.round(track.scrollLeft / getSlideWidth());
+          markActive(idx);
+        }, { passive: true });
+      }
+
+      /* Arrow buttons */
+      prev?.addEventListener("click", () => {
+        nudgePause();
+        goTo(activeIndex - 1);
+      });
+      next?.addEventListener("click", () => {
+        nudgePause();
+        goTo(activeIndex + 1);
+      });
+
+      /* Dots */
+      dots.forEach((d, i) => {
+        d.addEventListener("click", () => {
+          nudgePause();
+          goTo(i);
+        });
+      });
+
+      /* Hover / focus pause */
+      hero.addEventListener("mouseenter", () => (paused = true));
+      hero.addEventListener("mouseleave", () => (paused = reduced));
+      hero.addEventListener("focusin", () => (paused = true));
+      hero.addEventListener("focusout", () => {
+        if (!hero.contains(document.activeElement)) paused = reduced;
+      });
+
+      /* Keyboard (track focused) */
+      track.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowLeft") { e.preventDefault(); nudgePause(); goTo(activeIndex - 1); }
+        if (e.key === "ArrowRight") { e.preventDefault(); nudgePause(); goTo(activeIndex + 1); }
+      });
+
+      /* Pointer drag (desktop) */
+      let isDown = false, startX = 0, startScroll = 0, hasDragged = false;
+      const onPointerDown = (e: PointerEvent) => {
+        if (e.pointerType === "touch") return;
+        const target = e.target as HTMLElement;
+        if (target.closest("a,button")) return;
+        isDown = true;
+        hasDragged = false;
+        startX = e.clientX;
+        startScroll = track.scrollLeft;
+        track.classList.add("is-dragging");
+        track.setPointerCapture(e.pointerId);
+        nudgePause(10000);
+      };
+      const onPointerMove = (e: PointerEvent) => {
+        if (!isDown) return;
+        const dx = e.clientX - startX;
+        if (Math.abs(dx) > 3) hasDragged = true;
+        track.scrollLeft = startScroll - dx;
+      };
+      const onPointerUp = (e: PointerEvent) => {
+        if (!isDown) return;
+        isDown = false;
+        track.classList.remove("is-dragging");
+        try { track.releasePointerCapture(e.pointerId); } catch {}
+        /* Snap to nearest slide after drag */
+        const idx = Math.round(track.scrollLeft / getSlideWidth());
+        goTo(idx);
+        if (hasDragged) {
+          const stop = (ev: Event) => { ev.preventDefault(); ev.stopPropagation(); };
+          track.addEventListener("click", stop, { capture: true, once: true });
+        }
+      };
+      track.addEventListener("pointerdown", onPointerDown);
+      track.addEventListener("pointermove", onPointerMove);
+      track.addEventListener("pointerup", onPointerUp);
+      track.addEventListener("pointercancel", onPointerUp);
+
+      track.addEventListener("touchstart", () => nudgePause(10000), { passive: true });
+
+      /* Auto-advance */
+      if (autoMs > 0 && !reduced) {
+        const step = () => {
+          if (!paused && performance.now() > pauseUntil && document.visibilityState === "visible") {
+            goTo(activeIndex + 1);
+          }
+        };
+        autoTimer = window.setInterval(step, autoMs);
+      }
+
+      /* Cleanup on page transition */
+      document.addEventListener("astro:before-preparation", () => {
+        if (autoTimer) clearInterval(autoTimer);
+      }, { once: true });
+    });
+  }
+
+  document.addEventListener("astro:page-load", mountPromoHero);
+  if (document.readyState !== "loading") mountPromoHero();
+  else document.addEventListener("DOMContentLoaded", mountPromoHero);
+</script>
