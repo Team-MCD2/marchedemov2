@@ -1,7 +1,7 @@
 ---
 titre: "Feijoada brésilienne — haricots noirs et viandes fumées"
 resume: "Le plat national du Brésil : cocotte d'haricots noirs mijotés avec plusieurs viandes halal fumées. Servi avec riz blanc, farofa et tranches d'orange."
-image: "/images/rayons/saveur-sud-amer.jpg"
+image: "/images/rayons/saveur-sud-amer/plateau-colombien-alexandra-tran.jpg"
 imageAlt: "Cocotte de feijoada brésilienne avec riz, farofa et orange"
 tempsMin: 180
 tempsPrepMin: 30

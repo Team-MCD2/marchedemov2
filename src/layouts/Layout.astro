@@ -44,7 +44,7 @@ const {
   title,
   description,
   canonical,
-  ogImage = "/logos/logo-marchedemo-rond-contourgreen.png",
+  ogImage,
   heroImage,
   heroImageType,
   faqItems,
@@ -67,7 +67,17 @@ function inferImageType(path?: string): string | undefined {
 const heroType = heroImageType ?? inferImageType(heroImage);
 
 const canonicalUrl = canonical ?? new URL(Astro.url.pathname, SITE.url).toString();
-const absoluteOgImage = ogImage.startsWith("http") ? ogImage : `${SITE.url}${ogImage}`;
+
+/* OG image resolution priority :
+   1. explicit ogImage prop          — page chooses its own social card
+   2. heroImage prop                 — use the page's hero photo (best
+                                        for rayons, recettes, actus)
+   3. default logo                   — fallback for pages without hero */
+const resolvedOgImage =
+  ogImage ?? heroImage ?? "/logos/logo-marchedemo-rond-contourgreen.png";
+const absoluteOgImage = resolvedOgImage.startsWith("http")
+  ? resolvedOgImage
+  : `${SITE.url}${resolvedOgImage}`;
 const schemas = Array.isArray(schema) ? schema : schema ? [schema] : [];
 ---
 
@@ -114,19 +124,24 @@ const schemas = Array.isArray(schema) ? schema : schema ? [schema] : [];
     <meta name="author" content={SITE.name} />
     <meta name="generator" content={Astro.generator} />
 
-    <!-- Open Graph -->
+    <!-- Open Graph — meta :width/:height 1200x630 sont des hints
+         qui permettent aux crawlers de réserver l'espace avant fetch. -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={SITE.name} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={absoluteOgImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={description} />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:locale" content="fr_FR" />
 
-    <!-- Twitter -->
+    <!-- Twitter summary_large_image : nécessite une image ≥ 300x157. -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
+    <meta name="twitter:image:alt" content={description} />
     <meta name="twitter:image" content={absoluteOgImage} />
 
     <!-- JSON-LD : FAQ (auto si faqItems) -->

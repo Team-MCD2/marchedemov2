@@ -1,8 +1,8 @@
 ---
 titre: "Pad Thaï authentique aux crevettes et tofu"
 resume: "L'icône de la street food thaïlandaise : nouilles de riz sautées au wok, sauce de tamarin sucrée-acidulée, crevettes, tofu, pousses de soja croquantes."
-image: "/images/rayons/saveurs-asie.jpg"
-imageAlt: "Pad Thaï sur assiette avec cacahuètes, citron vert et coriandre"
+image: "/images/rayons/saveurs-asie/curry-de-poulet-indien.jpg"
+imageAlt: "Pad Thaï sauté au wok avec crevettes, tofu, pousses de soja et cacahuètes"
 tempsMin: 30
 tempsPrepMin: 15
 tempsCuissonMin: 15
