@@ -349,7 +349,12 @@ const pageDesc = (() => {
       <div class={heroCompact ? "lg:col-span-4" : "lg:col-span-5"}>
         <div class={`relative rounded-[40px] overflow-hidden shadow-2xl ring-1 ring-black/5 ${heroCompact ? "aspect-[4/3]" : "aspect-[4/5]"}`}>
           {slideshowActive ? (
-            <div class="rayon-slideshow absolute inset-0" data-slides={slideCount} data-parallax="0.25">
+            <div
+              class="rayon-slideshow absolute inset-0"
+              data-slides={slideCount}
+              data-parallax="0.25"
+              transition:name={`rayon-card-${rayonSlug}`}
+            >
               {uniqueSlides.slice(0, 4).map((src, i) => (
                 <img
                   src={src}
@@ -369,6 +374,7 @@ const pageDesc = (() => {
               src={rayon.image}
               alt={rayon.imageAlt}
               data-parallax="0.25"
+              transition:name={`rayon-card-${rayonSlug}`}
               class="w-full h-full object-cover"
               fetchpriority="high"
               width="800"

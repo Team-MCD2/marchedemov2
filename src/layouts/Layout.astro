@@ -418,11 +418,65 @@ const schemas = Array.isArray(schema) ? schema : schema ? [schema] : [];
           });
         };
 
+        /* ---------------------- MAGNETIC CTAs ---------------------- */
+        /* Buttons within .btn or [data-magnetic] attract the cursor when it
+           enters a radius around them, giving a premium tactile feel.
+           Respect prefers-reduced-motion + desktop-only (hover:hover). */
+        const mountMagnetic = () => {
+          if (prefersReduced) return;
+          if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+
+          const candidates = document.querySelectorAll(
+            "[data-magnetic], .btn-primary, .btn-secondary"
+          );
+          candidates.forEach((el) => {
+            if (el.__magMounted) return;
+            el.__magMounted = true;
+
+            /* Default pull : 8px max, softer for small buttons. */
+            const strength = parseFloat(el.dataset.magneticStrength || "8");
+            const radius = parseFloat(el.dataset.magneticRadius || "60");
+
+            const onMove = (e) => {
+              const rect = el.getBoundingClientRect();
+              const cx = rect.left + rect.width / 2;
+              const cy = rect.top + rect.height / 2;
+              const dx = e.clientX - cx;
+              const dy = e.clientY - cy;
+              const dist = Math.hypot(dx, dy);
+              if (dist > radius + Math.max(rect.width, rect.height) / 2) {
+                el.style.setProperty("--mag-x", "0px");
+                el.style.setProperty("--mag-y", "0px");
+                return;
+              }
+              /* Normalize: closer = stronger pull, up to `strength` px */
+              const pull = Math.min(1, 1 - dist / (radius * 2));
+              el.style.setProperty(
+                "--mag-x",
+                ((dx / rect.width) * strength * pull).toFixed(1) + "px"
+              );
+              el.style.setProperty(
+                "--mag-y",
+                ((dy / rect.height) * strength * pull).toFixed(1) + "px"
+              );
+            };
+            const onLeave = () => {
+              el.style.setProperty("--mag-x", "0px");
+              el.style.setProperty("--mag-y", "0px");
+            };
+            /* Track globally to follow cursor into the radius, not only
+               when it's over the button. */
+            window.addEventListener("mousemove", onMove, { passive: true });
+            el.addEventListener("mouseleave", onLeave);
+          });
+        };
+
         /* ---------------------- MOUNT + CLEANUP ---------------------- */
         const mount = () => {
           collectParallax();
           mountTilt();
           mountSplitReveal();
+          mountMagnetic();
           onScrollFrame(); /* initial paint */
         };
 
