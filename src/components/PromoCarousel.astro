@@ -1,0 +1,128 @@
+---
+/**
+ * PromoCarousel — auto-scrolling row of promo cards.
+ *
+ * Pure Astro, zero JS. The duplication for seamless looping is done
+ * server-side, which is the root-cause fix for the previous React
+ * island version : Astro slots cannot be safely duplicated on the
+ * client, they only render their content once.
+ *
+ * Behaviour :
+ *   - 3 to 4 cards visible on desktop, 2 on tablet, 1.3 on mobile.
+ *   - Card width shrinks responsively so the track always feels
+ *     packed but never cramped.
+ *   - translateX(0 → -50%) loop with a duration proportional to the
+ *     number of original promos (~8 s per card, min 24 s).
+ *   - Pauses on hover AND on focus-within (keyboard a11y).
+ *   - prefers-reduced-motion : animation off, overflow-x-auto +
+ *     scroll-snap so the user can swipe manually.
+ *   - Duplicated track is marked aria-hidden so screen-readers
+ *     only see each promo once.
+ */
+import PromoCard from "@components/PromoCard.astro";
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  promos: CollectionEntry<"promos">[];
+}
+
+const { promos } = Astro.props as Props;
+
+/* Seamless loop : we render the list twice. The 2nd copy is purely
+   visual, so aria-hidden. */
+const cycleSeconds = Math.max(24, promos.length * 8);
+---
+
+<div class="promo-marquee-wrap relative -mx-5 md:-mx-8 lg:mx-0">
+  <div
+    class="promo-marquee flex gap-5 md:gap-6 px-5 md:px-8 lg:px-0 will-change-transform"
+    style={`--promo-marquee-duration: ${cycleSeconds}s`}
+  >
+    {/* Original list — read by screen-readers */}
+    {promos.map((p) => (
+      <div class="promo-card-slot shrink-0">
+        <PromoCard
+          titre={p.data.titre}
+          description={p.data.description}
+          image={p.data.image}
+          prix_original={p.data.prix_original}
+          prix_promo={p.data.prix_promo}
+          reduction_pct={p.data.reduction_pct}
+          rayon={p.data.rayon}
+          magasin={p.data.magasin}
+          date_fin={p.data.date_fin}
+          featured={p.data.mise_en_avant}
+        />
+      </div>
+    ))}
+
+    {/* Duplicated list — hidden from SR, required for seamless loop */}
+    {promos.map((p) => (
+      <div class="promo-card-slot shrink-0" aria-hidden="true">
+        <PromoCard
+          titre={p.data.titre}
+          description={p.data.description}
+          image={p.data.image}
+          prix_original={p.data.prix_original}
+          prix_promo={p.data.prix_promo}
+          reduction_pct={p.data.reduction_pct}
+          rayon={p.data.rayon}
+          magasin={p.data.magasin}
+          date_fin={p.data.date_fin}
+          featured={p.data.mise_en_avant}
+        />
+      </div>
+    ))}
+  </div>
+
+  <div class="hidden md:flex items-center justify-end gap-2 mt-4 text-[12px] text-neutral-400 font-pro">
+    <span class="inline-flex items-center gap-1.5">
+      <span class="w-1.5 h-1.5 rounded-full bg-vert animate-pulse" aria-hidden="true"></span>
+      Défilement auto · pause au survol
+    </span>
+  </div>
+</div>
+
+<style>
+  .promo-marquee-wrap {
+    overflow: hidden;
+  }
+  .promo-marquee {
+    animation: promo-marquee-scroll var(--promo-marquee-duration, 60s) linear infinite;
+  }
+  .promo-marquee-wrap:hover .promo-marquee,
+  .promo-marquee-wrap:focus-within .promo-marquee {
+    animation-play-state: paused;
+  }
+  /* Card sizing : 3 visible ≥ md, ~4 visible ≥ lg, 1.3 visible on mobile. */
+  .promo-card-slot {
+    width: 260px;
+  }
+  @media (min-width: 640px) {
+    .promo-card-slot { width: 280px; }
+  }
+  @media (min-width: 768px) {
+    .promo-card-slot { width: 300px; }
+  }
+  @media (min-width: 1024px) {
+    .promo-card-slot { width: 300px; }
+  }
+  @media (min-width: 1280px) {
+    .promo-card-slot { width: 320px; }
+  }
+
+  @keyframes promo-marquee-scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .promo-marquee-wrap {
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+    }
+    .promo-marquee { animation: none; }
+    .promo-marquee > .promo-card-slot {
+      scroll-snap-align: start;
+    }
+  }
+</style>

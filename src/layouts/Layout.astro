@@ -9,6 +9,7 @@ import { ViewTransitions } from "astro:transitions";
 import Header from "@components/Header.astro";
 import Footer from "@components/Footer.astro";
 import TickerBanner from "@components/TickerBanner.astro";
+import ChatMo from "@components/islands/ChatMo.jsx";
 import { SITE } from "@/lib/site";
 import { faqSchema } from "@/lib/schema";
 import type { FAQItem } from "@/lib/faqs";
@@ -161,6 +162,15 @@ const schemas = Array.isArray(schema) ? schema : schema ? [schema] : [];
     </main>
 
     {!hideChrome && <Footer />}
+
+    {!hideChrome && (
+      <ChatMo
+        client:idle
+        phoneE164={SITE.phoneE164}
+        phoneDisplay={SITE.phone}
+        email={SITE.email}
+      />
+    )}
 
     <!--
       Scroll-reveal observer — ajoute .is-visible aux éléments .reveal

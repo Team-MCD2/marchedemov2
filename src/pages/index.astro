@@ -8,7 +8,7 @@ import Stats from "@components/Stats.astro";
 import FAQAccordion from "@components/FAQAccordion.astro";
 import NewsletterInline from "@components/NewsletterInline.astro";
 import TikTokEmbed from "@components/islands/TikTokEmbed.jsx";
-import PromoCarousel from "@components/islands/PromoCarousel.jsx";
+import PromoCarousel from "@components/PromoCarousel.astro";
 import { getCollection } from "astro:content";
 import { RAYONS_LIST, ENGAGEMENTS, MAGASINS, SITE } from "@/lib/site";
 import { PRODUITS_VEDETTES } from "@/lib/produits-vedettes";
@@ -205,22 +205,7 @@ const schemas = [
           </a>
         </div>
 
-        <PromoCarousel client:visible>
-          {promosHome.map((p) => (
-            <PromoCard
-              titre={p.data.titre}
-              description={p.data.description}
-              image={p.data.image}
-              prix_original={p.data.prix_original}
-              prix_promo={p.data.prix_promo}
-              reduction_pct={p.data.reduction_pct}
-              rayon={p.data.rayon}
-              magasin={p.data.magasin}
-              date_fin={p.data.date_fin}
-              featured={p.data.mise_en_avant}
-            />
-          ))}
-        </PromoCarousel>
+        <PromoCarousel promos={promosHome} />
       </div>
     </section>
   )}
