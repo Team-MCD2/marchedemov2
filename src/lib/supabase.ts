@@ -87,6 +87,10 @@ export interface ProduitRow {
   prix_indicatif: number | null;
   unite: string | null;
   rayon: RayonSlug;
+  /** Niveau 1 de la taxonomie (ex : "Fruits" pour fruits-legumes). */
+  categorie: string | null;
+  /** Niveau 2, optionnel (ex : "Dattes" sous "Fruits"). */
+  sous_categorie: string | null;
   origine: string | null;
   badge: string | null;
   actif: boolean;

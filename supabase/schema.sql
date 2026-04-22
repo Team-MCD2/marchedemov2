@@ -63,6 +63,12 @@ create table if not exists public.produits (
                     'saveur-sud-amer','balkans-turques','produits-courants','surgeles',
                     'boulangerie','produits-laitiers'
                   )),
+  -- Hiérarchie catégorielle pour drill-down.
+  -- categorie     : niveau 1 (ex : 'Fruits', 'Légumes' pour fruits-legumes)
+  -- sous_categorie: niveau 2 optionnel (ex : 'Exotiques', 'Dattes')
+  -- Les slugs catégorie/sous_cat sont dans src/lib/taxonomie.ts (single source of truth).
+  categorie       text,
+  sous_categorie  text,
   origine         text,
   badge           text,
   actif           boolean      default true,
@@ -71,9 +77,11 @@ create table if not exists public.produits (
   updated_at      timestamptz  default now()
 );
 
-create index if not exists idx_produits_actif on public.produits(actif) where actif = true;
-create index if not exists idx_produits_rayon on public.produits(rayon);
-create index if not exists idx_produits_ordre on public.produits(ordre);
+create index if not exists idx_produits_actif      on public.produits(actif) where actif = true;
+create index if not exists idx_produits_rayon      on public.produits(rayon);
+create index if not exists idx_produits_categorie  on public.produits(rayon, categorie);
+create index if not exists idx_produits_sous_cat   on public.produits(rayon, categorie, sous_categorie);
+create index if not exists idx_produits_ordre      on public.produits(ordre);
 
 -- ================================================================
 -- Trigger updated_at (touche les timestamps à chaque UPDATE)

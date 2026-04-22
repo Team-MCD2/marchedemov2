@@ -177,13 +177,51 @@ const schemas = Array.isArray(schema) ? schema : schema ? [schema] : [];
       quand ils entrent dans le viewport. Re-déclenché après chaque
       ViewTransition via astro:page-load.
       Respecte prefers-reduced-motion (CSS force les éléments visibles).
+
+      Features :
+        • Support .reveal / .reveal-left / .reveal-right / .reveal-scale / .reveal-blur
+        • data-reveal-delay="200" → override manual delay (ms)
+        • [data-reveal-stagger] parent → children get auto-incrementing delays
+          (step from data-reveal-step or default 80ms, capped at 600ms)
+        • Respecte prefers-reduced-motion (skip observer entirely)
     -->
     <script is:inline>
       (function () {
+        const prefersReduced =
+          window.matchMedia &&
+          window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+        const applyStagger = (parent) => {
+          const step = Number(parent.dataset.revealStep || 80);
+          const cap  = Number(parent.dataset.revealCap  || 600);
+          const kids = parent.querySelectorAll(":scope > .reveal, :scope > * > .reveal");
+          kids.forEach((kid, i) => {
+            if (kid.dataset.revealDelay) return; /* manual override respected */
+            const d = Math.min(i * step, cap);
+            kid.style.setProperty("--reveal-delay", d + "ms");
+          });
+        };
+
         const mount = () => {
+          /* Apply stagger delays on [data-reveal-stagger] parents. */
+          document.querySelectorAll("[data-reveal-stagger]").forEach(applyStagger);
+
+          /* Manual delays from data-reveal-delay. */
+          document
+            .querySelectorAll(".reveal[data-reveal-delay]:not(.is-visible)")
+            .forEach((el) => {
+              el.style.setProperty("--reveal-delay", el.dataset.revealDelay + "ms");
+            });
+
+          if (prefersReduced) {
+            document
+              .querySelectorAll(".reveal:not(.is-visible)")
+              .forEach((el) => el.classList.add("is-visible"));
+            return;
+          }
+
           const els = document.querySelectorAll(".reveal:not(.is-visible)");
           if (!els.length || !("IntersectionObserver" in window)) {
-            // Fallback : tout visible immédiatement (pas d'IO dispo).
             els.forEach((el) => el.classList.add("is-visible"));
             return;
           }
@@ -196,12 +234,12 @@ const schemas = Array.isArray(schema) ? schema : schema ? [schema] : [];
                 }
               });
             },
-            { rootMargin: "0px 0px -10% 0px", threshold: 0.1 }
+            { rootMargin: "0px 0px -8% 0px", threshold: 0.08 }
           );
           els.forEach((el) => io.observe(el));
         };
+
         document.addEventListener("astro:page-load", mount);
-        // 1er chargement (avant ViewTransitions init).
         if (document.readyState !== "loading") mount();
         else document.addEventListener("DOMContentLoaded", mount);
       })();

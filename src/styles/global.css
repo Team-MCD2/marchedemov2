@@ -360,22 +360,114 @@
   }
 
   /* ------------------------------------------------------------
-     Scroll reveal — opacity 0→1 + translateY(20px→0) quand visible.
-     Déclenché côté JS par IntersectionObserver (script dans Layout).
-     Usage : ajouter class="reveal" sur un élément + data-reveal-delay
-             optionnel en ms pour staggériser.
+     Scroll reveal — 5 variantes, toutes basées sur .reveal.
+     Déclenchées côté JS par IntersectionObserver (script dans Layout).
+
+     Usage basique :
+       <div class="reveal">…</div>            (fade + slide up)
+       <div class="reveal reveal-left">…</div> (slide depuis la gauche)
+       <div class="reveal reveal-right">…</div>(slide depuis la droite)
+       <div class="reveal reveal-scale">…</div> (zoom-in léger)
+       <div class="reveal reveal-blur">…</div> (blur + fade)
+
+     Stagger automatique :
+       <div data-reveal-stagger>
+         <div class="reveal">…</div>  ← delay 0
+         <div class="reveal">…</div>  ← delay 80ms
+         <div class="reveal">…</div>  ← delay 160ms
+       </div>
+     Le script ajoute --reveal-delay : --{index}*80ms via JS.
+
+     Delay manuel : <div class="reveal" data-reveal-delay="200">
      ------------------------------------------------------------ */
   .reveal {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(24px);
     transition:
-      opacity 0.6s var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1)),
-      transform 0.6s var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1));
+      opacity 0.7s var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1)),
+      transform 0.7s var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1)),
+      filter 0.7s var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1));
     transition-delay: var(--reveal-delay, 0ms);
+    will-change: opacity, transform;
   }
   .reveal.is-visible {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
+    filter: none;
+  }
+
+  /* Variantes directionnelles */
+  .reveal-left  { transform: translate3d(-32px, 0, 0); }
+  .reveal-right { transform: translate3d( 32px, 0, 0); }
+  .reveal-scale { transform: scale(0.94); }
+  .reveal-blur  { filter: blur(8px); opacity: 0; }
+
+  /* ------------------------------------------------------------
+     Link underline draw-in — class="link-draw"
+     L'underline apparaît de gauche à droite au hover.
+     ------------------------------------------------------------ */
+  .link-draw {
+    position: relative;
+    display: inline-block;
+  }
+  .link-draw::after {
+    content: "";
+    position: absolute;
+    left: 0; bottom: -2px;
+    width: 100%; height: 2px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  .link-draw:hover::after,
+  .link-draw:focus-visible::after {
+    transform: scaleX(1);
+  }
+
+  /* ------------------------------------------------------------
+     Button sheen — brillance qui traverse au hover.
+     Ajouter class="btn-sheen" sur un bouton déjà stylé.
+     ------------------------------------------------------------ */
+  .btn-sheen {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .btn-sheen::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      110deg,
+      transparent 0%,
+      transparent 40%,
+      rgba(255,255,255,0.25) 50%,
+      transparent 60%,
+      transparent 100%
+    );
+    transform: translateX(-100%);
+    transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    z-index: 1;
+  }
+  .btn-sheen:hover::before,
+  .btn-sheen:focus-visible::before {
+    transform: translateX(100%);
+  }
+
+  /* ------------------------------------------------------------
+     Card hover float — subtle lift + shadow.
+     Complement à hover:-translate-y-1 déjà utilisé.
+     ------------------------------------------------------------ */
+  .card-float {
+    transition:
+      transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .card-float:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.18);
   }
 
   /* ------------------------------------------------------------

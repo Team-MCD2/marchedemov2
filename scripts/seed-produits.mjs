@@ -44,7 +44,102 @@ const sb = createClient(SUPABASE_URL, SERVICE_KEY, {
   auth: { persistSession: false },
 });
 
+/* --------------------------------------------------------------
+   Badge → (catégorie, sous-catégorie) mapping.
+
+   The starter JSON uses `badge` as a single-level sub-cat label.
+   The new drill-down UI expects 2 levels : `categorie` +
+   `sous_categorie`. This table infers both from the rayon + badge
+   so existing data auto-upgrades without manual edits. When a
+   badge doesn't map, we fall back to { categorie: badge, sous: null }
+   so nothing breaks.
+   -------------------------------------------------------------- */
+const BADGE_MAP = {
+  "boucherie-halal": {
+    "Agneau":       ["Viandes",           "Agneau"],
+    "Bœuf":         ["Viandes",           "Bœuf"],
+    "Veau":         ["Viandes",           "Veau"],
+    "Mouton":       ["Viandes",           "Mouton"],
+    "Volaille":     ["Volailles",         "Poulet"],
+    "Poulet":       ["Volailles",         "Poulet"],
+    "Dinde":        ["Volailles",         "Dinde"],
+    "Charcuterie":  ["Charcuterie halal", null],
+  },
+  "fruits-legumes": {
+    "Exotique":       ["Fruits",               "Exotiques"],
+    "Fruit exotique": ["Fruits",               "Exotiques"],
+    "Tubercule":      ["Tubercules",           null],
+    "Légume":         ["Légumes",              "Frais"],
+    "Piment":         ["Légumes",              "Frais"],
+    "Dattes":         ["Dattes & fruits secs", "Dattes"],
+    "Bio":            ["Fruits",               "Bio"],
+  },
+  "epices-du-monde": {
+    "Maghreb":       ["Maghreb",             null],
+    "Inde":          ["Inde",                "Simples"],
+    "Piquant":       ["Piments",             null],
+    "Méditerranée":  ["Méditerranée",        null],
+  },
+  "saveurs-afrique": {
+    "Sauce":    ["Sauces & condiments",     null],
+    "Féculent": ["Féculents & farines",     null],
+    "Cuisine":  ["Huiles",                  null],
+    "Boisson":  ["Épicerie",                "Boissons"],
+    "Épicerie": ["Épicerie",                "Poudres"],
+  },
+  "saveurs-asie": {
+    "Riz":       ["Riz & nouilles",        "Riz"],
+    "Pâtes":     ["Riz & nouilles",        "Nouilles"],
+    "Sauce":     ["Sauces & condiments",   "Soja"],
+    "Épicerie":  ["Épicerie",              "Épicerie sèche"],
+    "Condiment": ["Frais",                 "Kimchi"],
+  },
+  "saveur-mediterranee": {
+    "Huile":          ["Huiles & vinaigres",     null],
+    "AOP":            ["Fromages",               "AOP"],
+    "Olives":         ["Olives & tapenades",     null],
+    "Maghreb":        ["Harissas & condiments",  null],
+    "Semoule":        ["Semoules & couscous",    null],
+  },
+  "saveur-sud-amer": {
+    "Céréale":     ["Céréales & graines",  null],
+    "Légumineuse": ["Légumineuses",        null],
+    "Farine":      ["Farines",             null],
+  },
+  "balkans-turques": {
+    "Boisson":     ["Boissons",             null],
+    "Fromage":     ["Fromages",             null],
+    "Fruits secs": ["Fruits secs & noix",   null],
+    "Pâtisserie":  ["Pâtisseries",          "Baklava"],
+    "Balkans":     ["Épicerie balkanique",  null],
+  },
+  "produits-courants": {
+    "Épicerie":  ["Épicerie salée",  null],
+    "Boisson":   ["Boissons",        null],
+    "Sucré":     ["Épicerie sucrée", null],
+    "Hygiène":   ["Hygiène & entretien", null],
+  },
+  "surgeles": {
+    "Apéritif":   ["Apéritifs",              "Samoussas"],
+    "Asiatique":  ["Apéritifs",              "Nems"],
+    "Halal":      ["Plats préparés halal",  null],
+    "Légumes":    ["Légumes",                null],
+  },
+};
+
+function inferCategorie(rayon, badge) {
+  if (!badge) return { categorie: null, sous_categorie: null };
+  const map = BADGE_MAP[rayon];
+  if (!map) return { categorie: badge, sous_categorie: null };
+  const hit = map[badge];
+  if (!hit) return { categorie: badge, sous_categorie: null };
+  return { categorie: hit[0], sous_categorie: hit[1] };
+}
+
 function normalize(p) {
+  /* Respect explicit categorie/sous_categorie in the JSON if present,
+     else infer from badge via the map above. */
+  const inferred = inferCategorie(p.rayon, p.badge);
   return {
     slug: String(p.slug).trim().toLowerCase(),
     nom: String(p.nom).trim(),
@@ -53,6 +148,8 @@ function normalize(p) {
     prix_indicatif: p.prix_indicatif != null ? Number(p.prix_indicatif) : null,
     unite: p.unite ?? null,
     rayon: p.rayon,
+    categorie: p.categorie ?? inferred.categorie,
+    sous_categorie: p.sous_categorie ?? inferred.sous_categorie,
     origine: p.origine ?? null,
     badge: p.badge ?? null,
     actif: p.actif !== false,
