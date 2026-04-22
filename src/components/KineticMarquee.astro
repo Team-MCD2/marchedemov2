@@ -37,7 +37,7 @@ interface Props {
 const {
   items,
   variant = "noir",
-  speed = 50,
+  speed = 28,
   direction = "left",
   accentColor,
   class: extraClass = "",
@@ -59,7 +59,7 @@ const doubled = [...items, ...items];
 
 <section
   class:list={[
-    "kinetic-marquee overflow-hidden relative py-6 md:py-8",
+    "kinetic-marquee overflow-hidden relative py-3 md:py-4",
     v.bg,
     v.text,
     extraClass,
@@ -67,9 +67,9 @@ const doubled = [...items, ...items];
   style={`--marquee-duration: ${speed}s; --marquee-direction: ${direction === "right" ? "reverse" : "normal"}`}
   aria-hidden="true"
 >
-  <div class="kinetic-marquee__track flex gap-8 md:gap-14 whitespace-nowrap items-center will-change-transform">
+  <div class="kinetic-marquee__track flex gap-6 md:gap-10 whitespace-nowrap items-center will-change-transform">
     {doubled.map((item) => (
-      <span class="inline-flex items-center gap-8 md:gap-14 shrink-0">
+      <span class="inline-flex items-center gap-6 md:gap-10 shrink-0">
         <span
           class="kinetic-marquee__puce"
           style={`background: ${puceColor}`}
@@ -112,22 +112,23 @@ const doubled = [...items, ...items];
   }
 
   .kinetic-marquee__text {
-    /* Fluid massive display : 40px mobile → 120px desktop */
-    font-size: clamp(40px, 8vw, 120px);
-    letter-spacing: -0.02em;
+    /* Display moyen : 22px mobile → 44px desktop. Assez grand pour etre
+       signature, assez mesure pour ne pas ecraser la mise en page. */
+    font-size: clamp(22px, 3.2vw, 44px);
+    letter-spacing: -0.015em;
   }
 
   .kinetic-marquee__puce {
-    width: 14px;
-    height: 14px;
+    width: 8px;
+    height: 8px;
     border-radius: 999px;
     flex-shrink: 0;
   }
 
   @media (min-width: 768px) {
     .kinetic-marquee__puce {
-      width: 20px;
-      height: 20px;
+      width: 10px;
+      height: 10px;
     }
   }
 

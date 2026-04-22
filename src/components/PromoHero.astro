@@ -55,7 +55,7 @@ interface Props {
   autoAdvanceMs?: number;
 }
 
-const { promos = [], extraSlides = [], autoAdvanceMs = 6000 } = Astro.props as Props;
+const { promos = [], extraSlides = [], autoAdvanceMs = 4500 } = Astro.props as Props;
 
 /* Build slides array — promos first, editorial after. Max 5 total. */
 const promoSlides = promos.slice(0, 5).map((p) => ({
@@ -269,10 +269,11 @@ const hasSlides = slides.length > 0;
   .promo-hero-slide-inner {
     color: white;
     max-width: 640px;
-    /* Staggered fade-in when this slide becomes active */
+    /* Staggered fade-in when this slide becomes active — timing reduit
+       pour un feel plus snappy (user feedback : "transitions trop longues"). */
     opacity: 0;
-    transform: translateY(24px);
-    transition: opacity 0.6s ease-out 0.15s, transform 0.7s cubic-bezier(0.22,1,0.36,1) 0.15s;
+    transform: translateY(18px);
+    transition: opacity 0.35s ease-out 0.05s, transform 0.45s cubic-bezier(0.22,1,0.36,1) 0.05s;
   }
   .promo-hero-slide.is-active .promo-hero-slide-inner {
     opacity: 1;
