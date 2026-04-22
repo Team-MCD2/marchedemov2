@@ -1,0 +1,72 @@
+---
+/**
+ * ActuCard — card uniforme pour le stream "Les actus du marché".
+ *
+ * Design : image large (aspect 5/4), badge coloré top-right avec
+ * nom de rayon ou type d'actu, titre en dessous sur 2 lignes max.
+ *
+ * Inspiré du pattern Grand Frais "Les actus du meilleur marché" où
+ * tous les types de contenu (recette, événement, nouveauté, arrivage,
+ * article) partagent un affichage uniforme pour cohérence visuelle.
+ */
+import type { ActuItem } from "@/lib/actus";
+import { actuBadgeLabel, actuBadgeColor } from "@/lib/actus";
+
+interface Props {
+  actu: ActuItem;
+}
+
+const { actu } = Astro.props as Props;
+const badge = actuBadgeLabel(actu);
+const badgeColor = actuBadgeColor(actu);
+---
+
+<a
+  href={actu.href}
+  data-tilt
+  data-tilt-max="3"
+  class="actu-card group block"
+>
+  <div class="relative overflow-hidden rounded-2xl bg-creme aspect-[5/4] ring-1 ring-black/5 shadow-sm group-hover:shadow-card-hover transition-all duration-400">
+    <img
+      src={actu.image}
+      alt={actu.imageAlt ?? actu.titre}
+      loading="lazy"
+      decoding="async"
+      width="600"
+      height="480"
+      class="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.06] transition-transform duration-600"
+    />
+
+    {/* Badge rayon / type — top-right, couleur rayon */}
+    <span
+      class="actu-badge absolute top-3 right-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10.5px] font-pro font-bold uppercase tracking-wider text-white shadow-sm"
+      style={`background: ${badgeColor}`}
+    >
+      {badge}
+    </span>
+
+    {/* Petit indicateur de type d'actu (dot coloré animé pour arrivage/nouveauté) */}
+    {(actu.type === "arrivage" || actu.type === "nouveaute") && (
+      <span class="absolute top-3 left-3 inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-white/95 backdrop-blur text-[10px] font-bold uppercase tracking-wider text-noir shadow-sm">
+        <span class="relative flex w-1.5 h-1.5">
+          <span class="absolute inset-0 rounded-full bg-rouge animate-ping opacity-60"></span>
+          <span class="relative w-1.5 h-1.5 rounded-full bg-rouge"></span>
+        </span>
+        {actu.type === "arrivage" ? "Arrivage" : "Nouveau"}
+      </span>
+    )}
+  </div>
+
+  <div class="mt-3 px-0.5">
+    <h3 class="font-soft font-bold text-[14.5px] md:text-[15.5px] leading-tight text-noir line-clamp-2 min-h-[2.4em] group-hover:text-vert transition-colors">
+      {actu.titre}
+    </h3>
+  </div>
+</a>
+
+<style>
+  .actu-card {
+    cursor: pointer;
+  }
+</style>

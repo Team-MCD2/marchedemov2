@@ -1,0 +1,303 @@
+---
+/**
+ * ActuCarousel — horizontal scroller des actus du marché (pattern Grand Frais).
+ *
+ * Différencié de PromoCarousel : cards plus petites (5/4), 4-5 visibles
+ * sur desktop, auto-scroll lent. Swipe + drag + flèches + keyboard.
+ *
+ * Interactions :
+ *   1. Auto-scroll continu (~30 px/s, pause on hover/focus/drag)
+ *   2. Native swipe sur mobile (overflow-x: auto + scroll-snap: proximity)
+ *   3. Pointer drag sur desktop (click + drag track)
+ *   4. Flèches prev/next (apparaissent on hover desktop, toujours sur mobile)
+ *   5. Seamless loop : cards dupliquées, wrap invisible quand scrollLeft >= halfWidth
+ *
+ * Accessibility :
+ *   - Track duplicata est aria-hidden (SR ne lit chaque actu qu'une fois)
+ *   - Flèches avec aria-label
+ *   - prefers-reduced-motion : auto-scroll désactivé, tout le reste OK
+ */
+import ActuCard from "@components/ActuCard.astro";
+import type { ActuItem } from "@/lib/actus";
+
+interface Props {
+  actus: ActuItem[];
+}
+
+const { actus } = Astro.props as Props;
+---
+
+{actus.length > 0 && (
+  <div class="actu-carousel relative -mx-5 md:-mx-8 lg:mx-0">
+    {/* Prev button — overlayed left */}
+    <button
+      type="button"
+      class="actu-nav actu-nav-prev"
+      aria-label="Actualité précédente"
+      data-actu-prev
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+        <path d="m15 18-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+
+    {/* Scroll track */}
+    <div
+      class="actu-track flex gap-4 md:gap-5 px-5 md:px-8 lg:px-2"
+      data-actu-track
+      tabindex="0"
+      role="region"
+      aria-label="Les actus du marché"
+      aria-roledescription="carousel"
+    >
+      {/* Première passe — lue par SR */}
+      {actus.map((actu) => (
+        <div class="actu-slot shrink-0" role="group" aria-roledescription="diapositive">
+          <ActuCard actu={actu} />
+        </div>
+      ))}
+
+      {/* Duplicate pour seamless loop, SR-hidden */}
+      {actus.map((actu) => (
+        <div class="actu-slot shrink-0" aria-hidden="true">
+          <ActuCard actu={actu} />
+        </div>
+      ))}
+    </div>
+
+    {/* Next button — overlayed right */}
+    <button
+      type="button"
+      class="actu-nav actu-nav-next"
+      aria-label="Actualité suivante"
+      data-actu-next
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+        <path d="m9 18 6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+
+    <div class="hidden md:flex items-center justify-end gap-2 mt-4 text-[12px] text-neutral-400 font-pro">
+      <span class="inline-flex items-center gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-vert animate-pulse" aria-hidden="true"></span>
+        Glissez · flèches · défilement auto
+      </span>
+    </div>
+  </div>
+)}
+
+<style>
+  .actu-carousel {
+    position: relative;
+  }
+  .actu-track {
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scroll-behavior: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    overscroll-behavior-inline: contain;
+  }
+  .actu-track::-webkit-scrollbar { display: none; }
+  .actu-track.is-dragging { cursor: grabbing; }
+  .actu-track:focus { outline: none; }
+
+  /* Card sizing : 2 cards mobile, 3 tablet, 4-5 desktop. */
+  .actu-slot {
+    width: 220px;
+    scroll-snap-align: start;
+  }
+  @media (min-width: 640px)  { .actu-slot { width: 240px; } }
+  @media (min-width: 768px)  { .actu-slot { width: 260px; } }
+  @media (min-width: 1024px) { .actu-slot { width: 270px; } }
+  @media (min-width: 1280px) { .actu-slot { width: 290px; } }
+
+  /* Nav buttons (same style as PromoCarousel) */
+  .actu-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    width: 44px;
+    height: 44px;
+    border-radius: 9999px;
+    background: white;
+    color: #0F0F0F;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08), 0 16px 40px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease, opacity 0.2s ease, background 0.2s ease;
+    opacity: 0;
+    pointer-events: none;
+    border: none;
+    cursor: pointer;
+  }
+  .actu-carousel:hover .actu-nav,
+  .actu-carousel:focus-within .actu-nav {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  @media (max-width: 767px) {
+    .actu-nav { opacity: 0.95; pointer-events: auto; width: 38px; height: 38px; }
+  }
+  .actu-nav:hover {
+    background: #1C6B35;
+    color: white;
+    transform: translateY(-50%) scale(1.08);
+  }
+  .actu-nav:focus-visible {
+    outline: 2px solid #1C6B35;
+    outline-offset: 3px;
+  }
+  .actu-nav svg { width: 20px; height: 20px; }
+  .actu-nav-prev { left: 8px; }
+  .actu-nav-next { right: 8px; }
+  @media (min-width: 1024px) {
+    .actu-nav-prev { left: -18px; }
+    .actu-nav-next { right: -18px; }
+  }
+</style>
+
+<script>
+  /* Actu carousel controller — auto-scroll continu RTL, identique PromoCarousel
+     mais plus lent (30px/s vs 40) car les cards sont plus petites. */
+  function mountActuCarousels() {
+    const carousels = document.querySelectorAll<HTMLElement>(".actu-carousel");
+    carousels.forEach((carousel) => {
+      if ((carousel as any).__actuMounted) return;
+      (carousel as any).__actuMounted = true;
+
+      const track = carousel.querySelector<HTMLElement>("[data-actu-track]");
+      const prev = carousel.querySelector<HTMLButtonElement>("[data-actu-prev]");
+      const next = carousel.querySelector<HTMLButtonElement>("[data-actu-next]");
+      if (!track) return;
+
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      const firstSlot = track.querySelector<HTMLElement>(".actu-slot");
+      const slotWidth = () => {
+        if (!firstSlot) return 280;
+        const rect = firstSlot.getBoundingClientRect();
+        const style = window.getComputedStyle(track);
+        const gap = parseFloat(style.columnGap || style.gap || "0") || 0;
+        return rect.width + gap;
+      };
+      const halfWidth = () => track.scrollWidth / 2;
+
+      let wrapLocked = false;
+      const wrapIfNeeded = () => {
+        if (wrapLocked) return;
+        const h = halfWidth();
+        if (h <= 0) return;
+        if (track.scrollLeft >= h) {
+          wrapLocked = true;
+          track.scrollLeft -= h;
+          requestAnimationFrame(() => { wrapLocked = false; });
+        } else if (track.scrollLeft < 0) {
+          wrapLocked = true;
+          track.scrollLeft += h;
+          requestAnimationFrame(() => { wrapLocked = false; });
+        }
+      };
+
+      const SPEED_PX_S = reduced ? 0 : 30;
+      let paused = reduced;
+      let pauseUntil = 0;
+      let lastTs = 0;
+      let targetSL = track.scrollLeft;
+      let lastAppliedSL = track.scrollLeft;
+      const syncTargetFromScroll = () => {
+        if (Math.abs(track.scrollLeft - lastAppliedSL) > 1) {
+          targetSL = track.scrollLeft;
+        }
+      };
+      const tick = (ts: number) => {
+        if (!lastTs) lastTs = ts;
+        const dt = Math.min(0.1, (ts - lastTs) / 1000);
+        lastTs = ts;
+        if (!paused && performance.now() > pauseUntil && document.visibilityState === "visible" && SPEED_PX_S > 0) {
+          syncTargetFromScroll();
+          targetSL += SPEED_PX_S * dt;
+          const rounded = Math.round(targetSL);
+          track.scrollLeft = rounded;
+          lastAppliedSL = track.scrollLeft;
+        } else {
+          targetSL = track.scrollLeft;
+          lastAppliedSL = track.scrollLeft;
+        }
+        wrapIfNeeded();
+        (carousel as any).__actuRaf = requestAnimationFrame(tick);
+      };
+      (carousel as any).__actuRaf = requestAnimationFrame(tick);
+
+      const nudgePause = (ms = 4000) => { pauseUntil = performance.now() + ms; };
+
+      carousel.addEventListener("mouseenter", () => (paused = true));
+      carousel.addEventListener("mouseleave", () => (paused = reduced));
+      carousel.addEventListener("focusin", () => (paused = true));
+      carousel.addEventListener("focusout", () => {
+        if (!carousel.contains(document.activeElement)) paused = reduced;
+      });
+
+      prev?.addEventListener("click", () => {
+        nudgePause();
+        track.scrollBy({ left: -slotWidth(), behavior: "smooth" });
+      });
+      next?.addEventListener("click", () => {
+        nudgePause();
+        track.scrollBy({ left: slotWidth(), behavior: "smooth" });
+      });
+
+      let isDown = false, startX = 0, startScroll = 0, hasDragged = false;
+      const onPointerDown = (e: PointerEvent) => {
+        if (e.pointerType === "touch") return;
+        const target = e.target as HTMLElement;
+        if (target.closest("a,button")) return;
+        isDown = true;
+        hasDragged = false;
+        startX = e.clientX;
+        startScroll = track.scrollLeft;
+        track.classList.add("is-dragging");
+        track.setPointerCapture(e.pointerId);
+        nudgePause(6000);
+      };
+      const onPointerMove = (e: PointerEvent) => {
+        if (!isDown) return;
+        const dx = e.clientX - startX;
+        if (Math.abs(dx) > 3) hasDragged = true;
+        track.scrollLeft = startScroll - dx;
+      };
+      const onPointerUp = (e: PointerEvent) => {
+        if (!isDown) return;
+        isDown = false;
+        track.classList.remove("is-dragging");
+        try { track.releasePointerCapture(e.pointerId); } catch {}
+        if (hasDragged) {
+          const stop = (ev: Event) => { ev.preventDefault(); ev.stopPropagation(); };
+          track.addEventListener("click", stop, { capture: true, once: true });
+        }
+      };
+      track.addEventListener("pointerdown", onPointerDown);
+      track.addEventListener("pointermove", onPointerMove);
+      track.addEventListener("pointerup", onPointerUp);
+      track.addEventListener("pointercancel", onPointerUp);
+
+      track.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowLeft") { e.preventDefault(); nudgePause(); track.scrollBy({ left: -slotWidth(), behavior: "smooth" }); }
+        if (e.key === "ArrowRight") { e.preventDefault(); nudgePause(); track.scrollBy({ left: slotWidth(), behavior: "smooth" }); }
+      });
+
+      track.addEventListener("touchstart", () => nudgePause(6000), { passive: true });
+      track.addEventListener("wheel", () => nudgePause(4000), { passive: true });
+      track.addEventListener("scroll", wrapIfNeeded, { passive: true });
+    });
+  }
+
+  document.addEventListener("astro:page-load", mountActuCarousels);
+  if (document.readyState !== "loading") mountActuCarousels();
+  else document.addEventListener("DOMContentLoaded", mountActuCarousels);
+</script>
