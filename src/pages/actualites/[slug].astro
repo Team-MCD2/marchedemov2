@@ -14,6 +14,20 @@ export async function getStaticPaths() {
 const { article } = Astro.props;
 const { Content } = await article.render();
 
+/* Articles liés : même catégorie, actifs, excluant l'article courant.
+   Tri descendant par date, top 3. */
+const allArticles = await getCollection("articles", (a) => a.data.actif);
+const related = allArticles
+  .filter(
+    (a) => a.slug !== article.slug && a.data.categorie === article.data.categorie,
+  )
+  .sort(
+    (a, b) =>
+      new Date(b.data.date_publication).getTime() -
+      new Date(a.data.date_publication).getTime(),
+  )
+  .slice(0, 3);
+
 const bc = breadcrumbSchema([
   { name: "Actualités", url: "/actualites" },
   { name: article.data.titre, url: `/actualites/${article.slug}` },
@@ -24,6 +38,27 @@ const dateStr = new Date(article.data.date_publication).toLocaleDateString("fr-F
   month: "long",
   year: "numeric",
 });
+
+/* Temps de lecture estimé — 230 mots/min moyenne française lecture web.
+   Compte très approximatif basé sur le body rendu (non exact mais utile). */
+const bodyText = article.body || "";
+const wordsApprox = bodyText.split(/\s+/).filter(Boolean).length;
+const readingMin = Math.max(1, Math.round(wordsApprox / 230));
+
+/* Couleur + label par catégorie — cohérent avec le badge du stream actus
+   et des cards de la grille /actualites. */
+const CATEGORIE_META: Record<string, { label: string; color: string; bg: string }> = {
+  promos: { label: "Promos", color: "#8B1919", bg: "#FCE7E7" },
+  nouveautes: { label: "Nouveautés", color: "#1C6B35", bg: "#E5F3EB" },
+  recettes: { label: "Recettes", color: "#A68332", bg: "#FAF4E4" },
+  engagements: { label: "Engagements", color: "#2563EB", bg: "#E3EBFB" },
+  evenements: { label: "Événements", color: "#7D4500", bg: "#F5E9D4" },
+};
+const catMeta = CATEGORIE_META[article.data.categorie] ?? {
+  label: article.data.categorie,
+  color: "#1C6B35",
+  bg: "#E5F3EB",
+};
 ---
 
 <Layout
@@ -39,32 +74,111 @@ const dateStr = new Date(article.data.date_publication).toLocaleDateString("fr-F
     ]}
   />
 
-  <!-- Hero -->
   <article class="bg-blanc">
-    <div class="container-mo py-8">
-      <span class="eyebrow">{article.data.categorie}</span>
-      <h1 class="display-xl mt-4 text-balance max-w-4xl">{article.data.titre}</h1>
+    {/* Hero */}
+    <section class="container-mo py-6 md:py-8">
+      <div class="flex flex-wrap items-center gap-2 mb-5">
+        <span
+          class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-pro font-bold uppercase tracking-wider"
+          style={`color: ${catMeta.color}; background: ${catMeta.bg}`}
+        >
+          <span class="w-1.5 h-1.5 rounded-full" style={`background: ${catMeta.color}`}></span>
+          {catMeta.label}
+        </span>
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-pro font-bold uppercase tracking-wider bg-creme text-neutral-700">
+          {readingMin} min de lecture
+        </span>
+      </div>
+      <h1 class="display-xl text-balance max-w-4xl" data-split-reveal>
+        {article.data.titre}
+      </h1>
       <div class="mt-6 flex items-center gap-4 text-[13.5px] text-neutral-500">
         <span>{article.data.auteur}</span>
         <span>·</span>
         <time datetime={article.data.date_publication.toISOString()}>{dateStr}</time>
       </div>
-    </div>
+    </section>
 
-    <div class="container-mo max-w-5xl">
-      <div class="aspect-[16/9] rounded-3xl overflow-hidden shadow-card">
-        <img src={article.data.image} alt={article.data.titre} class="w-full h-full object-cover" fetchpriority="high" />
+    {/* Image hero */}
+    <section class="container-mo max-w-5xl">
+      <div class="aspect-[16/9] md:aspect-[2/1] rounded-3xl overflow-hidden shadow-card bg-creme">
+        <img
+          src={article.data.image}
+          alt={article.data.titre}
+          class="w-full h-full object-cover"
+          fetchpriority="high"
+          data-parallax="0.12"
+        />
       </div>
-    </div>
+    </section>
 
-    <div class="container-mo max-w-3xl py-12 md:py-16">
+    {/* Body */}
+    <section class="container-mo max-w-3xl py-12 md:py-16">
       <p class="font-soft text-[22px] md:text-[26px] leading-snug text-balance text-neutral-800">
         {article.data.resume}
       </p>
       <div class="mt-10 prose-mo">
         <Content />
       </div>
-    </div>
+
+      <p class="mt-12 pt-8 border-t border-black/10 text-[13px] text-neutral-500 italic">
+        Article publié le <time datetime={article.data.date_publication.toISOString()}>{dateStr}</time>
+        {" — "}par <strong class="not-italic font-bold">{article.data.auteur}</strong>
+      </p>
+    </section>
+
+    {/* Articles liés */}
+    {related.length > 0 && (
+      <section class="section bg-creme">
+        <div class="container-mo">
+          <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+            <div class="max-w-xl">
+              <span class="eyebrow">Dans la même catégorie</span>
+              <h2 class="display-md mt-3 text-balance">
+                Autres articles <span class="text-vert">{catMeta.label.toLowerCase()}</span>
+              </h2>
+            </div>
+            <a href="/actualites" class="btn btn-secondary shrink-0">
+              Toutes les actualités
+            </a>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {related.map((a, i) => (
+              <a
+                href={`/actualites/${a.slug}`}
+                class="group bg-white rounded-3xl overflow-hidden shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all reveal reveal-scale"
+                style={`--reveal-delay: ${i * 70}ms`}
+              >
+                <div class="aspect-[4/3] overflow-hidden">
+                  <img
+                    src={a.data.image}
+                    alt={a.data.titre}
+                    class="w-full h-full object-cover group-hover:scale-[1.06] transition-transform duration-500"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+                <div class="p-6">
+                  <span
+                    class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-pro font-bold uppercase tracking-wider"
+                    style={`color: ${catMeta.color}; background: ${catMeta.bg}`}
+                  >
+                    {catMeta.label}
+                  </span>
+                  <h3 class="font-soft font-bold text-[19px] leading-tight mt-3 group-hover:text-vert transition-colors">
+                    {a.data.titre}
+                  </h3>
+                  <p class="mt-2 text-[13.5px] text-neutral-500 line-clamp-2">{a.data.resume}</p>
+                  <time class="text-[12px] text-neutral-400 mt-3 block">
+                    {new Date(a.data.date_publication).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
+                  </time>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+    )}
   </article>
 
   <NewsletterInline />
@@ -72,11 +186,74 @@ const dateStr = new Date(article.data.date_publication).toLocaleDateString("fr-F
 
 <style>
   .prose-mo { font-family: var(--font-pro); }
-  .prose-mo h2 { font-family: var(--font-soft); font-weight: 700; font-size: 24px; margin-top: 2.5rem; margin-bottom: 0.75rem; color: #0A0A0A; }
-  .prose-mo h3 { font-family: var(--font-soft); font-weight: 700; font-size: 20px; margin-top: 1.75rem; margin-bottom: 0.5rem; color: #0A0A0A; }
-  .prose-mo p  { font-size: 16px; line-height: 1.8; color: rgb(64, 64, 64); margin: 0.9rem 0; }
-  .prose-mo ul { margin: 0.75rem 0 1rem 1.25rem; }
-  .prose-mo ul li { font-size: 16px; line-height: 1.8; list-style: disc; margin: 0.25rem 0; color: rgb(64, 64, 64); }
-  .prose-mo strong { color: #0A0A0A; }
-  .prose-mo a { color: #1C6B35; text-decoration: underline; text-underline-offset: 3px; }
+  .prose-mo h2 {
+    font-family: var(--font-soft);
+    font-weight: 700;
+    font-size: 26px;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+    color: #0A0A0A;
+    position: relative;
+    padding-left: 1.1rem;
+  }
+  .prose-mo h2::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.55rem;
+    bottom: 0.55rem;
+    width: 4px;
+    background: #1C6B35;
+    border-radius: 2px;
+  }
+  .prose-mo h3 {
+    font-family: var(--font-soft);
+    font-weight: 700;
+    font-size: 20px;
+    margin-top: 1.75rem;
+    margin-bottom: 0.5rem;
+    color: #0A0A0A;
+  }
+  .prose-mo p {
+    font-size: 16px;
+    line-height: 1.8;
+    color: rgb(64, 64, 64);
+    margin: 0.9rem 0;
+  }
+  .prose-mo ul,
+  .prose-mo ol {
+    margin: 0.75rem 0 1rem 1.25rem;
+  }
+  .prose-mo ul li,
+  .prose-mo ol li {
+    font-size: 16px;
+    line-height: 1.8;
+    margin: 0.35rem 0;
+    color: rgb(64, 64, 64);
+  }
+  .prose-mo ul li { list-style: disc; }
+  .prose-mo ol li { list-style: decimal; }
+  .prose-mo ol li::marker {
+    font-weight: 700;
+    color: #1C6B35;
+    font-family: var(--font-soft);
+  }
+  .prose-mo strong {
+    color: #0A0A0A;
+    font-weight: 700;
+  }
+  .prose-mo a {
+    color: #1C6B35;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .prose-mo blockquote {
+    margin: 1.5rem 0;
+    padding: 1rem 1.25rem;
+    border-left: 3px solid #1C6B35;
+    background: #F6F2EB;
+    border-radius: 0 0.75rem 0.75rem 0;
+    font-style: italic;
+    color: #3A3A3A;
+  }
 </style>

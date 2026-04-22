@@ -15,6 +15,17 @@ const featured = articles[0];
 const others = articles.slice(1);
 
 const bc = breadcrumbSchema([{ name: "Actualités", url: "/actualites" }]);
+
+/* Couleurs + labels par catégorie — identiques au detail page. */
+const CATEGORIE_META: Record<string, { label: string; color: string; bg: string }> = {
+  promos: { label: "Promos", color: "#8B1919", bg: "#FCE7E7" },
+  nouveautes: { label: "Nouveautés", color: "#1C6B35", bg: "#E5F3EB" },
+  recettes: { label: "Recettes", color: "#A68332", bg: "#FAF4E4" },
+  engagements: { label: "Engagements", color: "#2563EB", bg: "#E3EBFB" },
+  evenements: { label: "Événements", color: "#7D4500", bg: "#F5E9D4" },
+};
+const getMeta = (cat: string) =>
+  CATEGORIE_META[cat] ?? { label: cat, color: "#1C6B35", bg: "#E5F3EB" };
 ---
 
 <Layout
@@ -52,7 +63,16 @@ const bc = breadcrumbSchema([{ name: "Actualités", url: "/actualites" }]);
             />
           </div>
           <div>
-            <span class="eyebrow">À la une — {featured.data.categorie}</span>
+            <div class="flex items-center gap-2">
+              <span class="eyebrow">À la une</span>
+              <span
+                class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-pro font-bold uppercase tracking-wider"
+                style={`color: ${getMeta(featured.data.categorie).color}; background: ${getMeta(featured.data.categorie).bg}`}
+              >
+                <span class="w-1.5 h-1.5 rounded-full" style={`background: ${getMeta(featured.data.categorie).color}`}></span>
+                {getMeta(featured.data.categorie).label}
+              </span>
+            </div>
             <h2 class="display-md mt-4 text-balance group-hover:text-vert transition-colors">
               {featured.data.titre}
             </h2>
@@ -77,23 +97,42 @@ const bc = breadcrumbSchema([{ name: "Actualités", url: "/actualites" }]);
       <div class="container-mo">
         <h2 class="display-md text-balance max-w-2xl">Tous les articles.</h2>
         <div class="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {others.map((a) => (
-            <a href={`/actualites/${a.slug}`} class="group bg-white rounded-3xl overflow-hidden shadow-card hover:shadow-card-hover transition-all">
-              <div class="aspect-[4/3] overflow-hidden">
-                <img src={a.data.image} alt={a.data.titre} class="w-full h-full object-cover group-hover:scale-[1.06] transition-transform duration-500" loading="lazy"/>
-              </div>
-              <div class="p-6">
-                <span class="pill pill-vert">{a.data.categorie}</span>
-                <h3 class="font-soft font-bold text-[19px] leading-tight mt-3 group-hover:text-vert transition-colors">
-                  {a.data.titre}
-                </h3>
-                <p class="mt-2 text-[13.5px] text-neutral-500 line-clamp-2">{a.data.resume}</p>
-                <time class="text-[12px] text-neutral-400 mt-3 block">
-                  {new Date(a.data.date_publication).toLocaleDateString("fr-FR", { day:"numeric", month:"short", year:"numeric" })}
-                </time>
-              </div>
-            </a>
-          ))}
+          {others.map((a, i) => {
+            const meta = getMeta(a.data.categorie);
+            return (
+              <a
+                href={`/actualites/${a.slug}`}
+                class="group bg-white rounded-3xl overflow-hidden shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all reveal reveal-scale"
+                style={`--reveal-delay: ${(i % 3) * 70}ms`}
+              >
+                <div class="aspect-[4/3] overflow-hidden bg-creme">
+                  <img
+                    src={a.data.image}
+                    alt={a.data.titre}
+                    class="w-full h-full object-cover group-hover:scale-[1.06] transition-transform duration-500"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+                <div class="p-6">
+                  <span
+                    class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-pro font-bold uppercase tracking-wider"
+                    style={`color: ${meta.color}; background: ${meta.bg}`}
+                  >
+                    <span class="w-1.5 h-1.5 rounded-full" style={`background: ${meta.color}`}></span>
+                    {meta.label}
+                  </span>
+                  <h3 class="font-soft font-bold text-[19px] leading-tight mt-3 group-hover:text-vert transition-colors">
+                    {a.data.titre}
+                  </h3>
+                  <p class="mt-2 text-[13.5px] text-neutral-500 line-clamp-2">{a.data.resume}</p>
+                  <time class="text-[12px] text-neutral-400 mt-3 block">
+                    {new Date(a.data.date_publication).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
+                  </time>
+                </div>
+              </a>
+            );
+          })}
         </div>
       </div>
     </section>
