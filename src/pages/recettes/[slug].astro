@@ -1,0 +1,295 @@
+---
+import Layout from "@layouts/Layout.astro";
+import Breadcrumb from "@components/Breadcrumb.astro";
+import NewsletterInline from "@components/NewsletterInline.astro";
+import RecetteCard from "@components/RecetteCard.astro";
+import { getCollection } from "astro:content";
+import { RAYONS, SITE } from "@/lib/site";
+import { breadcrumbSchema, recipeSchema } from "@/lib/schema";
+import { getRecettesForRayon } from "@/lib/recettes";
+
+export async function getStaticPaths() {
+  const recettes = await getCollection("recettes");
+  return recettes.map((r) => ({ params: { slug: r.slug }, props: { recette: r } }));
+}
+
+const { recette } = Astro.props;
+const { Content } = await recette.render();
+
+const rayonPrincipal = RAYONS[recette.data.rayonPrincipal];
+const rayonSecondaires = recette.data.rayons
+  .filter((r) => r !== recette.data.rayonPrincipal)
+  .map((slug) => RAYONS[slug])
+  .filter(Boolean);
+
+/* Recettes similaires : partageant le rayon principal, sauf cette recette */
+const similaires = (await getRecettesForRayon(recette.data.rayonPrincipal, 6))
+  .filter((r) => r.id !== recette.slug)
+  .slice(0, 3);
+
+const bc = breadcrumbSchema([
+  { name: "Recettes", url: "/recettes" },
+  { name: recette.data.titre, url: `/recettes/${recette.slug}` },
+]);
+
+const recipeJsonLd = recipeSchema({
+  titre: recette.data.titre,
+  resume: recette.data.resume,
+  image: recette.data.image,
+  imageAlt: recette.data.imageAlt,
+  tempsMin: recette.data.tempsMin,
+  tempsPrepMin: recette.data.tempsPrepMin,
+  tempsCuissonMin: recette.data.tempsCuissonMin,
+  portions: recette.data.portions,
+  difficulte: recette.data.difficulte,
+  origine: recette.data.origine,
+  keywords: recette.data.keywords,
+  date_publication: recette.data.date_publication,
+  slug: recette.slug,
+});
+
+const schemas = [bc, recipeJsonLd];
+
+const dateStr = new Date(recette.data.date_publication).toLocaleDateString("fr-FR", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+});
+
+const heures = Math.floor(recette.data.tempsMin / 60);
+const minutes = recette.data.tempsMin % 60;
+const tempsLabel =
+  heures > 0 ? `${heures} h${minutes > 0 ? ` ${minutes}` : ""}` : `${minutes} min`;
+---
+
+<Layout
+  title={`${recette.data.titre} · Recette ${recette.data.origine ?? ""} · ${SITE.name}`}
+  description={recette.data.resume}
+  heroImage={recette.data.image}
+  schema={schemas}
+>
+  <Breadcrumb
+    items={[
+      { name: "Recettes", href: "/recettes" },
+      { name: recette.data.titre },
+    ]}
+  />
+
+  <article class="bg-blanc">
+    {/* Hero */}
+    <section class="container-mo py-6 md:py-8">
+      <div class="flex flex-wrap items-center gap-2 mb-5">
+        {rayonPrincipal && (
+          <a
+            href={`/rayons/${recette.data.rayonPrincipal}`}
+            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-pro font-bold uppercase tracking-wider text-white shadow-sm"
+            style={`background: ${rayonPrincipal.accent}`}
+          >
+            <span class="w-1.5 h-1.5 rounded-full bg-white/90"></span>
+            {rayonPrincipal.nomCourt}
+          </a>
+        )}
+        {recette.data.origine && (
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-pro font-bold uppercase tracking-wider bg-creme text-neutral-700">
+            {recette.data.origine}
+          </span>
+        )}
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-pro font-bold uppercase tracking-wider bg-creme text-neutral-700">
+          {recette.data.difficulte}
+        </span>
+      </div>
+      <h1 class="display-xl text-balance max-w-4xl" data-split-reveal>
+        {recette.data.titre}
+      </h1>
+      <p class="mt-5 max-w-2xl text-[17px] text-neutral-600 leading-relaxed">
+        {recette.data.resume}
+      </p>
+    </section>
+
+    {/* Image hero + meta-infos en overlay */}
+    <section class="container-mo max-w-5xl">
+      <div class="relative aspect-[16/9] md:aspect-[2/1] rounded-3xl overflow-hidden shadow-card bg-creme">
+        <img
+          src={recette.data.image}
+          alt={recette.data.imageAlt ?? recette.data.titre}
+          class="w-full h-full object-cover"
+          fetchpriority="high"
+          data-parallax="0.12"
+        />
+        <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent p-5 md:p-8">
+          <div class="flex flex-wrap items-center gap-5 md:gap-8 text-white">
+            <div class="flex flex-col">
+              <span class="text-[11px] uppercase tracking-wider text-white/70 font-pro font-bold">Temps total</span>
+              <span class="font-soft font-bold text-[20px] md:text-[22px]">{tempsLabel}</span>
+            </div>
+            <div class="w-px h-8 bg-white/30"></div>
+            <div class="flex flex-col">
+              <span class="text-[11px] uppercase tracking-wider text-white/70 font-pro font-bold">Portions</span>
+              <span class="font-soft font-bold text-[20px] md:text-[22px]">{recette.data.portions}</span>
+            </div>
+            {recette.data.tempsPrepMin && (
+              <>
+                <div class="w-px h-8 bg-white/30 hidden sm:block"></div>
+                <div class="flex flex-col hidden sm:flex">
+                  <span class="text-[11px] uppercase tracking-wider text-white/70 font-pro font-bold">Préparation</span>
+                  <span class="font-soft font-bold text-[20px] md:text-[22px]">{recette.data.tempsPrepMin} min</span>
+                </div>
+              </>
+            )}
+            {recette.data.tempsCuissonMin && (
+              <>
+                <div class="w-px h-8 bg-white/30 hidden md:block"></div>
+                <div class="flex flex-col hidden md:flex">
+                  <span class="text-[11px] uppercase tracking-wider text-white/70 font-pro font-bold">Cuisson</span>
+                  <span class="font-soft font-bold text-[20px] md:text-[22px]">{recette.data.tempsCuissonMin} min</span>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* Body MDX */}
+    <section class="container-mo max-w-3xl py-10 md:py-14">
+      <div class="prose-mo">
+        <Content />
+      </div>
+    </section>
+
+    {/* Rayons liés — cross-linking */}
+    {rayonSecondaires.length > 0 && (
+      <section class="bg-creme py-10 md:py-14">
+        <div class="container-mo max-w-3xl">
+          <span class="eyebrow">Trouvez les ingrédients</span>
+          <h2 class="font-soft font-bold text-[24px] md:text-[30px] mt-3 mb-6 text-balance">
+            Tous les produits de cette recette sont dans nos rayons
+          </h2>
+          <div class="flex flex-wrap gap-3">
+            {rayonPrincipal && (
+              <a
+                href={`/rayons/${recette.data.rayonPrincipal}`}
+                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white ring-1 ring-black/5 hover:-translate-y-0.5 hover:shadow-card transition-all text-[14px] font-pro"
+              >
+                <span class="w-2 h-2 rounded-full" style={`background: ${rayonPrincipal.accent}`}></span>
+                <strong>{rayonPrincipal.nom}</strong>
+                <span class="text-neutral-500">→</span>
+              </a>
+            )}
+            {rayonSecondaires.map((r) => (
+              <a
+                href={`/rayons/${r.slug}`}
+                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white ring-1 ring-black/5 hover:-translate-y-0.5 hover:shadow-card transition-all text-[14px] font-pro"
+              >
+                <span class="w-2 h-2 rounded-full" style={`background: ${r.accent}`}></span>
+                {r.nom}
+              </a>
+            ))}
+          </div>
+          <p class="mt-5 text-[13px] text-neutral-500 italic">
+            Publié le <time datetime={recette.data.date_publication.toISOString()}>{dateStr}</time>
+            {" — "}
+            {"L'équipe Marché de Mo'"}
+          </p>
+        </div>
+      </section>
+    )}
+
+    {/* Similaires */}
+    {similaires.length > 0 && (
+      <section class="section bg-blanc">
+        <div class="container-mo">
+          <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+            <div class="max-w-xl">
+              <span class="eyebrow">Ça pourrait vous plaire</span>
+              <h2 class="display-md mt-3 text-balance">
+                Autres recettes du rayon <span class="text-vert">{rayonPrincipal?.nomCourt}</span>
+              </h2>
+            </div>
+            <a href="/recettes" class="btn btn-secondary shrink-0">
+              Toutes les recettes
+            </a>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            {similaires.map((r) => (
+              <div class="reveal reveal-scale">
+                <RecetteCard recette={r} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    )}
+  </article>
+
+  <NewsletterInline />
+</Layout>
+
+<style>
+  .prose-mo { font-family: var(--font-pro); }
+  .prose-mo h2 {
+    font-family: var(--font-soft);
+    font-weight: 700;
+    font-size: 28px;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+    color: #0A0A0A;
+    position: relative;
+    padding-left: 1.2rem;
+  }
+  .prose-mo h2::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.6rem;
+    bottom: 0.6rem;
+    width: 4px;
+    background: #1C6B35;
+    border-radius: 2px;
+  }
+  .prose-mo h3 {
+    font-family: var(--font-soft);
+    font-weight: 700;
+    font-size: 20px;
+    margin-top: 1.75rem;
+    margin-bottom: 0.5rem;
+    color: #0A0A0A;
+  }
+  .prose-mo p {
+    font-size: 16px;
+    line-height: 1.75;
+    color: rgb(64, 64, 64);
+    margin: 0.9rem 0;
+  }
+  .prose-mo ul,
+  .prose-mo ol {
+    margin: 0.75rem 0 1rem 1.25rem;
+  }
+  .prose-mo ul li,
+  .prose-mo ol li {
+    font-size: 16px;
+    line-height: 1.75;
+    margin: 0.35rem 0;
+    color: rgb(64, 64, 64);
+  }
+  .prose-mo ul li {
+    list-style: disc;
+  }
+  .prose-mo ol li {
+    list-style: decimal;
+  }
+  .prose-mo ol li::marker {
+    font-weight: 700;
+    color: #1C6B35;
+    font-family: var(--font-soft);
+  }
+  .prose-mo strong {
+    color: #0A0A0A;
+    font-weight: 700;
+  }
+  .prose-mo a {
+    color: #1C6B35;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+</style>

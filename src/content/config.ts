@@ -95,4 +95,61 @@ const articles = defineCollection({
   }),
 });
 
-export const collections = { promos, videos, postes, articles };
+/* ------------------------------------------------------------
+   RECETTES (Content Collection MDX/MD)
+   Le corps du .md contient : Ingrédients + Étapes + Astuces.
+   Frontmatter = métadonnées pour cards, filtres, Schema.org Recipe.
+   ------------------------------------------------------------ */
+const recettes = defineCollection({
+  type: 'content',
+  schema: z.object({
+    titre: z.string(),
+    resume: z.string(),
+    image: z.string(),
+    imageAlt: z.string().optional(),
+    /** Temps total en minutes (prep + cuisson). */
+    tempsMin: z.number().int().positive(),
+    /** Temps de préparation seul, si on veut le détail. */
+    tempsPrepMin: z.number().int().positive().optional(),
+    /** Temps de cuisson seul. */
+    tempsCuissonMin: z.number().int().positive().optional(),
+    portions: z.number().int().positive(),
+    difficulte: z.enum(['Facile', 'Moyen', 'Avancé']),
+    /** Rayons touchés par la recette (pour cross-linking). */
+    rayons: z.array(z.enum([
+      'boucherie-halal',
+      'fruits-legumes',
+      'epices-du-monde',
+      'saveurs-afrique',
+      'saveurs-asie',
+      'saveur-mediterranee',
+      'saveur-sud-amer',
+      'balkans-turques',
+      'produits-courants',
+      'surgeles',
+    ])),
+    /** Rayon principal (pour la couleur/badge). */
+    rayonPrincipal: z.enum([
+      'boucherie-halal',
+      'fruits-legumes',
+      'epices-du-monde',
+      'saveurs-afrique',
+      'saveurs-asie',
+      'saveur-mediterranee',
+      'saveur-sud-amer',
+      'balkans-turques',
+      'produits-courants',
+      'surgeles',
+    ]),
+    /** Origine géo/culturelle : "Sénégal", "Maghreb", "Corée"… */
+    origine: z.string().optional(),
+    /** Keywords SEO pour la page détail. */
+    keywords: z.array(z.string()).default([]),
+    date_publication: z.date(),
+    actif: z.boolean().default(true),
+    /** Mise en avant sur la home / index /recettes. */
+    mise_en_avant: z.boolean().default(false),
+  }),
+});
+
+export const collections = { promos, videos, postes, articles, recettes };

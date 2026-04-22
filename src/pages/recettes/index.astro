@@ -1,0 +1,249 @@
+---
+import Layout from "@layouts/Layout.astro";
+import Breadcrumb from "@components/Breadcrumb.astro";
+import RecetteCard from "@components/RecetteCard.astro";
+import NewsletterInline from "@components/NewsletterInline.astro";
+import { getAllRecettes } from "@/lib/recettes";
+import { getCollection } from "astro:content";
+import { RAYONS, SITE } from "@/lib/site";
+import { breadcrumbSchema } from "@/lib/schema";
+
+/* Sur la page index on veut afficher la grille de toutes les recettes
+   avec le filtre par rayon. On passe par getCollection direct pour avoir
+   les champs `rayonPrincipal` + `origine` + `mise_en_avant` utiles au UI. */
+const entries = (await getCollection("recettes", (r) => r.data.actif)).sort(
+  (a, b) =>
+    new Date(b.data.date_publication).getTime() -
+    new Date(a.data.date_publication).getTime()
+);
+
+/* Convertir en type Recette pour la card + enrichir avec origine/keywords */
+const recettes = await getAllRecettes();
+
+/* Featured = première mise en avant, sinon la plus récente */
+const featuredEntry =
+  entries.find((e) => e.data.mise_en_avant) ?? entries[0];
+
+/* Comptage par rayon pour le filtre visuel */
+const rayonsWithCount = Array.from(
+  entries.reduce((map, e) => {
+    map.set(e.data.rayonPrincipal, (map.get(e.data.rayonPrincipal) ?? 0) + 1);
+    return map;
+  }, new Map<string, number>())
+).map(([slug, count]) => ({ slug, count, rayon: (RAYONS as any)[slug] }));
+
+/* Comptage par origine culturelle */
+const originesWithCount = Array.from(
+  entries.reduce((map, e) => {
+    const o = e.data.origine ?? "Autre";
+    map.set(o, (map.get(o) ?? 0) + 1);
+    return map;
+  }, new Map<string, number>())
+);
+
+const bc = breadcrumbSchema([{ name: "Recettes", url: "/recettes" }]);
+---
+
+<Layout
+  title={`Recettes du monde entier · ${SITE.name}`}
+  description="Recettes authentiques d'Afrique, d'Asie, de Méditerranée, des Balkans et d'Amérique du Sud. Mijotés, grillades, pâtisseries — toutes vérifiées par notre équipe toulousaine."
+  schema={bc}
+>
+  <Breadcrumb items={[{ name: "Recettes" }]} />
+
+  <!-- Hero -->
+  <section class="bg-blanc pb-8">
+    <div class="container-mo">
+      <span class="eyebrow">Recettes du monde</span>
+      <h1 class="display-xl mt-4 text-balance max-w-4xl" data-split-reveal>
+        Cuisinez le <span class="text-vert">monde entier</span>,<br/>
+        avec les produits du Marché de Mo'.
+      </h1>
+      <p class="mt-6 max-w-2xl text-[17px] text-neutral-600 leading-relaxed">
+        Des recettes vérifiées, testées, documentées. Chaque plat est ancré à un
+        rayon culturel — vous cliquez, vous trouvez tous les ingrédients en
+        magasin. Cuisine du Sénégal, du Maghreb, de Corée, du Vietnam, du Brésil.
+      </p>
+
+      <div class="mt-8 flex flex-wrap items-center gap-3 text-[13px] text-neutral-500 font-pro">
+        <span class="inline-flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-vert"></span>
+          <strong>{entries.length}</strong> recettes authentiques
+        </span>
+        <span>·</span>
+        <span>
+          <strong>{originesWithCount.length}</strong> origines culturelles
+        </span>
+        <span>·</span>
+        <span>
+          Toutes les viandes <strong>halal certifiées</strong>
+        </span>
+      </div>
+    </div>
+  </section>
+
+  {/* Featured */}
+  {featuredEntry && (
+    <section class="section-sm bg-blanc">
+      <div class="container-mo">
+        <a
+          href={`/recettes/${featuredEntry.slug}`}
+          class="group grid lg:grid-cols-2 gap-8 lg:gap-14 items-center"
+          data-tilt
+          data-tilt-max="2"
+        >
+          <div class="aspect-[4/3] lg:aspect-[5/4] overflow-hidden rounded-3xl bg-creme" data-parallax="0.15">
+            <img
+              src={featuredEntry.data.image}
+              alt={featuredEntry.data.imageAlt ?? featuredEntry.data.titre}
+              class="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700"
+              loading="eager"
+              fetchpriority="high"
+            />
+          </div>
+          <div>
+            <span class="eyebrow">À la une — {featuredEntry.data.origine ?? "Recette"}</span>
+            <h2 class="display-md mt-4 text-balance group-hover:text-vert transition-colors">
+              {featuredEntry.data.titre}
+            </h2>
+            <p class="mt-4 text-[15.5px] text-neutral-600 leading-relaxed max-w-lg">
+              {featuredEntry.data.resume}
+            </p>
+            <div class="mt-6 flex flex-wrap items-center gap-5 text-[13px] text-neutral-500 font-pro">
+              <span class="inline-flex items-center gap-1.5">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                {Math.floor(featuredEntry.data.tempsMin / 60) > 0
+                  ? `${Math.floor(featuredEntry.data.tempsMin / 60)} h${featuredEntry.data.tempsMin % 60 > 0 ? ` ${featuredEntry.data.tempsMin % 60}` : ""}`
+                  : `${featuredEntry.data.tempsMin} min`}
+              </span>
+              <span class="inline-flex items-center gap-1.5">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                </svg>
+                {featuredEntry.data.portions} portions
+              </span>
+              <span class="inline-flex items-center gap-1.5 font-bold uppercase tracking-wider text-vert">
+                {featuredEntry.data.difficulte}
+              </span>
+            </div>
+            <div class="mt-8 inline-flex items-center gap-2 text-[14px] font-bold link-draw text-vert">
+              Voir la recette complète
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M5 12h14M13 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+        </a>
+      </div>
+    </section>
+  )}
+
+  {/* Filtres par rayon — petite bar horizontale */}
+  <section class="bg-creme py-6 border-y border-black/5">
+    <div class="container-mo">
+      <div class="flex flex-wrap items-center gap-2 text-[12px] font-pro">
+        <span class="text-neutral-500 font-bold uppercase tracking-wider mr-2">
+          Filtrer par rayon :
+        </span>
+        <a
+          href="#grid"
+          class="filter-chip inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white ring-1 ring-black/5 hover:bg-vert hover:text-white transition"
+          data-filter-rayon="all"
+        >
+          <strong>Toutes</strong>
+          <span class="opacity-60">({entries.length})</span>
+        </a>
+        {rayonsWithCount.map(({ slug, count, rayon }) => rayon && (
+          <a
+            href="#grid"
+            class="filter-chip inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white ring-1 ring-black/5 hover:bg-vert hover:text-white transition"
+            data-filter-rayon={slug}
+            style={`--chip-accent: ${rayon.accent}`}
+          >
+            <span class="w-1.5 h-1.5 rounded-full" style={`background: ${rayon.accent}`}></span>
+            <strong>{rayon.nomCourt}</strong>
+            <span class="opacity-60">({count})</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  {/* Grid */}
+  <section class="section bg-blanc" id="grid">
+    <div class="container-mo">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8" id="recettes-grid">
+        {recettes.map((recette, i) => (
+          <div
+            class="reveal reveal-scale recette-item"
+            data-rayon-slug={recette.rayon}
+            style={`--reveal-delay: ${(i % 3) * 80}ms`}
+          >
+            <RecetteCard recette={recette} />
+          </div>
+        ))}
+      </div>
+
+      <p
+        id="grid-empty"
+        class="hidden text-center text-neutral-500 py-16 font-pro"
+      >
+        Aucune recette pour ce rayon — revenez bientôt.
+      </p>
+    </div>
+  </section>
+
+  <NewsletterInline />
+</Layout>
+
+<script>
+  /* Filtre par rayon — client-side, pas de rechargement. */
+  (function () {
+    const chips = document.querySelectorAll<HTMLElement>("[data-filter-rayon]");
+    const items = document.querySelectorAll<HTMLElement>(".recette-item");
+    const empty = document.getElementById("grid-empty");
+
+    const apply = (filter: string) => {
+      let visible = 0;
+      items.forEach((el) => {
+        const match = filter === "all" || el.dataset.rayonSlug === filter;
+        el.style.display = match ? "" : "none";
+        if (match) visible++;
+      });
+      if (empty) empty.classList.toggle("hidden", visible > 0);
+
+      chips.forEach((c) => {
+        const active = c.dataset.filterRayon === filter;
+        c.classList.toggle("is-active", active);
+      });
+    };
+
+    chips.forEach((chip) => {
+      chip.addEventListener("click", (e) => {
+        e.preventDefault();
+        apply(chip.dataset.filterRayon ?? "all");
+        /* Scroll to grid smoothly if user clicked from top */
+        const grid = document.getElementById("grid");
+        if (grid && window.scrollY < grid.offsetTop - 100) {
+          grid.scrollIntoView({ behavior: "smooth" });
+        }
+      });
+    });
+
+    apply("all");
+  })();
+</script>
+
+<style>
+  .filter-chip.is-active {
+    background: #1C6B35;
+    color: white;
+  }
+  .filter-chip.is-active span {
+    background: white !important;
+  }
+</style>

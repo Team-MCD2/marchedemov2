@@ -158,3 +158,69 @@ export function offerSchema(p: {
     seller: { "@type": "Organization", name: SITE.name },
   };
 }
+
+/**
+ * Schema.org Recipe — pour rich results Google (photo + temps +
+ * étoiles + calories dans SERP). Appelé depuis /recettes/[slug].astro.
+ *
+ * Convertit les minutes en format ISO 8601 duration ("PT45M", "PT1H30M").
+ */
+function minutesToISO(min: number | undefined): string | undefined {
+  if (!min || min < 1) return undefined;
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  if (h === 0) return `PT${m}M`;
+  if (m === 0) return `PT${h}H`;
+  return `PT${h}H${m}M`;
+}
+
+export function recipeSchema(r: {
+  titre: string;
+  resume: string;
+  image: string;
+  imageAlt?: string;
+  tempsMin: number;
+  tempsPrepMin?: number;
+  tempsCuissonMin?: number;
+  portions: number;
+  difficulte: "Facile" | "Moyen" | "Avancé";
+  origine?: string;
+  keywords: string[];
+  date_publication: Date;
+  slug: string;
+  /** Liste des ingrédients plain-text extraite du MDX (optionnel, enrichit SERP). */
+  ingredients?: string[];
+  /** Liste des étapes plain-text extraite du MDX (optionnel). */
+  steps?: string[];
+}) {
+  const imageUrl = r.image.startsWith("http") ? r.image : `${SITE.url}${r.image}`;
+  return {
+    "@context": "https://schema.org",
+    "@type": "Recipe",
+    name: r.titre,
+    description: r.resume,
+    image: [imageUrl],
+    author: { "@type": "Organization", name: SITE.name },
+    datePublished: r.date_publication.toISOString(),
+    prepTime: minutesToISO(r.tempsPrepMin),
+    cookTime: minutesToISO(r.tempsCuissonMin),
+    totalTime: minutesToISO(r.tempsMin),
+    recipeYield: `${r.portions} portions`,
+    recipeCategory: "Plat principal",
+    recipeCuisine: r.origine,
+    keywords: r.keywords?.join(", "),
+    ...(r.ingredients && r.ingredients.length > 0
+      ? { recipeIngredient: r.ingredients }
+      : {}),
+    ...(r.steps && r.steps.length > 0
+      ? {
+          recipeInstructions: r.steps.map((text, i) => ({
+            "@type": "HowToStep",
+            position: i + 1,
+            text,
+          })),
+        }
+      : {}),
+    url: `${SITE.url}/recettes/${r.slug}`,
+  };
+}

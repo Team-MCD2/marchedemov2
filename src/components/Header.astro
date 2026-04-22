@@ -128,6 +128,12 @@ const isActive = (href: string) =>
         Magasins
       </a>
       <a
+        href="/recettes"
+        class:list={["px-3 py-2 rounded-full hover:bg-black/5 transition", isActive("/recettes") && "text-vert"]}
+      >
+        Recettes
+      </a>
+      <a
         href="/recrutement"
         class:list={["px-3 py-2 rounded-full hover:bg-black/5 transition", isActive("/recrutement") && "text-vert"]}
       >
@@ -188,6 +194,7 @@ const isActive = (href: string) =>
 
       <a href="/promos" class="block py-2.5 border-b border-black/5 text-rouge font-bold">Promos</a>
       <a href="/magasins" class="block py-2.5 border-b border-black/5">Magasins</a>
+      <a href="/recettes" class="block py-2.5 border-b border-black/5">Recettes</a>
       <a href="/recrutement" class="block py-2.5 border-b border-black/5">Recrutement</a>
       <a href="/programme-fidelite" class="block py-2.5 border-b border-black/5">Programme fidélité</a>
       <a href="/actualites" class="block py-2.5 border-b border-black/5">Actualités</a>

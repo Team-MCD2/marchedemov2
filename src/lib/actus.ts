@@ -21,7 +21,7 @@
 
 import { getCollection } from "astro:content";
 import { RAYONS, type RayonSlug } from "@/lib/site";
-import { RECETTES_HOME } from "@/lib/recettes";
+import { getAllRecettes } from "@/lib/recettes";
 
 /** Type d'actu — utilisé pour le libellé fallback quand pas de rayon. */
 export type ActuType =
@@ -203,22 +203,25 @@ export async function getActus(limit?: number): Promise<ActuItem[]> {
     /* Collection non trouvée ou vide — on continue. */
   }
 
-  /* 2 — Recettes (lib static) */
-  for (const r of RECETTES_HOME) {
-    items.push({
-      id: `recette-${r.id}`,
-      type: "recette",
-      titre: r.titre,
-      resume: r.resume,
-      image: r.image,
-      imageAlt: r.titre,
-      rayon: r.rayon,
-      /* Pas de date dans RECETTES_HOME → on utilise une date antérieure
-         pour qu'elles n'apparaissent pas en tête. */
-      date: new Date("2026-03-01"),
-      href: r.lien ?? `/rayons/${r.rayon}`,
-    });
-  }
+  /* 2 — Recettes (Content Collection avec fallback lib) */
+  try {
+    const recettes = await getAllRecettes();
+    for (const r of recettes) {
+      items.push({
+        id: `recette-${r.id}`,
+        type: "recette",
+        titre: r.titre,
+        resume: r.resume,
+        image: r.image,
+        imageAlt: r.titre,
+        rayon: r.rayon,
+        /* Les recettes Collection ont une date_publication, mais l'interface
+           Recette ne l'expose pas. On utilise une date par défaut récente. */
+        date: new Date("2026-03-01"),
+        href: r.lien ?? `/rayons/${r.rayon}`,
+      });
+    }
+  } catch {}
 
   /* 3 — Seeds arrivages / événements / nouveautés */
   items.push(...ACTUS_SEED);
