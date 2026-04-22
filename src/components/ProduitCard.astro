@@ -1,0 +1,65 @@
+---
+/**
+ * ProduitCard — vitrine sensorielle d'un produit, SANS PRIX.
+ *
+ * Doctrine : pas de prix affiché (risque juridique de pratique
+ * commerciale trompeuse si écart entre prix site et prix magasin).
+ * Le prix reste exclusivement sur les promos (datées + cadrées).
+ *
+ * Layout : image carrée dominante + nom court + pill rayon.
+ * Hover : zoom léger image + lift card.
+ */
+import { RAYONS } from "@/lib/site";
+import type { ProduitVedette } from "@/lib/produits-vedettes";
+
+interface Props {
+  produit: ProduitVedette;
+}
+
+const { produit } = Astro.props as Props;
+const rayonData = RAYONS[produit.rayon];
+const accent = rayonData?.accent ?? "#1C6B35";
+---
+
+<a
+  href={`/rayons/${produit.rayon}`}
+  class="group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1"
+>
+  <div class="relative aspect-square overflow-hidden bg-creme">
+    <img
+      src={produit.image}
+      alt={produit.nom}
+      loading="lazy"
+      decoding="async"
+      width="600"
+      height="600"
+      class="w-full h-full object-cover group-hover:scale-[1.07] transition-transform duration-500"
+    />
+    {produit.badge && (
+      <span
+        class="absolute top-3 left-3 inline-flex items-center px-2.5 py-1 rounded-full bg-white/95 text-[11px] font-pro font-bold tracking-wide uppercase shadow-sm"
+        style={`color: ${accent}`}
+      >
+        {produit.badge}
+      </span>
+    )}
+  </div>
+
+  <div class="p-4 flex flex-col gap-2">
+    <h3 class="font-soft font-bold text-[15px] leading-tight text-noir text-balance line-clamp-2 min-h-[2.4em]">
+      {produit.nom}
+    </h3>
+    <div class="flex items-center justify-between gap-2 text-[12px]">
+      <span
+        class="inline-flex items-center gap-1.5 font-pro font-bold tracking-wide uppercase"
+        style={`color: ${accent}`}
+      >
+        <span class="w-1.5 h-1.5 rounded-full" style={`background: ${accent}`}></span>
+        {rayonData?.nomCourt ?? produit.rayon}
+      </span>
+      {produit.origine && (
+        <span class="text-neutral-400 font-pro truncate">{produit.origine}</span>
+      )}
+    </div>
+  </div>
+</a>

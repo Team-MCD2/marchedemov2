@@ -1,0 +1,80 @@
+---
+/**
+ * RecetteCard — card inspiration recette, ancrée à un rayon.
+ * Layout : image landscape + meta (temps, portions, difficulté) + titre.
+ * Si `recette.lien` est défini → card cliquable vers l'article ;
+ * sinon → CTA "Bientôt en ligne" et lien vers le rayon.
+ */
+import { RAYONS } from "@/lib/site";
+import type { Recette } from "@/lib/recettes";
+
+interface Props {
+  recette: Recette;
+}
+
+const { recette } = Astro.props as Props;
+const rayonData = RAYONS[recette.rayon];
+const accent = rayonData?.accent ?? "#1C6B35";
+
+const href = recette.lien ?? `/rayons/${recette.rayon}`;
+const heures = Math.floor(recette.tempsMin / 60);
+const minutes = recette.tempsMin % 60;
+const tempsLabel =
+  heures > 0
+    ? `${heures} h${minutes > 0 ? ` ${minutes}` : ""}`
+    : `${minutes} min`;
+---
+
+<a
+  href={href}
+  class="group relative flex flex-col overflow-hidden rounded-3xl bg-white shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1"
+>
+  <div class="relative aspect-[16/10] overflow-hidden bg-creme">
+    <img
+      src={recette.image}
+      alt={recette.titre}
+      loading="lazy"
+      decoding="async"
+      width="800"
+      height="500"
+      class="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-500"
+    />
+    <div class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/55 to-transparent"></div>
+    <span
+      class="absolute top-4 left-4 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/95 text-[11px] font-pro font-bold tracking-wide uppercase shadow-sm"
+      style={`color: ${accent}`}
+    >
+      <span class="w-1.5 h-1.5 rounded-full" style={`background: ${accent}`}></span>
+      {rayonData?.nomCourt ?? recette.rayon}
+    </span>
+  </div>
+
+  <div class="p-6 flex-1 flex flex-col">
+    <h3 class="font-soft font-bold text-[19px] md:text-[21px] leading-snug text-noir text-balance">
+      {recette.titre}
+    </h3>
+    <p class="mt-2 text-[13.5px] text-neutral-500 line-clamp-2 flex-1">
+      {recette.resume}
+    </p>
+
+    <div class="mt-5 pt-4 border-t border-black/5 flex items-center justify-between text-[12px] text-neutral-500 font-pro">
+      <span class="inline-flex items-center gap-1.5">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        {tempsLabel}
+      </span>
+      <span class="inline-flex items-center gap-1.5">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+        </svg>
+        {recette.portions} parts
+      </span>
+      <span class="font-bold uppercase tracking-wider" style={`color: ${accent}`}>
+        {recette.difficulte}
+      </span>
+    </div>
+  </div>
+</a>

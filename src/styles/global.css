@@ -403,6 +403,76 @@
   }
 
   /* ------------------------------------------------------------
+     Phone mockup (hero — visuel "notre site sur votre téléphone")
+     ------------------------------------------------------------
+     Frame iPhone-style en CSS pur, aucun asset SVG. L'image
+     intérieure est passée en <img> classique dans le slot screen.
+     Aspect ratio interne : 9/19.5 (= proportions iPhone 15).
+     Léger float vertical en boucle pour donner du vivant. */
+  .phone-mockup {
+    position: relative;
+    width: 100%;
+    max-width: 320px;
+    aspect-ratio: 9 / 19.5;
+    margin-inline: auto;
+    border-radius: 48px;
+    background: linear-gradient(160deg, #1a1a1a 0%, #2c2c2c 100%);
+    padding: 12px;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.08) inset,
+      0 0 0 1px rgba(0, 0, 0, 0.6),
+      0 30px 60px rgba(0, 0, 0, 0.35),
+      0 8px 20px rgba(0, 0, 0, 0.18);
+    animation: phone-float 6s ease-in-out infinite;
+  }
+  .phone-mockup-screen {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 36px;
+    overflow: hidden;
+    background: #fff;
+  }
+  .phone-mockup-screen > img,
+  .phone-mockup-screen > .phone-screen-content {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+    display: block;
+  }
+  /* Dynamic Island au centre haut */
+  .phone-mockup::before {
+    content: "";
+    position: absolute;
+    top: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90px;
+    height: 26px;
+    background: #000;
+    border-radius: 999px;
+    z-index: 2;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+  }
+  /* Boutons physiques droite (volume + lock) */
+  .phone-mockup::after {
+    content: "";
+    position: absolute;
+    right: -2px;
+    top: 30%;
+    width: 3px;
+    height: 60px;
+    background: #1a1a1a;
+    border-radius: 2px;
+    box-shadow: 0 80px 0 #1a1a1a;
+  }
+  @keyframes phone-float {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-8px); }
+  }
+
+  /* ------------------------------------------------------------
      prefers-reduced-motion : désactive TOUTES nos animations custom.
      ------------------------------------------------------------ */
   @media (prefers-reduced-motion: reduce) {
@@ -410,6 +480,7 @@
     .marquee-track      { animation: none !important; }
     .reveal             { opacity: 1 !important; transform: none !important; transition: none !important; }
     .badge-stamp        { animation: none !important; }
+    .phone-mockup       { animation: none !important; }
   }
 
   /* ------------------------------------------------------------
