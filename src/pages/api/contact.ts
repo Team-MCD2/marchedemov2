@@ -4,7 +4,11 @@ import type { APIRoute } from "astro";
  * POST /api/contact — service client form.
  * Fields: prenom, nom, email, sujet, message, rgpd.
  * Logs + returns JSON (or redirect for form-encoded).
+ *
+ * `prerender = false` required in hybrid mode (cf login.ts).
  */
+export const prerender = false;
+
 export const POST: APIRoute = async ({ request, redirect }) => {
   const ct = request.headers.get("content-type") ?? "";
   const wantsJson = ct.includes("application/json");

@@ -3,7 +3,11 @@ import type { APIRoute } from "astro";
 /**
  * POST /api/fidelite — loyalty program sign-up.
  * Fields: prenom, nom, email, telephone, magasin, rgpd.
+ *
+ * `prerender = false` required in hybrid mode (cf login.ts).
  */
+export const prerender = false;
+
 export const POST: APIRoute = async ({ request, redirect }) => {
   const ct = request.headers.get("content-type") ?? "";
   const wantsJson = ct.includes("application/json");

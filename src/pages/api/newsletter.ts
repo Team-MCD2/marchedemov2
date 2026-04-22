@@ -5,7 +5,11 @@ import type { APIRoute } from "astro";
  * Accepts form-encoded or JSON payload with { email }.
  * In prod, forward to Brevo / Mailchimp using env API key.
  * Here, we simply echo back success to keep the pipeline working in dev.
+ *
+ * `prerender = false` required in hybrid mode (cf login.ts).
  */
+export const prerender = false;
+
 export const POST: APIRoute = async ({ request, redirect }) => {
   const ct = request.headers.get("content-type") ?? "";
   let email = "";

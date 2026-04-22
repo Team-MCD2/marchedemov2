@@ -4,7 +4,11 @@ import type { APIRoute } from "astro";
  * POST /api/candidature — job application form.
  * Accepts multipart/form-data for CV upload.
  * Fields: prenom, nom, email, telephone, magasin, poste, message, rgpd, cv (File).
+ *
+ * `prerender = false` required in hybrid mode (cf login.ts).
  */
+export const prerender = false;
+
 export const POST: APIRoute = async ({ request }) => {
   if (!request.headers.get("content-type")?.includes("multipart/form-data") &&
       !request.headers.get("content-type")?.includes("application/x-www-form-urlencoded")) {
