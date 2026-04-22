@@ -1,0 +1,363 @@
+---
+/**
+ * /produits — Catalogue hub
+ *
+ * Inspiré des grandes enseignes (Grand Frais, Carrefour). Affiche tous
+ * les produits actifs de la table Supabase, avec filtres client-side :
+ *   1. Pills par rayon
+ *   2. Input texte (fuzzy match sur nom + origine + badge)
+ *
+ * Doctrine Mo' :
+ *   - AUCUN prix affiché (risque pratique commerciale trompeuse)
+ *   - Chaque card renvoie vers /rayons/[rayon] — site vitrine, pas e-commerce
+ *   - Placeholder gradient cream si pas d'image (voir ProduitCard)
+ */
+import Layout from "@layouts/Layout.astro";
+import Breadcrumb from "@components/Breadcrumb.astro";
+import ProduitCard from "@components/ProduitCard.astro";
+import NewsletterInline from "@components/NewsletterInline.astro";
+import { SITE, RAYONS_LIST } from "@/lib/site";
+import { getAllProduits } from "@/lib/produits-repo";
+import { breadcrumbSchema } from "@/lib/schema";
+
+const produits = await getAllProduits();
+
+const countByRayon = produits.reduce<Record<string, number>>((acc, p) => {
+  acc[p.rayon] = (acc[p.rayon] ?? 0) + 1;
+  return acc;
+}, {});
+
+const rayonsAvecProduits = RAYONS_LIST.filter((r) => countByRayon[r.slug] > 0);
+
+const bc = breadcrumbSchema([{ name: "Produits", url: "/produits" }]);
+
+/* ProduitCard attend la shape ProduitVedette. */
+type Minimal = {
+  id: string;
+  nom: string;
+  image: string;
+  rayon: any;
+  badge?: string;
+  origine?: string;
+};
+const cards: Minimal[] = produits.map((p) => ({
+  id: p.slug,
+  nom: p.nom,
+  image: p.image ?? "",
+  rayon: p.rayon,
+  badge: p.badge ?? undefined,
+  origine: p.origine ?? undefined,
+}));
+---
+
+<Layout
+  title={`Nos produits — ${produits.length}+ références du monde · ${SITE.name}`}
+  description="Catalogue complet du Marché de Mo' — épices, produits du monde, boucherie halal, fruits exotiques, surgelés. Découvrez toutes les références disponibles en magasin."
+  schema={bc}
+>
+  <Breadcrumb items={[{ name: "Produits" }]} />
+
+  <section class="bg-blanc pb-8 relative overflow-hidden">
+    <img
+      src="/logos/favicon-marchedemo.png"
+      alt=""
+      aria-hidden="true"
+      class="absolute -right-24 top-4 w-[500px] opacity-[0.04] pointer-events-none select-none"
+      data-parallax="0.08"
+    />
+    <div class="container-mo relative">
+      <span class="eyebrow">Catalogue</span>
+      <h1 class="display-xl mt-4 text-balance max-w-4xl" data-split-reveal>
+        {produits.length}+ produits. <span class="text-vert">10 rayons.</span>
+      </h1>
+      <p class="mt-6 max-w-2xl text-[17px] text-neutral-600 leading-relaxed">
+        Parcourez l'ensemble des références disponibles dans nos deux magasins.
+        Épices du monde, fruits exotiques, boucherie halal, spécialités d'Afrique,
+        d'Asie, de Méditerranée. Filtrez par rayon ou cherchez un produit précis.
+      </p>
+
+      <div class="mt-10 flex flex-col md:flex-row md:items-end gap-4 md:gap-6">
+        <div class="flex-1 max-w-xl">
+          <label for="produit-search" class="block text-[13px] font-bold uppercase tracking-wider text-neutral-500 mb-2">
+            Rechercher un produit
+          </label>
+          <div class="relative">
+            <svg
+              class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 pointer-events-none"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" stroke-linecap="round" />
+            </svg>
+            <input
+              type="search"
+              id="produit-search"
+              placeholder="Exemple : ras el hanout, plantain, dattes..."
+              class="w-full rounded-2xl border border-black/10 bg-white pl-12 pr-4 py-3.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-vert/40 focus:border-vert transition-all"
+              aria-describedby="produit-count"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </div>
+        </div>
+        <p
+          id="produit-count"
+          class="text-[13px] text-neutral-500 font-pro pb-3"
+          aria-live="polite"
+        >
+          <span id="count-value">{produits.length}</span> produits affichés
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <div class="sticky top-16 z-30 bg-blanc/95 backdrop-blur-sm border-y border-black/5 py-3 md:py-4">
+    <div class="container-mo">
+      <div
+        class="flex gap-2 overflow-x-auto scrollbar-thin -mx-4 px-4 pb-1 snap-x snap-mandatory"
+        role="tablist"
+        aria-label="Filtrer par rayon"
+      >
+        <button
+          type="button"
+          class="filter-pill filter-pill--active shrink-0 snap-start"
+          data-rayon="all"
+          role="tab"
+          aria-selected="true"
+        >
+          Tous
+          <span class="filter-pill-count">{produits.length}</span>
+        </button>
+        {rayonsAvecProduits.map((r) => (
+          <button
+            type="button"
+            class="filter-pill shrink-0 snap-start"
+            data-rayon={r.slug}
+            role="tab"
+            aria-selected="false"
+            style={`--pill-accent: ${r.accent ?? "#1C6B35"}`}
+          >
+            {r.nomCourt}
+            <span class="filter-pill-count">{countByRayon[r.slug]}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <section class="section bg-creme">
+    <div class="container-mo">
+      <div
+        id="produits-grid"
+        class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4"
+      >
+        {cards.map((p, i) => (
+          <div
+            class="produit-item"
+            data-rayon={p.rayon}
+            data-search={`${p.nom} ${p.origine ?? ""} ${p.badge ?? ""}`.toLowerCase()}
+          >
+            <ProduitCard produit={p as any} />
+          </div>
+        ))}
+      </div>
+
+      <div
+        id="empty-state"
+        class="hidden mt-12 text-center py-16 bg-white rounded-3xl shadow-card"
+      >
+        <img
+          src="/logos/favicon-marchedemo.png"
+          alt=""
+          aria-hidden="true"
+          class="w-16 h-16 mx-auto opacity-25"
+        />
+        <p class="mt-4 font-soft font-bold text-[22px]">Aucun produit ne correspond</p>
+        <p class="mt-2 text-[14px] text-neutral-500 max-w-sm mx-auto">
+          Essayez une autre recherche, ou réinitialisez le filtre de rayon.
+        </p>
+        <button
+          type="button"
+          id="reset-filters"
+          class="mt-6 btn btn-secondary"
+        >
+          Réinitialiser les filtres
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-sm bg-blanc">
+    <div class="container-mo">
+      <div class="flex items-end justify-between gap-4 mb-8">
+        <div>
+          <span class="eyebrow">Explorer par rayon</span>
+          <h2 class="display-md mt-3 text-balance">Plongez dans un univers.</h2>
+        </div>
+        <a href="/rayons" class="btn btn-secondary shrink-0">Tous les rayons →</a>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+        {RAYONS_LIST.slice(0, 10).map((r) => (
+          <a
+            href={`/rayons/${r.slug}`}
+            class="group relative overflow-hidden rounded-2xl aspect-[4/3] bg-noir-softer"
+          >
+            <img
+              src={r.image}
+              alt={r.imageAlt}
+              loading="lazy"
+              decoding="async"
+              class="w-full h-full object-cover opacity-75 group-hover:opacity-90 group-hover:scale-[1.04] transition-all duration-500"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent"></div>
+            <div class="absolute bottom-3 left-4 right-4">
+              <p class="text-white font-soft font-bold text-[15px] leading-tight">
+                {r.nomCourt}
+              </p>
+              <p class="text-white/70 text-[11px] mt-0.5">
+                {countByRayon[r.slug] ?? 0} produits
+              </p>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <NewsletterInline />
+</Layout>
+
+<style>
+  .filter-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1rem;
+    border-radius: 999px;
+    background: #F6F2EB;
+    color: #3A3A3A;
+    font-family: var(--font-pro);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 180ms ease-out;
+    --pill-accent: #1C6B35;
+  }
+  .filter-pill:hover {
+    background: #EEEAE0;
+    border-color: rgba(0, 0, 0, 0.08);
+  }
+  .filter-pill--active {
+    background: var(--pill-accent, #1C6B35);
+    color: white;
+    border-color: var(--pill-accent, #1C6B35);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  }
+  .filter-pill-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.4rem;
+    padding: 0 0.4rem;
+    height: 1.4rem;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.08);
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .filter-pill--active .filter-pill-count {
+    background: rgba(255, 255, 255, 0.22);
+    color: white;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    height: 4px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 2px;
+  }
+  .produit-item.is-hidden {
+    display: none;
+  }
+</style>
+
+<script>
+  (() => {
+    const pills = Array.from(
+      document.querySelectorAll<HTMLButtonElement>(".filter-pill"),
+    );
+    const items = Array.from(
+      document.querySelectorAll<HTMLElement>(".produit-item"),
+    );
+    const searchInput = document.getElementById("produit-search") as HTMLInputElement | null;
+    const countEl = document.getElementById("count-value");
+    const emptyState = document.getElementById("empty-state");
+    const grid = document.getElementById("produits-grid");
+    const resetBtn = document.getElementById("reset-filters");
+
+    let activeRayon = "all";
+    let searchTerm = "";
+
+    function normalize(s: string) {
+      return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    }
+
+    function applyFilters() {
+      const term = normalize(searchTerm.trim());
+      let visible = 0;
+      for (const item of items) {
+        const rayon = item.dataset.rayon ?? "";
+        const haystack = normalize(item.dataset.search ?? "");
+        const matchRayon = activeRayon === "all" || activeRayon === rayon;
+        const matchSearch = !term || haystack.includes(term);
+        const show = matchRayon && matchSearch;
+        item.classList.toggle("is-hidden", !show);
+        if (show) visible += 1;
+      }
+      if (countEl) countEl.textContent = String(visible);
+      if (emptyState && grid) {
+        emptyState.classList.toggle("hidden", visible > 0);
+        grid.classList.toggle("hidden", visible === 0);
+      }
+    }
+
+    function setActivePill(slug: string) {
+      activeRayon = slug;
+      for (const p of pills) {
+        const match = p.dataset.rayon === slug;
+        p.classList.toggle("filter-pill--active", match);
+        p.setAttribute("aria-selected", String(match));
+      }
+      applyFilters();
+    }
+
+    pills.forEach((p) =>
+      p.addEventListener("click", () => setActivePill(p.dataset.rayon ?? "all")),
+    );
+
+    if (searchInput) {
+      let debounceTimer: ReturnType<typeof setTimeout>;
+      searchInput.addEventListener("input", (e) => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          searchTerm = (e.target as HTMLInputElement).value;
+          applyFilters();
+        }, 120);
+      });
+    }
+
+    if (resetBtn) {
+      resetBtn.addEventListener("click", () => {
+        if (searchInput) searchInput.value = "";
+        searchTerm = "";
+        setActivePill("all");
+      });
+    }
+  })();
+</script>

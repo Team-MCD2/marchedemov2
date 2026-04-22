@@ -72,3 +72,123 @@ export async function getProduitsVedettes(limit = 8): Promise<ProduitVedette[]> 
     return STATIC_FALLBACK.slice(0, limit);
   }
 }
+
+/* --------------------------------------------------------------------
+   Full catalogue helpers — power the public /produits page.
+   -------------------------------------------------------------------- */
+
+export interface ProduitPublic {
+  slug: string;
+  nom: string;
+  description: string;
+  image: string | null;
+  rayon: string;
+  categorie: string | null;
+  sous_categorie: string | null;
+  origine: string | null;
+  badge: string | null;
+  ordre: number;
+}
+
+interface DbRowFull extends DbRow {
+  categorie: string | null;
+  sous_categorie: string | null;
+}
+
+function rowToProduitPublic(r: DbRowFull): ProduitPublic {
+  return {
+    slug: r.slug,
+    nom: r.nom,
+    description: r.description ?? "",
+    image: r.image_url,
+    rayon: r.rayon,
+    categorie: r.categorie,
+    sous_categorie: r.sous_categorie,
+    origine: r.origine,
+    badge: r.badge,
+    ordre: r.ordre,
+  };
+}
+
+/**
+ * Full catalogue — every actif produit, ordered by rayon then ordre.
+ * Used by /produits to build the client-side filterable grid.
+ *
+ * This may return hundreds of rows after seeding. Supabase's default
+ * row cap is 1000 which is more than enough; beyond that we'd paginate.
+ */
+export async function getAllProduits(): Promise<ProduitPublic[]> {
+  try {
+    const { data, error } = await supabase
+      .from("produits")
+      .select(
+        "slug, nom, description, image_url, rayon, categorie, sous_categorie, origine, badge, ordre",
+      )
+      .eq("actif", true)
+      .order("rayon", { ascending: true })
+      .order("ordre", { ascending: true })
+      .order("nom", { ascending: true });
+    if (error) {
+      console.warn("[produits-repo] getAllProduits error :", error.message);
+      return [];
+    }
+    return (data ?? []).map((r) => rowToProduitPublic(r as DbRowFull));
+  } catch (e: any) {
+    console.warn("[produits-repo] Supabase unreachable :", e?.message || e);
+    return [];
+  }
+}
+
+/**
+ * Every produit for one rayon, drill-down filterable.
+ * Used by /produits/[rayon] and the rayon-page deep dive section.
+ */
+export async function getProduitsByRayon(rayon: string): Promise<ProduitPublic[]> {
+  try {
+    const { data, error } = await supabase
+      .from("produits")
+      .select(
+        "slug, nom, description, image_url, rayon, categorie, sous_categorie, origine, badge, ordre",
+      )
+      .eq("actif", true)
+      .eq("rayon", rayon)
+      .order("ordre", { ascending: true })
+      .order("nom", { ascending: true });
+    if (error) {
+      console.warn("[produits-repo] getProduitsByRayon error :", error.message);
+      return [];
+    }
+    return (data ?? []).map((r) => rowToProduitPublic(r as DbRowFull));
+  } catch (e: any) {
+    console.warn("[produits-repo] Supabase unreachable :", e?.message || e);
+    return [];
+  }
+}
+
+/**
+ * Single produit by slug — used by /produits/[slug].
+ * Returns null if not found or inactif.
+ */
+export async function getProduitBySlug(
+  slug: string,
+): Promise<ProduitPublic | null> {
+  try {
+    const { data, error } = await supabase
+      .from("produits")
+      .select(
+        "slug, nom, description, image_url, rayon, categorie, sous_categorie, origine, badge, ordre",
+      )
+      .eq("actif", true)
+      .eq("slug", slug)
+      .limit(1)
+      .maybeSingle();
+    if (error) {
+      console.warn("[produits-repo] getProduitBySlug error :", error.message);
+      return null;
+    }
+    return data ? rowToProduitPublic(data as DbRowFull) : null;
+  } catch (e: any) {
+    console.warn("[produits-repo] Supabase unreachable :", e?.message || e);
+    return null;
+  }
+}

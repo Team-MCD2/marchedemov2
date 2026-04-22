@@ -9,6 +9,62 @@ import { FAQ_HOME } from "@/lib/faqs";
 import { breadcrumbSchema, organizationSchema } from "@/lib/schema";
 
 const bc = breadcrumbSchema([{ name: "Notre enseigne", url: "/notre-enseigne" }]);
+
+/* Timeline chronologique — dates réelles du parcours du groupe. */
+const TIMELINE = [
+  {
+    date: "2022",
+    label: "La naissance du projet",
+    detail:
+      "Samir Ouaddaha, issu d'une famille de commerçants, conçoit le Marché de Mo' comme un hommage à son père Mohammed — et un pari : faire entrer les saveurs du monde dans un supermarché grand public, à prix juste.",
+  },
+  {
+    date: "Août 2024",
+    label: "Ouverture Portet",
+    detail:
+      "Premier magasin — 1 200 m², 6 000 références le jour J, dans les anciens locaux de la Biocoop de Portet-sur-Garonne. Toulouse accueille son plus grand supermarché ethnique.",
+  },
+  {
+    date: "2024",
+    label: "Lauréat Réseau Entreprendre Occitanie",
+    detail:
+      "Distinction entrepreneuriale majeure. Parrainage par le directeur du magasin Auchan Gramont. Le projet est reconnu par l'écosystème économique régional.",
+  },
+  {
+    date: "Avril 2026",
+    label: "Ouverture Toulouse Sud — Cépière",
+    detail:
+      "Deuxième magasin, même surface, même philosophie. Centre commercial L'Hippodrome, sortie 27 de la rocade. L'enseigne passe de 1 à 2 adresses en 20 mois.",
+  },
+  {
+    date: "2026",
+    label: "15 nouveaux emplois",
+    detail:
+      "Plan de recrutement de 15 postes sur les 2 magasins — 12 CDI direct. Formation interne, grille salariale transparente, priorité à la motivation sur le diplôme.",
+  },
+] as const;
+
+/* Les 3 piliers fondateurs du groupe — identité, pas slogan. */
+const PILIERS = [
+  {
+    icon: "🎯",
+    titre: "Qualité",
+    detail:
+      "Boucherie sur carcasse, fruits & légumes livrés chaque matin, épices importées en direct — pas de grossiste intermédiaire. La qualité n'est pas une option, c'est ce qui justifie le prix.",
+  },
+  {
+    icon: "🤝",
+    titre: "Engagement",
+    detail:
+      "Dons réguliers aux banques alimentaires de Haute-Garonne, soutien aux associations sportives locales, partenariats avec les structures pour personnes âgées. On rend à la ville ce qu'elle nous donne.",
+  },
+  {
+    icon: "🌱",
+    titre: "Inclusion",
+    detail:
+      "90 % de notre équipe n'avait pas d'emploi avant. 24 salariés entre 19 et 56 ans. Pas de diplôme exigé, pas de CV formel demandé — seule la motivation compte.",
+  },
+] as const;
 ---
 
 <Layout
@@ -112,6 +168,98 @@ const bc = breadcrumbSchema([{ name: "Notre enseigne", url: "/notre-enseigne" }]
     </div>
   </section>
 
+  <!-- TIMELINE -->
+  <section class="section bg-creme">
+    <div class="container-mo">
+      <div class="max-w-2xl">
+        <span class="eyebrow">Chronologie</span>
+        <h2 class="display-md mt-4 text-balance">
+          20 mois. <span class="text-vert">2 magasins.</span> Une trajectoire.
+        </h2>
+        <p class="mt-5 text-[15.5px] text-neutral-600 leading-relaxed">
+          De l'idée à la deuxième ouverture, les dates qui ont construit le Groupe Marché de Mo'.
+        </p>
+      </div>
+
+      <ol class="mt-14 relative pl-6 md:pl-0 md:max-w-3xl md:mx-auto">
+        <span class="absolute left-2 md:left-1/2 md:-translate-x-1/2 top-2 bottom-2 w-[2px] bg-vert/25" aria-hidden="true"></span>
+        {TIMELINE.map((t, i) => (
+          <li
+            class:list={[
+              "relative mb-10 last:mb-0 md:grid md:grid-cols-2 md:gap-10 reveal",
+              i % 2 === 0 ? "reveal-left" : "reveal-right",
+            ]}
+            style={`--reveal-delay: ${i * 80}ms`}
+          >
+            <span
+              class="absolute left-2 md:left-1/2 md:-translate-x-1/2 top-2 w-3 h-3 rounded-full bg-vert ring-4 ring-creme shadow"
+              aria-hidden="true"
+            ></span>
+
+            {i % 2 === 0 ? (
+              <>
+                <div class="md:text-right md:pr-10 pl-6 md:pl-0">
+                  <p class="text-[13px] uppercase tracking-wider text-vert font-bold">{t.date}</p>
+                  <h3 class="font-soft font-bold text-[22px] mt-1">{t.label}</h3>
+                </div>
+                <div class="mt-2 md:mt-0 md:pl-10 pl-6 md:border-l md:border-vert/20">
+                  <p class="text-[15px] text-neutral-700 leading-relaxed">{t.detail}</p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div class="md:pr-10 md:text-right md:order-1 hidden md:block">
+                  <p class="text-[15px] text-neutral-700 leading-relaxed">{t.detail}</p>
+                </div>
+                <div class="md:pl-10 md:order-2 pl-6">
+                  <p class="text-[13px] uppercase tracking-wider text-vert font-bold">{t.date}</p>
+                  <h3 class="font-soft font-bold text-[22px] mt-1">{t.label}</h3>
+                  <p class="text-[15px] text-neutral-700 leading-relaxed mt-2 md:hidden">{t.detail}</p>
+                </div>
+              </>
+            )}
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <!-- PILIERS — 3 valeurs fondatrices -->
+  <section class="section bg-blanc">
+    <div class="container-mo">
+      <div class="max-w-2xl">
+        <span class="eyebrow">Nos 3 piliers</span>
+        <h2 class="display-md mt-4 text-balance">
+          Notre ADN ne change pas. <span class="text-vert">Ni hier, ni demain.</span>
+        </h2>
+      </div>
+
+      <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+        {PILIERS.map((p, i) => (
+          <article
+            class="bg-creme rounded-3xl p-7 md:p-8 reveal transition-all hover:-translate-y-1 hover:shadow-card"
+            style={`--reveal-delay: ${i * 90}ms`}
+          >
+            <span class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-white text-[26px]" aria-hidden="true">
+              {p.icon}
+            </span>
+            <h3 class="font-soft font-bold text-[24px] mt-5">{p.titre}</h3>
+            <p class="mt-3 text-[14.5px] text-neutral-700 leading-relaxed">{p.detail}</p>
+          </article>
+        ))}
+      </div>
+
+      <div class="mt-10 flex flex-wrap items-center gap-3">
+        <a href="/nos-engagements" class="btn btn-secondary">
+          Voir nos engagements en détail
+        </a>
+        <a href="/recrutement" class="text-[14px] font-bold text-vert hover:underline underline-offset-4">
+          Nous rejoindre →
+        </a>
+      </div>
+    </div>
+  </section>
+
   <!-- CHIFFRES ENGAGEMENTS -->
   <section class="section bg-noir-section">
     <div class="container-mo">
@@ -125,6 +273,43 @@ const bc = breadcrumbSchema([{ name: "Notre enseigne", url: "/notre-enseigne" }]
         <div><div class="stat-number !text-white">90<span class="text-vert-light text-[0.7em]">%</span></div><div class="mt-2 font-bold text-[14px] uppercase tracking-wide">sans emploi avant</div></div>
         <div><div class="stat-number !text-white">120<span class="text-vert-light text-[0.7em]">+</span></div><div class="mt-2 font-bold text-[14px] uppercase tracking-wide">fruits exotiques</div></div>
         <div><div class="stat-number !text-white">19 – 56</div><div class="mt-2 font-bold text-[14px] uppercase tracking-wide">ans, notre équipe</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REJOINDRE L'ÉQUIPE -->
+  <section class="section-sm bg-creme-warm">
+    <div class="container-mo">
+      <div class="grid lg:grid-cols-12 gap-8 items-center">
+        <div class="lg:col-span-8">
+          <span class="eyebrow">Rejoindre l'équipe</span>
+          <h2 class="display-md mt-4 text-balance">
+            15 postes ouverts en 2026 <span class="text-vert">— pas de CV requis.</span>
+          </h2>
+          <p class="mt-5 text-[15.5px] text-neutral-700 leading-relaxed max-w-2xl">
+            Boucher·e halal, conseiller·e rayon, chauffeur-livreur, responsable de rayon.
+            12 postes en <strong>CDI direct</strong>, formation interne accompagnée,
+            grille salariale transparente, tickets restaurant et mutuelle prise en
+            charge à 80 %.
+          </p>
+          <div class="mt-7 flex flex-wrap gap-3">
+            <a href="/recrutement" class="btn btn-primary">Voir les offres ouvertes</a>
+            <a href="/actualites/recrutement-2026-15-postes" class="btn btn-secondary">
+              Lire les détails des 15 postes
+            </a>
+          </div>
+        </div>
+        <div class="lg:col-span-4 hidden lg:block">
+          <div class="aspect-square rounded-[32px] overflow-hidden shadow-card bg-noir-softer">
+            <img
+              src="/images/rayons/saveur-mediterranee/ouvrier-d-x27-epicerie.jpg"
+              alt="Employé d'épicerie Marché de Mo'"
+              class="w-full h-full object-cover"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+        </div>
       </div>
     </div>
   </section>

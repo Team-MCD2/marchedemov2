@@ -93,12 +93,18 @@ const isActive = (href: string) =>
               </a>
             ))}
           </div>
-          <div class="px-4 py-3 mt-2 bg-noir rounded-2xl flex items-center justify-between gap-3">
-            <span class="text-white text-[13px] font-pro">
-              <strong class="font-bold">10 000+</strong> références · 10 rayons
-            </span>
-            <a href="/rayons" class="text-white font-bold text-[13px] hover:text-vert-light transition">
-              Voir tout →
+          <div class="mt-2 grid grid-cols-2 gap-2">
+            <a href="/rayons" class="flex items-center justify-between px-4 py-3 bg-noir text-white rounded-2xl hover:bg-noir/90 transition group/cta">
+              <span class="text-[13px] font-pro">
+                Tous les <strong class="font-bold">rayons</strong>
+              </span>
+              <span class="text-[13px] font-bold text-white group-hover/cta:translate-x-0.5 transition-transform">→</span>
+            </a>
+            <a href="/produits" class="flex items-center justify-between px-4 py-3 bg-vert text-white rounded-2xl hover:bg-vert/90 transition group/cta">
+              <span class="text-[13px] font-pro">
+                Tous les <strong class="font-bold">produits</strong>
+              </span>
+              <span class="text-[13px] font-bold text-white group-hover/cta:translate-x-0.5 transition-transform">→</span>
             </a>
           </div>
         </div>
@@ -184,6 +190,13 @@ const isActive = (href: string) =>
           Nos rayons <span class="text-vert">+</span>
         </summary>
         <div class="pl-3 pb-2 space-y-1">
+          <a href="/rayons" class="block py-1.5 text-[14px] font-bold text-neutral-900">
+            Tous les rayons →
+          </a>
+          <a href="/produits" class="block py-1.5 text-[14px] font-bold text-vert">
+            Tous les produits →
+          </a>
+          <span class="block h-px bg-black/5 my-1"></span>
           {RAYONS_LIST.map((r) => (
             <a href={`/rayons/${r.slug}`} class="block py-1.5 text-[14px] font-normal text-neutral-700">
               {r.nom}
