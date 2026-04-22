@@ -1,0 +1,178 @@
+---
+/**
+ * /rayons/produits-laitiers — stub SEO
+ *
+ * Page stub légère décrite dans plan.md § VII. Mo' a un rayon produits
+ * laitiers & œufs mais pas de catalogue e-commerce. Cette page capture
+ * le trafic SEO "fromage ethnique Toulouse", "labneh Toulouse", "feta
+ * authentique" et redirige vers les magasins.
+ */
+import Layout from "@layouts/Layout.astro";
+import Breadcrumb from "@components/Breadcrumb.astro";
+import FAQAccordion from "@components/FAQAccordion.astro";
+import NewsletterInline from "@components/NewsletterInline.astro";
+import { SITE } from "@/lib/site";
+import { breadcrumbSchema } from "@/lib/schema";
+
+const bc = breadcrumbSchema([
+  { name: "Rayons", url: "/rayons" },
+  { name: "Produits laitiers & œufs", url: "/rayons/produits-laitiers" },
+]);
+
+const produits = [
+  { nom: "Feta grecque AOP", desc: "Bloc entier ou émietté, salée-acide parfaite pour salades." },
+  { nom: "Labneh libanais", desc: "Yaourt égoutté crémeux, en pot ou en boule à l'huile." },
+  { nom: "Fromage turc beyaz peynir", desc: "Fromage frais saumuré, pilier du petit-déjeuner turc." },
+  { nom: "Halloumi chypriote", desc: "Fromage à griller halal, ne fond pas à la poêle." },
+  { nom: "Paneer indien frais", desc: "Fromage pressé pour palak paneer, matar paneer." },
+  { nom: "Yaourt grec entier", desc: "Épais, naturel, sans sucre ajouté — pour tzatziki et desserts." },
+  { nom: "Œufs fermiers plein air", desc: "Code 0 et 1, pondus en France, toujours frais." },
+  { nom: "Laits et beurres du monde", desc: "Ghee indien, smen marocain, beurre de lait de chamelle." },
+];
+
+const faqItems = [
+  {
+    q: "Votre feta est-elle authentique AOP ?",
+    r: "Oui. Nous référençons la feta grecque AOP (Appellation d'Origine Protégée), fabriquée en Grèce à partir de lait de brebis et chèvre. C'est la seule qui peut légalement porter le nom 'feta' en Europe. Prix affiché en rayon.",
+  },
+  {
+    q: "Proposez-vous des yaourts et laits d'origines diverses ?",
+    r: "Oui : yaourts grecs entiers, yaourts libanais laban, ayran turc, lassi indien, ghee indien, smen marocain (beurre clarifié), et occasionnellement lait de chamelle en saison. Tous les fromages sont conformes aux normes européennes.",
+  },
+  {
+    q: "Avez-vous des fromages halal ?",
+    r: "La plupart des fromages sont naturellement compatibles halal (présure végétale). Nous précisons en rayon lorsqu'un fromage utilise de la présure animale non halal (rare sur les fromages ethniques). En cas de doute, demandez à notre équipe.",
+  },
+  {
+    q: "Proposez-vous des œufs bio ou fermiers ?",
+    r: "Oui, nous référençons uniquement des œufs de catégorie code 0 (bio plein air) et code 1 (plein air). Jamais d'œufs de poules en cage. Marquage français DDM + coquilles toujours fraîches.",
+  },
+];
+---
+
+<Layout
+  title={`Produits laitiers & œufs — Fromages du monde · ${SITE.name}`}
+  description="Feta AOP, labneh libanais, halloumi chypriote, paneer indien, yaourts grecs, œufs fermiers. Le rayon produits laitiers du Marché de Mo' à Toulouse."
+  faqItems={faqItems}
+  schema={bc}
+>
+  <Breadcrumb items={[{ name: "Rayons", href: "/rayons" }, { name: "Produits laitiers & œufs" }]} />
+
+  <!-- Hero -->
+  <section class="relative overflow-hidden bg-gradient-to-br from-[#FFFCF5] via-[#F2EAD7] to-[#E3D4B0]">
+    <div class="container-mo py-14 md:py-20 relative z-10">
+      <span class="eyebrow text-[#A68332]">Rayon produits laitiers & œufs</span>
+      <h1 class="display-xl mt-4 text-balance max-w-3xl text-[#3E3419]" data-split-reveal>
+        Les <span class="text-[#A68332]">fromages du monde,</span><br/>
+        les œufs fermiers, le ghee et le labneh.
+      </h1>
+      <p class="mt-6 max-w-2xl text-[17px] md:text-[18px] leading-relaxed text-[#5A4D28]">
+        Feta grecque AOP, labneh libanais, halloumi à griller, paneer indien,
+        fromage turc beyaz peynir, yaourts grecs épais. Plus les œufs fermiers
+        plein air et les beurres clarifiés du monde entier.
+      </p>
+
+      <div class="mt-8 flex flex-wrap gap-2">
+        <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#A68332] text-white text-[13px] font-bold">
+          <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+          Fromages authentiques
+        </span>
+        <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/80 text-[#3E3419] text-[13px] font-bold">
+          Œufs code 0 & 1 uniquement
+        </span>
+        <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/80 text-[#3E3419] text-[13px] font-bold">
+          Chaîne du froid stricte
+        </span>
+      </div>
+
+      <div class="mt-10 flex flex-wrap gap-3">
+        <a href="/magasins" class="btn btn-primary btn-sheen">
+          Voir les magasins
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M5 12h14M13 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+        <a href="/rayons" class="btn btn-secondary">
+          Explorer les autres rayons
+        </a>
+      </div>
+    </div>
+
+    <!-- Motif discret -->
+    <div class="absolute top-6 right-6 w-40 h-40 md:w-56 md:h-56 opacity-[0.08] pointer-events-none">
+      <svg viewBox="0 0 100 100" class="w-full h-full text-[#3E3419]" fill="currentColor">
+        <circle cx="30" cy="35" r="8"/>
+        <circle cx="55" cy="25" r="6"/>
+        <circle cx="70" cy="50" r="9"/>
+        <circle cx="40" cy="70" r="7"/>
+        <circle cx="25" cy="60" r="5"/>
+        <circle cx="65" cy="75" r="8"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- Produits -->
+  <section class="section bg-blanc">
+    <div class="container-mo">
+      <div class="max-w-2xl mb-10">
+        <span class="eyebrow">Sélection représentative</span>
+        <h2 class="display-md mt-4 text-balance">
+          8 références <span class="text-vert">authentiques</span>, sur un catalogue de plus de 80.
+        </h2>
+        <p class="mt-3 text-[15px] text-neutral-600 leading-relaxed">
+          Prix affichés en rayon, week-end compris. Chaîne du froid respectée
+          jusqu'à votre mise au panier.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+        {produits.map((p, i) => (
+          <div
+            class="group p-5 rounded-2xl bg-creme ring-1 ring-black/5 hover:ring-black/10 hover:-translate-y-0.5 transition-all reveal"
+            style={`--reveal-delay: ${(i % 4) * 60}ms`}
+          >
+            <div class="w-10 h-10 rounded-full bg-[#A68332]/10 flex items-center justify-center mb-3 group-hover:bg-[#A68332] transition-colors">
+              <svg class="w-5 h-5 text-[#A68332] group-hover:text-white transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M8 2v4M16 2v4M4 10h16M5 6h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h3 class="font-soft font-bold text-[17px] leading-tight text-noir">
+              {p.nom}
+            </h3>
+            <p class="mt-2 text-[13.5px] text-neutral-600 leading-relaxed">
+              {p.desc}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA recettes qui utilisent les laitiers -->
+  <section class="section bg-creme">
+    <div class="container-mo">
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 p-8 md:p-10 bg-white rounded-3xl shadow-card">
+        <div class="max-w-xl">
+          <span class="eyebrow">Idée recette</span>
+          <h3 class="font-soft font-bold text-[24px] md:text-[28px] mt-3 text-balance leading-tight">
+            Yaourt grec au bibimbap, labneh dans le mafé, paneer au curry :
+            <span class="text-vert">explorez nos recettes.</span>
+          </h3>
+          <p class="mt-3 text-[14.5px] text-neutral-600">
+            Nos 9 recettes du monde indiquent exactement quels produits laitiers
+            utiliser et dans quel rayon les trouver.
+          </p>
+        </div>
+        <a href="/recettes" class="btn btn-primary btn-sheen shrink-0">
+          Toutes les recettes
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M5 12h14M13 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <NewsletterInline />
+  <FAQAccordion items={faqItems} title="FAQ — Produits laitiers & œufs" />
+</Layout>

@@ -43,6 +43,84 @@ const bc = breadcrumbSchema([{ name: "Nos rayons", url: "/rayons" }]);
     </div>
   </section>
 
+  <!-- Rayons complémentaires — stubs SEO (boulangerie, produits laitiers).
+       Pas de catalogue e-commerce (Mo' est un vitrine), mais pages dédiées
+       pour capter le trafic "boulangerie halal Toulouse", "fromage ethnique
+       Toulouse". Format plus sobre que les 10 rayons principaux. -->
+  <section class="section bg-creme">
+    <div class="container-mo">
+      <div class="max-w-2xl mb-10">
+        <span class="eyebrow">En magasin également</span>
+        <h2 class="display-md mt-4 text-balance">
+          Et aussi : <span class="text-vert">les rayons du quotidien</span> qu'on enrichit à notre façon.
+        </h2>
+        <p class="mt-3 text-[15px] text-neutral-600 leading-relaxed">
+          Pour compléter les 10 rayons signature, deux rayons complémentaires où
+          la touche Marché de Mo' fait la différence : pains du monde, fromages
+          ethniques, œufs fermiers.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+        <a
+          href="/rayons/boulangerie"
+          class="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#F5E9D4] to-[#E6C98A] p-8 md:p-10 ring-1 ring-black/5 hover:-translate-y-1 hover:shadow-card transition-all"
+        >
+          <span class="eyebrow text-[#7D4500]">Rayon complémentaire</span>
+          <h3 class="font-soft font-bold text-[28px] md:text-[32px] leading-tight text-[#3E2A12] mt-3">
+            Boulangerie
+          </h3>
+          <p class="mt-3 text-[14.5px] text-[#5A4319] leading-relaxed max-w-sm">
+            Pains pita, galettes libanaises, naan, lavash, pide turc, pâtisseries
+            orientales. Livrés frais chaque matin.
+          </p>
+          <span class="mt-6 inline-flex items-center gap-1.5 text-[14px] font-bold text-[#7D4500] link-draw">
+            Découvrir le rayon
+            <svg class="w-4 h-4 group-hover:translate-x-0.5 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M5 12h14M13 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <!-- Motif décoratif -->
+          <div class="absolute -right-6 -bottom-6 w-32 h-32 opacity-10 pointer-events-none">
+            <svg viewBox="0 0 100 100" fill="#3E2A12">
+              <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="2"/>
+              <circle cx="50" cy="50" r="25" fill="none" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </div>
+        </a>
+
+        <a
+          href="/rayons/produits-laitiers"
+          class="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#FFFCF5] to-[#E3D4B0] p-8 md:p-10 ring-1 ring-black/5 hover:-translate-y-1 hover:shadow-card transition-all"
+        >
+          <span class="eyebrow text-[#A68332]">Rayon complémentaire</span>
+          <h3 class="font-soft font-bold text-[28px] md:text-[32px] leading-tight text-[#3E3419] mt-3">
+            Produits laitiers & œufs
+          </h3>
+          <p class="mt-3 text-[14.5px] text-[#5A4D28] leading-relaxed max-w-sm">
+            Feta AOP, labneh, halloumi, paneer indien, yaourts grecs, œufs
+            fermiers code 0 et 1.
+          </p>
+          <span class="mt-6 inline-flex items-center gap-1.5 text-[14px] font-bold text-[#A68332] link-draw">
+            Découvrir le rayon
+            <svg class="w-4 h-4 group-hover:translate-x-0.5 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M5 12h14M13 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <!-- Motif décoratif -->
+          <div class="absolute -right-6 -bottom-6 w-32 h-32 opacity-10 pointer-events-none">
+            <svg viewBox="0 0 100 100" fill="#3E3419">
+              <circle cx="30" cy="35" r="8"/>
+              <circle cx="55" cy="25" r="6"/>
+              <circle cx="70" cy="50" r="9"/>
+              <circle cx="40" cy="70" r="7"/>
+            </svg>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
   <NewsletterInline />
   <FAQAccordion items={FAQ_RAYONS_GENERAL} />
 </Layout>

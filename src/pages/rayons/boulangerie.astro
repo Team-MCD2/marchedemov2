@@ -1,0 +1,179 @@
+---
+/**
+ * /rayons/boulangerie — stub SEO
+ *
+ * Page stub légère décrite dans plan.md § VII. Pas de catalogue produits
+ * car Mo' ne fait pas d'e-commerce. Hero + description + featured
+ * products lexicaux + CTA magasin + FAQ + newsletter. Valeur SEO pour
+ * "boulangerie halal Toulouse", "pains du monde Toulouse".
+ *
+ * Volontairement placé comme fichier statique pour bypasser la route
+ * dynamique /rayons/[...path].astro qui est réservée aux 10 rayons
+ * pleinement catalogués (avec taxonomie + produits).
+ */
+import Layout from "@layouts/Layout.astro";
+import Breadcrumb from "@components/Breadcrumb.astro";
+import FAQAccordion from "@components/FAQAccordion.astro";
+import NewsletterInline from "@components/NewsletterInline.astro";
+import { SITE } from "@/lib/site";
+import { breadcrumbSchema } from "@/lib/schema";
+
+const bc = breadcrumbSchema([
+  { name: "Rayons", url: "/rayons" },
+  { name: "Boulangerie", url: "/rayons/boulangerie" },
+]);
+
+const produits = [
+  { nom: "Pains pita chauds", desc: "Levain naturel, cuits plusieurs fois par jour." },
+  { nom: "Galettes libanaises", desc: "Man'ouché zaatar, fatayers épinards, kaak sésame." },
+  { nom: "Naan indien", desc: "Nature, à l'ail, au beurre clarifié." },
+  { nom: "Lavash arménien", desc: "Pain plat traditionnel pour wraps et kebabs." },
+  { nom: "Pain turc pide", desc: "Moelleux, parsemé de sésame et nigelle." },
+  { nom: "Chapati et paratha", desc: "Pour accompagner dahl, currys et tajines." },
+  { nom: "Pâtisseries orientales", desc: "Baklava, makrout, cornes de gazelle, kanafeh." },
+  { nom: "Semoule fine et moyenne", desc: "Pour couscous, tajines, msemen maison." },
+];
+
+const faqItems = [
+  {
+    q: "Vos pains sont-ils préparés en boutique ?",
+    r: "Nos pains pita, galettes et naan sont livrés frais quotidiennement par des boulangeries artisanales partenaires (halal certifiées), et réchauffés au four en magasin pour garantir moelleux et parfum. Certains pains spéciaux (lavash, pide) sont en sachet mais avec DLC courte.",
+  },
+  {
+    q: "Proposez-vous des pâtisseries orientales fraîches ?",
+    r: "Oui, notre comptoir pâtisseries orientales propose baklava aux pistaches d'Antep, makrout aux dattes, cornes de gazelle, kanafeh au fromage, ghriba, maamoul. Livraison fraîche plusieurs fois par semaine, mises en vitrine individuellement.",
+  },
+  {
+    q: "Où est situé le rayon boulangerie en magasin ?",
+    r: "À l'entrée de nos deux magasins (Portet et Toulouse Sud Cépière), juste après le rayon fruits et légumes. Vous ne pouvez pas le rater : les pains sont chauds dès 8h du matin.",
+  },
+  {
+    q: "Vendez-vous du pain sans gluten ?",
+    r: "Pas encore dans notre gamme régulière, mais nous référençons à la demande pour les clients ayant une intolérance. Parlez-en à votre magasin habituel.",
+  },
+];
+---
+
+<Layout
+  title={`Boulangerie — Pains du monde halal · ${SITE.name}`}
+  description="Pains pita, galettes libanaises, naan indien, lavash, pide turc, pâtisseries orientales. Le rayon boulangerie du Marché de Mo' à Portet et Toulouse Sud."
+  faqItems={faqItems}
+  schema={bc}
+>
+  <Breadcrumb items={[{ name: "Rayons", href: "/rayons" }, { name: "Boulangerie" }]} />
+
+  <!-- Hero -->
+  <section class="relative overflow-hidden bg-gradient-to-br from-[#F5E9D4] via-[#F0DCAA] to-[#E6C98A]">
+    <div class="container-mo py-14 md:py-20 relative z-10">
+      <span class="eyebrow text-[#7D4500]">Rayon boulangerie</span>
+      <h1 class="display-xl mt-4 text-balance max-w-3xl text-[#3E2A12]" data-split-reveal>
+        Les <span class="text-[#7D4500]">pains du monde</span>,<br/>
+        sortis du four chaque matin.
+      </h1>
+      <p class="mt-6 max-w-2xl text-[17px] md:text-[18px] leading-relaxed text-[#4A3518]">
+        Pita, galettes, naan, lavash, pide. Plus les pâtisseries orientales :
+        baklava aux pistaches d'Antep, makrout, cornes de gazelle, kanafeh.
+        Livrés frais chaque jour par nos boulangers partenaires halal.
+      </p>
+
+      <div class="mt-8 flex flex-wrap gap-2">
+        <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#7D4500] text-white text-[13px] font-bold">
+          <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+          Halal certifié
+        </span>
+        <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/80 text-[#3E2A12] text-[13px] font-bold">
+          Pains chauds dès 8h
+        </span>
+        <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/80 text-[#3E2A12] text-[13px] font-bold">
+          7j/7 — hors fériés
+        </span>
+      </div>
+
+      <div class="mt-10 flex flex-wrap gap-3">
+        <a href="/magasins" class="btn btn-primary btn-sheen">
+          Voir les magasins
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M5 12h14M13 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+        <a href="/rayons" class="btn btn-secondary">
+          Explorer les autres rayons
+        </a>
+      </div>
+    </div>
+
+    <!-- Motif visuel discret -->
+    <div class="absolute top-10 right-10 w-40 h-40 md:w-56 md:h-56 opacity-[0.08] pointer-events-none">
+      <svg viewBox="0 0 100 100" class="w-full h-full text-[#3E2A12]" fill="currentColor">
+        <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <circle cx="50" cy="50" r="30" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M50 5 L50 95 M5 50 L95 50 M15 15 L85 85 M85 15 L15 85" stroke="currentColor" stroke-width="1.5" fill="none"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- Produits — grille lexicale, pas de prix -->
+  <section class="section bg-blanc">
+    <div class="container-mo">
+      <div class="max-w-2xl mb-10">
+        <span class="eyebrow">Ce que vous trouverez en rayon</span>
+        <h2 class="display-md mt-4 text-balance">
+          8 spécialités boulangères, livrées <span class="text-vert">quotidiennement.</span>
+        </h2>
+        <p class="mt-3 text-[15px] text-neutral-600 leading-relaxed">
+          Pas de prix ici — les tarifs sont affichés en rayon, week-end compris.
+          Venez voir, sentir, toucher.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+        {produits.map((p, i) => (
+          <div
+            class="group p-5 rounded-2xl bg-creme ring-1 ring-black/5 hover:ring-black/10 hover:-translate-y-0.5 transition-all reveal"
+            style={`--reveal-delay: ${(i % 4) * 60}ms`}
+          >
+            <div class="w-10 h-10 rounded-full bg-[#7D4500]/10 flex items-center justify-center mb-3 group-hover:bg-[#7D4500] group-hover:text-white transition-colors">
+              <svg class="w-5 h-5 text-[#7D4500] group-hover:text-white transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke-linecap="round"/>
+                <circle cx="12" cy="12" r="4"/>
+              </svg>
+            </div>
+            <h3 class="font-soft font-bold text-[17px] leading-tight text-noir">
+              {p.nom}
+            </h3>
+            <p class="mt-2 text-[13.5px] text-neutral-600 leading-relaxed">
+              {p.desc}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Lien recettes -->
+  <section class="section bg-creme">
+    <div class="container-mo">
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 p-8 md:p-10 bg-white rounded-3xl shadow-card">
+        <div class="max-w-xl">
+          <span class="eyebrow">Idée recette</span>
+          <h3 class="font-soft font-bold text-[24px] md:text-[28px] mt-3 text-balance leading-tight">
+            Nos pains accompagnent parfaitement <span class="text-vert">tajines, mafé et couscous.</span>
+          </h3>
+          <p class="mt-3 text-[14.5px] text-neutral-600">
+            Explorez nos recettes du monde entier : chaque plat indique quels pains
+            d'accompagnement retirer en rayon boulangerie.
+          </p>
+        </div>
+        <a href="/recettes" class="btn btn-primary btn-sheen shrink-0">
+          Toutes les recettes
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M5 12h14M13 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <NewsletterInline />
+  <FAQAccordion items={faqItems} title="FAQ — Boulangerie" />
+</Layout>

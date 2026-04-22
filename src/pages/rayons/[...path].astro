@@ -275,6 +275,46 @@ const pageDesc = (() => {
                 <span class="pill rayon-pill">{f}</span>
               ))}
             </div>
+
+            {/* Encart saisonnalité — spécifique au rayon fruits-legumes.
+                Le lien vers mangerbouger.fr (ministère de la Santé) renforce
+                la crédibilité SEO de Mo' sur le critère "manger de saison" et
+                signale un positionnement fraîcheur aux visiteurs. */}
+            {rayonSlug === "fruits-legumes" && (
+              <div class="mt-8 max-w-xl rayon-saison-encart">
+                <div class="flex items-start gap-4 p-5 rounded-2xl bg-white/90 ring-1 ring-black/10 backdrop-blur-sm shadow-sm">
+                  <span
+                    aria-hidden="true"
+                    class="shrink-0 w-10 h-10 rounded-full bg-vert/10 text-vert flex items-center justify-center"
+                  >
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 2a10 10 0 0 0-7.35 16.77c.18.14.35.29.5.45M12 2a10 10 0 0 1 7.35 16.77 10.02 10.02 0 0 1-.5.45M12 2v20" stroke-linecap="round"/>
+                      <path d="M2 12h20" stroke-linecap="round"/>
+                    </svg>
+                  </span>
+                  <div class="min-w-0">
+                    <p class="font-soft font-bold text-[15px] md:text-[16px] text-noir leading-snug">
+                      Envie de manger de saison ?
+                    </p>
+                    <p class="mt-1 text-[13.5px] text-neutral-700 leading-relaxed">
+                      Consultez le calendrier officiel des fruits et légumes du moment publié
+                      par <strong>mangerbouger.fr</strong>, service du Ministère de la Santé.
+                    </p>
+                    <a
+                      href="https://www.mangerbouger.fr/l-essentiel/les-recommandations-sur-l-alimentation/fruits-et-legumes-de-saison"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="mt-2.5 inline-flex items-center gap-1.5 text-[13px] font-bold text-vert hover:text-vert-dark link-draw"
+                    >
+                      Voir le calendrier de saison
+                      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M7 17l10-10M7 7h10v10" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            )}
           </>
         )}
         {level >= 2 && (
