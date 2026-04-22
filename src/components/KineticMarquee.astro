@@ -1,0 +1,148 @@
+---
+/**
+ * KineticMarquee — typographie display massive qui defile horizontalement.
+ *
+ * Different du TickerBanner (petit bandeau en haut de header) : ici c'est
+ * un bloc section avec texte ENORME (clamp 56px-180px) en scroll infini.
+ * Signature "studio" utilisee par Pentagram, Off-White, Apex Magazine.
+ *
+ * Usage :
+ *   <KineticMarquee
+ *     items={["Fruits exotiques", "Epices du monde", "Boucherie halal"]}
+ *     variant="vert" / "noir" / "creme"
+ *     speed={60}  // seconds per full cycle
+ *     direction="left" / "right"
+ *   />
+ *
+ * Techniques utilisees :
+ *   - Duplication du contenu × 2 pour un loop seamless (0% → -50%)
+ *   - animation-play-state: paused au hover
+ *   - @media prefers-reduced-motion : figé
+ *   - will-change: transform pour GPU acceleration
+ *   - separateur puce typographique entre items (•)
+ */
+
+interface Props {
+  items: string[];
+  variant?: "vert" | "noir" | "creme" | "blanc";
+  /** Secondes par cycle complet. Default 50. */
+  speed?: number;
+  direction?: "left" | "right";
+  /** Accent color pour la puce (par defaut : contraste automatique). */
+  accentColor?: string;
+  /** Classe additionnelle pour le wrapper <section>. */
+  class?: string;
+}
+
+const {
+  items,
+  variant = "noir",
+  speed = 50,
+  direction = "left",
+  accentColor,
+  class: extraClass = "",
+} = Astro.props as Props;
+
+/* Couleurs par variant : bg + texte + accent puce */
+const variants: Record<NonNullable<Props["variant"]>, { bg: string; text: string; accent: string }> = {
+  vert: { bg: "bg-vert", text: "text-white", accent: "#F6F2EB" },
+  noir: { bg: "bg-noir", text: "text-white", accent: "#1C6B35" },
+  creme: { bg: "bg-creme", text: "text-noir", accent: "#1C6B35" },
+  blanc: { bg: "bg-blanc", text: "text-noir", accent: "#1C6B35" },
+};
+const v = variants[variant];
+const puceColor = accentColor ?? v.accent;
+
+/* Double pour loop seamless */
+const doubled = [...items, ...items];
+---
+
+<section
+  class:list={[
+    "kinetic-marquee overflow-hidden relative py-6 md:py-8",
+    v.bg,
+    v.text,
+    extraClass,
+  ]}
+  style={`--marquee-duration: ${speed}s; --marquee-direction: ${direction === "right" ? "reverse" : "normal"}`}
+  aria-hidden="true"
+>
+  <div class="kinetic-marquee__track flex gap-8 md:gap-14 whitespace-nowrap items-center will-change-transform">
+    {doubled.map((item) => (
+      <span class="inline-flex items-center gap-8 md:gap-14 shrink-0">
+        <span
+          class="kinetic-marquee__puce"
+          style={`background: ${puceColor}`}
+          aria-hidden="true"
+        ></span>
+        <span class="kinetic-marquee__text font-soft font-bold leading-none tracking-tight">
+          {item}
+        </span>
+      </span>
+    ))}
+  </div>
+</section>
+
+<style>
+  .kinetic-marquee {
+    /* Masque doux gauche/droite : fade-out via mask-image */
+    mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      #000 8%,
+      #000 92%,
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      #000 8%,
+      #000 92%,
+      transparent 100%
+    );
+  }
+
+  .kinetic-marquee__track {
+    animation: kinetic-marquee-scroll var(--marquee-duration, 50s) linear infinite;
+    animation-direction: var(--marquee-direction, normal);
+  }
+
+  .kinetic-marquee:hover .kinetic-marquee__track {
+    animation-play-state: paused;
+  }
+
+  .kinetic-marquee__text {
+    /* Fluid massive display : 40px mobile → 120px desktop */
+    font-size: clamp(40px, 8vw, 120px);
+    letter-spacing: -0.02em;
+  }
+
+  .kinetic-marquee__puce {
+    width: 14px;
+    height: 14px;
+    border-radius: 999px;
+    flex-shrink: 0;
+  }
+
+  @media (min-width: 768px) {
+    .kinetic-marquee__puce {
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  @keyframes kinetic-marquee-scroll {
+    from { transform: translate3d(0, 0, 0); }
+    to { transform: translate3d(-50%, 0, 0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .kinetic-marquee__track {
+      animation: none;
+      transform: none;
+      /* Show first half only, no scrolling */
+      overflow: hidden;
+      max-width: 100%;
+    }
+  }
+</style>

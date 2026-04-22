@@ -11,6 +11,7 @@ import TikTokEmbed from "@components/islands/TikTokEmbed.jsx";
 import PromoCarousel from "@components/PromoCarousel.astro";
 import PromoHero, { type ExtraSlide } from "@components/PromoHero.astro";
 import ActuCarousel from "@components/ActuCarousel.astro";
+import KineticMarquee from "@components/KineticMarquee.astro";
 import { getActus } from "@/lib/actus";
 import { getCollection } from "astro:content";
 import { RAYONS_LIST, ENGAGEMENTS, MAGASINS, SITE } from "@/lib/site";
@@ -114,7 +115,7 @@ const schemas = [
           <strong>2 magasins</strong> à Toulouse, ouverts <strong>7j/7</strong>.
         </p>
         <div class="mt-10 flex flex-col sm:flex-row gap-3">
-          <a href="/rayons" class="btn btn-primary">
+          <a href="/rayons" class="btn btn-primary btn-sheen">
             Voir les 10 rayons
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <path d="M5 12h14M13 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
@@ -278,7 +279,7 @@ const schemas = [
             <span class="text-vert">Un seul ticket de caisse.</span>
           </h2>
         </div>
-        <a href="/rayons" class="btn btn-secondary shrink-0">
+        <a href="/rayons" class="btn btn-secondary shrink-0 btn-sheen">
           Voir tous les rayons
         </a>
       </div>
@@ -290,6 +291,22 @@ const schemas = [
       </div>
     </div>
   </section>
+
+  {/* ====================== KINETIC MARQUEE — chapter break signature ======================
+      Typographie display massive qui défile. Casse le rythme visuel après
+      le mur des 10 rayons et annonce le chapitre "actualités". */}
+  <KineticMarquee
+    items={[
+      "Saveurs du monde",
+      "Arrivages quotidiens",
+      "Boucherie halal sur carcasse",
+      "Fruits exotiques",
+      "10 000+ références",
+      "Depuis 2012 à Toulouse",
+    ]}
+    variant="vert"
+    speed={55}
+  />
 
   {/* ====================== ACTUS DU MARCHÉ — carousel unifié (pattern Grand Frais) ======================
       Stream agrégé : articles éditoriaux, recettes, arrivages saisonniers,
@@ -335,7 +352,7 @@ const schemas = [
             Notre sélection du moment, rayon par rayon. Prix affichés à l'euro près en magasin.
           </p>
         </div>
-        <a href="/rayons" class="btn btn-secondary shrink-0">
+        <a href="/rayons" class="btn btn-secondary shrink-0 btn-sheen">
           Explorer les rayons
         </a>
       </div>
@@ -388,7 +405,7 @@ const schemas = [
           </p>
         </div>
         <div class="mt-10 flex flex-col sm:flex-row gap-3">
-          <a href="/notre-enseigne" class="btn btn-primary">Notre enseigne</a>
+          <a href="/notre-enseigne" class="btn btn-primary btn-sheen">Notre enseigne</a>
           <a href="/nos-engagements" class="btn btn-ghost !text-white !border-white/25 hover:!border-white">
             Nos engagements
           </a>
