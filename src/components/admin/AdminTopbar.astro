@@ -1,0 +1,63 @@
+---
+/**
+ * AdminTopbar — sticky header shared across every /admin/* page.
+ * The `current` prop highlights the active nav item.
+ */
+import { SITE } from "@/lib/site";
+
+interface Props {
+  current?: "dashboard" | "promos" | "produits" | "medias";
+}
+
+const { current } = Astro.props as Props;
+
+const navItems = [
+  { id: "dashboard", label: "Tableau de bord", href: "/admin" },
+  { id: "promos",    label: "Promos",           href: "/admin/promos" },
+  { id: "produits",  label: "Produits",         href: "/admin/produits" },
+  { id: "medias",    label: "Images",           href: "/admin/medias" },
+] as const;
+---
+
+<header class="sticky top-0 z-40 bg-white border-b border-black/5 backdrop-blur">
+  <div class="container-mo flex items-center justify-between h-16 gap-4">
+    <div class="flex items-center gap-2 md:gap-6 min-w-0">
+      <a href="/admin" class="flex items-center gap-3 shrink-0">
+        <img src="/logos/favicon-marchedemo.png" alt="" class="h-7" aria-hidden="true" />
+        <div class="hidden sm:block">
+          <p class="text-[11px] uppercase tracking-[0.15em] font-bold text-neutral-400 leading-tight">Admin</p>
+          <p class="font-soft font-bold text-[15px] leading-tight">{SITE.name}</p>
+        </div>
+      </a>
+      <nav class="flex items-center gap-1 overflow-x-auto no-scrollbar">
+        {navItems.map((n) => (
+          <a
+            href={n.href}
+            class:list={[
+              "px-3 py-1.5 rounded-full text-[13px] font-bold whitespace-nowrap transition",
+              current === n.id
+                ? "bg-noir text-white"
+                : "text-neutral-600 hover:bg-neutral-100",
+            ]}
+            aria-current={current === n.id ? "page" : undefined}
+          >
+            {n.label}
+          </a>
+        ))}
+      </nav>
+    </div>
+    <div class="flex items-center gap-3 shrink-0">
+      <a href="/" class="text-[13px] text-neutral-600 hover:text-vert transition hidden sm:block">
+        Voir le site →
+      </a>
+      <a href="/api/logout" class="pill bg-noir text-white hover:bg-noir-softer transition">
+        Déconnexion
+      </a>
+    </div>
+  </div>
+</header>
+
+<style>
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { scrollbar-width: none; }
+</style>

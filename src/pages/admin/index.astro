@@ -2,31 +2,63 @@
 export const prerender = false;
 
 import Layout from "@layouts/Layout.astro";
+import AdminTopbar from "@components/admin/AdminTopbar.astro";
 import { SITE } from "@/lib/site";
 import { isAuthenticated } from "@/lib/auth";
+import { supabaseAdmin } from "@/lib/supabase";
 import { getCollection } from "astro:content";
 
 if (!(await isAuthenticated(Astro.cookies))) {
   return Astro.redirect("/admin/login");
 }
 
-/* Content counts for the dashboard. */
-const promos = await getCollection("promos");
-const videos = await getCollection("videos");
-const postes = await getCollection("postes");
+/* Promos : live from Supabase (table public.promos).
+   Fallback : Content Collection if DB unreachable or key missing. */
+let promosAll: any[] = [];
+let promosSource: "supabase" | "content-collection" = "content-collection";
+let promosError: string | null = null;
+
+if (supabaseAdmin) {
+  const { data, error } = await supabaseAdmin.from("promos").select("id, actif, titre, reduction_pct, magasin, rayon").order("updated_at", { ascending: false });
+  if (error) {
+    promosError = error.message;
+    const fallback = await getCollection("promos");
+    promosAll = fallback.map((p) => ({ ...p.data, id: p.id }));
+  } else {
+    promosAll = data ?? [];
+    promosSource = "supabase";
+  }
+} else {
+  const fallback = await getCollection("promos");
+  promosAll = fallback.map((p) => ({ ...p.data, id: p.id }));
+}
+
+/* Produits : same pattern. Empty today, scaffolded for Vague 5.2. */
+let produitsTotal = 0;
+let produitsActifs = 0;
+if (supabaseAdmin) {
+  const { count: total } = await supabaseAdmin.from("produits").select("id", { count: "exact", head: true });
+  const { count: actifs } = await supabaseAdmin.from("produits").select("id", { count: "exact", head: true }).eq("actif", true);
+  produitsTotal = total ?? 0;
+  produitsActifs = actifs ?? 0;
+}
+
+const activePromos  = promosAll.filter((p) => p.actif).length;
+
+const postes   = await getCollection("postes");
 const articles = await getCollection("articles");
 
-const activePromos = promos.filter((p) => p.data.actif).length;
-const activeVideos = videos.filter((v) => v.data.actif).length;
-const activePostes = postes.filter((p) => p.data.actif).length;
-const activeArticles = articles.filter((a) => a.data.actif).length;
+const activePostes    = postes.filter((p) => p.data.actif).length;
+const activeArticles  = articles.filter((a) => a.data.actif).length;
 
 const stats = [
-  { label: "Promos actives", count: activePromos, total: promos.length, href: "/promos", color: "rouge" },
-  { label: "Vidéos TikTok", count: activeVideos, total: videos.length, href: "/", color: "noir" },
-  { label: "Offres d'emploi", count: activePostes, total: postes.length, href: "/recrutement", color: "vert" },
-  { label: "Articles", count: activeArticles, total: articles.length, href: "/actualites", color: "neutral" },
+  { label: "Promos actives",   count: activePromos,   total: promosAll.length,  href: "/admin/promos",   color: "rouge" },
+  { label: "Produits actifs",  count: produitsActifs, total: produitsTotal,     href: "/admin/produits", color: "vert" },
+  { label: "Offres d'emploi",  count: activePostes,   total: postes.length,     href: "/recrutement",    color: "noir" },
+  { label: "Articles",         count: activeArticles, total: articles.length,   href: "/actualites",     color: "neutral" },
 ];
+
+const recentPromos = promosAll.slice(0, 5);
 ---
 
 <Layout
@@ -36,22 +68,7 @@ const stats = [
   hideChrome
 >
   <div class="min-h-screen bg-creme">
-    <!-- Topbar -->
-    <header class="sticky top-0 z-40 bg-white border-b border-black/5 backdrop-blur">
-      <div class="container-mo flex items-center justify-between h-16">
-        <div class="flex items-center gap-3">
-          <img src="/logos/favicon-marchedemo.png" alt="" class="h-7" aria-hidden="true"/>
-          <div>
-            <p class="text-[11px] uppercase tracking-[0.15em] font-bold text-neutral-400">Admin</p>
-            <p class="font-soft font-bold text-[15px] leading-tight">{SITE.name}</p>
-          </div>
-        </div>
-        <div class="flex items-center gap-3">
-          <a href="/" class="text-[13px] text-neutral-600 hover:text-vert transition hidden sm:block">Voir le site →</a>
-          <a href="/api/logout" class="pill bg-noir text-white hover:bg-noir-softer transition">Déconnexion</a>
-        </div>
-      </div>
-    </header>
+    <AdminTopbar current="dashboard" />
 
     <main class="container-mo py-8 md:py-12">
       <!-- Hero -->
@@ -89,37 +106,57 @@ const stats = [
 
       <!-- Workflow note -->
       <section class="mt-12 bg-white rounded-3xl p-6 md:p-8 border border-black/5 shadow-card">
-        <h2 class="eyebrow">Comment ajouter / modifier du contenu</h2>
-        <p class="mt-4 text-[14.5px] text-neutral-700 leading-relaxed max-w-3xl">
-          Le site utilise <strong>Astro Content Collections</strong> — chaque promo, vidéo,
-          offre d'emploi et article vit dans un fichier dans le dossier <code class="bg-creme px-1.5 py-0.5 rounded text-[13px]">src/content/</code>
-          et est déployé automatiquement à chaque commit Git.
-        </p>
-        <ul class="mt-4 space-y-1.5 text-[13.5px] text-neutral-600">
-          <li>• <strong>Promos</strong> : <code class="bg-creme px-1.5 py-0.5 rounded text-[12.5px]">src/content/promos/*.json</code></li>
-          <li>• <strong>Offres d'emploi</strong> : <code class="bg-creme px-1.5 py-0.5 rounded text-[12.5px]">src/content/postes/*.md</code></li>
-          <li>• <strong>Vidéos</strong> : <code class="bg-creme px-1.5 py-0.5 rounded text-[12.5px]">src/content/videos/*.json</code></li>
-          <li>• <strong>Articles</strong> : <code class="bg-creme px-1.5 py-0.5 rounded text-[12.5px]">src/content/articles/*.md</code></li>
-        </ul>
-        <p class="mt-5 text-[13.5px] text-neutral-500">
-          Une interface CRUD complète (création / édition / suppression en ligne) est prévue en V2
-          pour permettre les modifications sans passer par Git.
-        </p>
+        <h2 class="eyebrow">Comment gérer le contenu</h2>
+        <div class="mt-4 grid md:grid-cols-2 gap-6 text-[14px] text-neutral-700 leading-relaxed">
+          <div>
+            <p class="font-bold text-noir mb-2">✓ Via l'admin (temps réel)</p>
+            <ul class="space-y-1.5 text-[13.5px]">
+              <li>• <strong>Promos</strong> → <a href="/admin/promos" class="text-vert hover:underline">/admin/promos</a> — table Supabase, modifs instantanées.</li>
+              <li>• <strong>Produits</strong> → <a href="/admin/produits" class="text-vert hover:underline">/admin/produits</a> — catalogue Supabase (à venir).</li>
+              <li>• <strong>Images</strong> → <a href="/admin/medias" class="text-vert hover:underline">/admin/medias</a> — Supabase Storage (à venir).</li>
+            </ul>
+          </div>
+          <div>
+            <p class="font-bold text-noir mb-2">✎ Via Git (déploiement)</p>
+            <ul class="space-y-1.5 text-[13.5px]">
+              <li>• <strong>Offres d'emploi</strong> : <code class="bg-creme px-1.5 py-0.5 rounded text-[12.5px]">src/content/postes/*.md</code></li>
+              <li>• <strong>Vidéos TikTok</strong> : <code class="bg-creme px-1.5 py-0.5 rounded text-[12.5px]">src/content/videos/*.json</code></li>
+              <li>• <strong>Articles blog</strong> : <code class="bg-creme px-1.5 py-0.5 rounded text-[12.5px]">src/content/articles/*.md</code></li>
+            </ul>
+          </div>
+        </div>
+        {promosSource === "supabase" && (
+          <p class="mt-6 inline-flex items-center gap-2 text-[12px] text-vert-dark bg-vert/10 px-3 py-1.5 rounded-full">
+            <span class="w-1.5 h-1.5 rounded-full bg-vert animate-pulse"></span>
+            Connecté à Supabase · {promosAll.length} promo(s) en base
+          </p>
+        )}
+        {promosError && (
+          <p class="mt-6 text-[12px] text-rouge bg-rouge/5 px-3 py-2 rounded-xl">
+            ⚠ Supabase erreur : {promosError} — fallback sur Content Collections.
+          </p>
+        )}
       </section>
 
       <!-- Recent activity -->
       <section class="mt-12 grid lg:grid-cols-2 gap-6">
         <div class="bg-white rounded-3xl p-6 shadow-card">
-          <h3 class="eyebrow">Dernières promos</h3>
+          <div class="flex items-center justify-between">
+            <h3 class="eyebrow">Dernières promos</h3>
+            <a href="/admin/promos" class="text-[12px] text-vert font-bold hover:underline">Gérer →</a>
+          </div>
           <ul class="mt-4 divide-y divide-black/5">
-            {promos.slice(0, 5).map((p) => (
+            {recentPromos.length === 0 && (
+              <li class="py-6 text-center text-neutral-400 text-[13px]">Aucune promo en base.</li>
+            )}
+            {recentPromos.map((p) => (
               <li class="py-3 flex items-center justify-between gap-3">
                 <div class="min-w-0">
-                  <p class="font-bold text-[14px] truncate">{p.data.titre}</p>
-                  <p class="text-[12px] text-neutral-500">-{p.data.reduction_pct}% · {p.data.magasin}</p>
+                  <p class="font-bold text-[14px] truncate">{p.titre}</p>
+                  <p class="text-[12px] text-neutral-500">-{p.reduction_pct}% · {p.magasin}</p>
                 </div>
-                <span class={`pill ${p.data.actif ? 'pill-vert' : 'bg-neutral-100 text-neutral-500'}`}>
-                  {p.data.actif ? "Active" : "Inactive"}
+                <span class={`pill ${p.actif ? 'pill-vert' : 'bg-neutral-100 text-neutral-500'}`}>
+                  {p.actif ? "Active" : "Inactive"}
                 </span>
               </li>
             ))}
