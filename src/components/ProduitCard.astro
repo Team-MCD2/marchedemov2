@@ -26,15 +26,33 @@ const accent = rayonData?.accent ?? "#1C6B35";
   class="group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1"
 >
   <div class="relative aspect-square overflow-hidden bg-creme">
-    <img
-      src={produit.image}
-      alt={produit.nom}
-      loading="lazy"
-      decoding="async"
-      width="600"
-      height="600"
-      class="w-full h-full object-cover group-hover:scale-[1.07] transition-transform duration-500"
-    />
+    {produit.image ? (
+      <img
+        src={produit.image}
+        alt={produit.nom}
+        loading="lazy"
+        decoding="async"
+        width="600"
+        height="600"
+        class="w-full h-full object-cover group-hover:scale-[1.07] transition-transform duration-500"
+      />
+    ) : (
+      <div class="absolute inset-0 bg-gradient-to-br from-creme via-creme-warm to-[#EEEAE0] flex flex-col items-center justify-center p-5 text-center">
+        <img
+          src="/logos/favicon-marchedemo.png"
+          alt=""
+          aria-hidden="true"
+          width="64"
+          height="64"
+          class="w-14 h-14 opacity-15 mb-3"
+          loading="lazy"
+        />
+        <p class="font-soft font-bold text-[12px] md:text-[13px] leading-tight text-neutral-500 uppercase tracking-wider line-clamp-3">
+          {produit.nom}
+        </p>
+        <span class="mt-2 text-[10px] text-neutral-400 italic">Photo à venir</span>
+      </div>
+    )}
     {produit.badge && (
       <span
         class="absolute top-3 left-3 inline-flex items-center px-2.5 py-1 rounded-full bg-white/95 text-[11px] font-pro font-bold tracking-wide uppercase shadow-sm"

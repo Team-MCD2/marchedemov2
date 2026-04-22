@@ -4,13 +4,15 @@ import Breadcrumb from "@components/Breadcrumb.astro";
 import PromoCard from "@components/PromoCard.astro";
 import FAQAccordion from "@components/FAQAccordion.astro";
 import NewsletterInline from "@components/NewsletterInline.astro";
-import { getCollection } from "astro:content";
 import { RAYONS_LIST, SITE } from "@/lib/site";
 import { FAQ_HOME } from "@/lib/faqs";
 import { breadcrumbSchema } from "@/lib/schema";
+import { getActivePromos } from "@/lib/promos-repo";
 
-const promos = (await getCollection("promos", (p) => p.data.actif))
-  .sort((a, b) => (a.data.mise_en_avant === b.data.mise_en_avant ? 0 : a.data.mise_en_avant ? -1 : 1));
+/* Supabase-first, Content Collection fallback. Featured first. */
+const promos = (await getActivePromos()).sort((a, b) =>
+  a.data.mise_en_avant === b.data.mise_en_avant ? 0 : a.data.mise_en_avant ? -1 : 1
+);
 
 const featured = promos.find((p) => p.data.mise_en_avant);
 const others = promos.filter((p) => p !== featured);

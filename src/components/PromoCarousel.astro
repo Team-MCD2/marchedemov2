@@ -26,10 +26,10 @@
  *     arrows + swipe remain — no one is trapped in an animation.
  */
 import PromoCard from "@components/PromoCard.astro";
-import type { CollectionEntry } from "astro:content";
+import type { PromoEntry } from "@/lib/promos-repo";
 
 interface Props {
-  promos: CollectionEntry<"promos">[];
+  promos: PromoEntry[];
 }
 
 const { promos } = Astro.props as Props;
@@ -120,8 +120,16 @@ const { promos } = Astro.props as Props;
   }
   .promo-track {
     overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scroll-behavior: smooth;
+    /* scroll-snap-type: proximity (not mandatory) so our rAF auto-
+       scroll (sub-pixel increments) isn't constantly snapped back to
+       the nearest card. */
+    scroll-snap-type: x proximity;
+    /* IMPORTANT : force AUTO to override `html { scroll-behavior:
+       smooth }` inherited from global.css. Without this, every
+       scrollLeft update from our rAF loop is animated, which kills
+       continuous drift. Arrows still scroll smoothly because
+       scrollBy({ behavior: 'smooth' }) overrides this per call. */
+    scroll-behavior: auto;
     /* Hide native scrollbar while keeping scroll capabilities */
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -136,7 +144,6 @@ const { promos } = Astro.props as Props;
   }
   .promo-track.is-dragging {
     cursor: grabbing;
-    scroll-behavior: auto; /* snappier while dragging */
   }
   .promo-track:focus {
     outline: none; /* we rely on the cards' own focus rings */
@@ -254,23 +261,43 @@ const { promos } = Astro.props as Props;
         }
       };
 
-      /* --- auto scroll (rAF driven) --- */
+      /* --- auto scroll (rAF driven) ---
+       *
+       * scrollLeft is effectively rounded to an integer by most
+       * browsers, so a naive `scrollLeft += 0.66` (40 px/s * 1/60 s)
+       * would be dropped every frame and nothing would move.
+       *
+       * We keep a float accumulator `targetSL`, advance it by
+       * SPEED * dt each frame, then assign Math.round(targetSL) to
+       * scrollLeft. After any user-driven scroll (drag, swipe,
+       * arrow, wheel) we re-sync targetSL from the real scrollLeft
+       * so auto-scroll doesn't snap back. */
       const SPEED_PX_S = reduced ? 0 : 40;
       let paused = reduced;
       let pauseUntil = 0;
       let lastTs = 0;
+      let targetSL = track.scrollLeft;
+      let lastAppliedSL = track.scrollLeft;
+      const syncTargetFromScroll = () => {
+        /* Called when the user has moved the scroll : sync accumulator. */
+        if (Math.abs(track.scrollLeft - lastAppliedSL) > 1) {
+          targetSL = track.scrollLeft;
+        }
+      };
       const tick = (ts: number) => {
         if (!lastTs) lastTs = ts;
-        const dt = (ts - lastTs) / 1000;
+        const dt = Math.min(0.1, (ts - lastTs) / 1000); /* cap dt in case of tab switch */
         lastTs = ts;
-        if (!paused && performance.now() > pauseUntil && document.visibilityState === "visible") {
-          const prevSL = track.scrollLeft;
-          track.scrollLeft = prevSL + SPEED_PX_S * dt;
-          /* If the browser refused the update (e.g. scroll clamped), bail. */
-          if (track.scrollLeft === prevSL && SPEED_PX_S > 0) {
-            /* likely at the very end before duplicate kicks in — wrap */
-            track.scrollLeft = prevSL + 1;
-          }
+        if (!paused && performance.now() > pauseUntil && document.visibilityState === "visible" && SPEED_PX_S > 0) {
+          syncTargetFromScroll();
+          targetSL += SPEED_PX_S * dt;
+          const rounded = Math.round(targetSL);
+          track.scrollLeft = rounded;
+          lastAppliedSL = track.scrollLeft;
+        } else {
+          /* Paused : keep target in sync with real scroll position */
+          targetSL = track.scrollLeft;
+          lastAppliedSL = track.scrollLeft;
         }
         wrapIfNeeded();
         (carousel as any).__promoRaf = requestAnimationFrame(tick);

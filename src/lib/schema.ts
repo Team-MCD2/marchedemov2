@@ -138,18 +138,19 @@ export function offerSchema(p: {
   titre: string;
   description: string;
   image: string;
-  prix_promo: string;
-  prix_original: string;
+  prix_promo: string | number;
+  prix_original: string | number;
   date_debut: string;
   date_fin: string;
 }) {
+  const priceStr = typeof p.prix_promo === "number" ? p.prix_promo.toFixed(2) : String(p.prix_promo);
   return {
     "@context": "https://schema.org",
     "@type": "Offer",
     name: p.titre,
     description: p.description,
     image: p.image.startsWith("http") ? p.image : `${SITE.url}${p.image}`,
-    price: p.prix_promo,
+    price: priceStr,
     priceCurrency: "EUR",
     priceValidUntil: p.date_fin,
     validFrom: p.date_debut,

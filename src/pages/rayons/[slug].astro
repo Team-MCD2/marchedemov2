@@ -10,6 +10,7 @@ import { RAYONS, RAYONS_LIST, SITE, type RayonSlug } from "@/lib/site";
 import { faqsForRayon } from "@/lib/faqs";
 import { breadcrumbSchema } from "@/lib/schema";
 import { supabase } from "@/lib/supabase";
+import { getPromosForRayon } from "@/lib/promos-repo";
 import tiktokEmbeds from "@/generated/tiktok-embeds.json";
 
 export async function getStaticPaths() {
@@ -24,9 +25,8 @@ const isCulturel = rayon.culturel;
 /* Cultural heroes use dark backgrounds with light text; non-cultural stay on light bg. */
 const heroTheme = isCulturel ? "rayon-hero--dark" : "rayon-hero--light";
 
-/* Promos du rayon */
-const promos = (await getCollection("promos"))
-  .filter((p) => p.data.actif && p.data.rayon === slug);
+/* Promos du rayon — Supabase-first via repo, fallback Content Collection */
+const promos = await getPromosForRayon(slug);
 
 /* Videos du rayon */
 const videos = (await getCollection("videos"))
@@ -80,6 +80,18 @@ const catalogueGroups = (() => {
     return a[0].localeCompare(b[0], "fr");
   });
 })();
+
+/* Previous approach (readdirSync over /images/rayons/<slug>/) produced
+ * wrong images because most subfolder files are AMBIANCE shots
+ * (landscapes, portraits, 'traçabilité' barcodes) pulled from the Wix
+ * scrape, not product shots. Showing a mountain photo next to "Attiéké
+ * précuit" was misleading, so the pool is removed entirely.
+ *
+ * New policy : show the real product photo when `image_url` is set,
+ * otherwise render a clean branded placeholder card (see below).
+ * Never guess-and-hope with a random scene.
+ *
+ * Admins curate product photos via /admin/medias + /admin/produits. */
 
 /* Other rayons pour cross-linking */
 const otherRayons = RAYONS_LIST.filter((r) => r.slug !== slug).slice(0, 4);
@@ -248,51 +260,70 @@ const slideCount = Math.min(uniqueSlides.length, 4);
           </div>
         </div>
 
-        <div class="space-y-6">
+        <div class="space-y-10 md:space-y-12">
           {catalogueGroups.map(([badge, items]) => (
-            <article class="bg-white rounded-3xl shadow-card overflow-hidden">
-              <header class="px-5 md:px-6 py-4 border-b border-black/5 flex items-baseline justify-between gap-4 flex-wrap">
-                <h3 class="font-soft font-bold text-[18px] md:text-[20px] text-noir">
+            <section>
+              <div class="flex items-baseline justify-between gap-4 flex-wrap mb-5">
+                <h3 class="font-soft font-bold text-[20px] md:text-[24px] text-noir inline-flex items-center gap-3">
+                  <span class="inline-block w-1 h-6 bg-vert rounded-full" aria-hidden="true"></span>
                   {badge}
                 </h3>
-                <span class="text-[12px] text-neutral-400 font-pro">
+                <span class="text-[12px] text-neutral-400 font-pro uppercase tracking-wider">
                   {items.length} produit{items.length > 1 ? "s" : ""}
                 </span>
-              </header>
-              <ul class="divide-y divide-black/5">
+              </div>
+
+              <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
                 {items.map((p) => (
-                  <li class="px-5 md:px-6 py-3 flex items-center gap-4 hover:bg-creme/50 transition">
-                    {p.image_url ? (
-                      <img
-                        src={p.image_url}
-                        alt=""
-                        loading="lazy"
-                        decoding="async"
-                        width="64"
-                        height="64"
-                        class="w-12 h-12 rounded-lg object-cover ring-1 ring-black/5 shrink-0"
-                      />
-                    ) : (
-                      <div class="w-12 h-12 rounded-lg bg-creme flex items-center justify-center text-neutral-300 shrink-0" aria-hidden="true">
-                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8 12 3 7 8M12 3v12" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                      </div>
-                    )}
-                    <div class="flex-1 min-w-0">
-                      <p class="font-bold text-noir truncate">{p.nom}</p>
-                      <p class="text-[12px] text-neutral-500 truncate">
-                        {p.origine && <span>{p.origine}</span>}
-                        {p.origine && p.unite && <span> · </span>}
-                        {p.unite && <span>{p.unite}</span>}
-                        {p.description && (p.origine || p.unite) && <span> · </span>}
-                        {p.description && <span class="text-neutral-400">{p.description}</span>}
+                  <article class="produit-card group">
+                    <div class="relative aspect-square rounded-2xl overflow-hidden ring-1 ring-black/5 shadow-sm group-hover:shadow-card-hover group-hover:-translate-y-0.5 transition-all duration-300">
+                      {p.image_url ? (
+                        <img
+                          src={p.image_url}
+                          alt={p.nom}
+                          loading="lazy"
+                          decoding="async"
+                          width="400"
+                          height="400"
+                          class="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500"
+                        />
+                      ) : (
+                        <div class="absolute inset-0 bg-gradient-to-br from-creme via-creme-warm to-[#EEEAE0] flex flex-col items-center justify-center p-4 text-center">
+                          <img
+                            src="/logos/favicon-marchedemo.png"
+                            alt=""
+                            aria-hidden="true"
+                            width="48"
+                            height="48"
+                            class="w-10 h-10 md:w-12 md:h-12 opacity-15 mb-2"
+                            loading="lazy"
+                          />
+                          <p class="font-soft font-bold text-[11px] md:text-[12px] leading-tight text-neutral-500 uppercase tracking-wider line-clamp-3">
+                            {p.nom}
+                          </p>
+                          <span class="mt-2 text-[9.5px] text-neutral-400 italic">Photo à venir</span>
+                        </div>
+                      )}
+                      {p.origine && (
+                        <span class="absolute top-2 left-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/95 backdrop-blur text-[10.5px] font-bold text-noir shadow-sm">
+                          {p.origine}
+                        </span>
+                      )}
+                    </div>
+                    <div class="mt-3 px-0.5">
+                      <p class="font-soft font-bold text-[13.5px] md:text-[14px] leading-tight text-noir line-clamp-2 min-h-[2.4em]">
+                        {p.nom}
+                      </p>
+                      <p class="text-[11.5px] text-neutral-500 mt-1 leading-snug">
+                        {p.unite && <span class="font-bold text-neutral-700">{p.unite}</span>}
+                        {p.unite && p.description && <span> · </span>}
+                        {p.description && <span class="line-clamp-1">{p.description}</span>}
                       </p>
                     </div>
-                  </li>
+                  </article>
                 ))}
-              </ul>
-            </article>
+              </div>
+            </section>
           ))}
         </div>
 

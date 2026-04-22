@@ -11,19 +11,24 @@ import TikTokEmbed from "@components/islands/TikTokEmbed.jsx";
 import PromoCarousel from "@components/PromoCarousel.astro";
 import { getCollection } from "astro:content";
 import { RAYONS_LIST, ENGAGEMENTS, MAGASINS, SITE } from "@/lib/site";
-import { PRODUITS_VEDETTES } from "@/lib/produits-vedettes";
 import { RECETTES_HOME } from "@/lib/recettes";
 import { FAQ_HOME } from "@/lib/faqs";
 import { organizationSchema, websiteSchema, allMagasinsSchema, offerSchema } from "@/lib/schema";
 import tiktokEmbedsRaw from "@/generated/tiktok-embeds.json";
+import { getActivePromos } from "@/lib/promos-repo";
+import { getProduitsVedettes } from "@/lib/produits-repo";
 
 type TikTokCacheEntry = { thumbnail?: string; html?: string };
 const tiktokEmbeds = tiktokEmbedsRaw as Record<string, TikTokCacheEntry>;
 
-/* Promos featured + toutes les promos actives */
-const allPromos = await getCollection("promos", (p) => p.data.actif);
+/* Promos : Supabase-first (actif=true), fallback Content Collection.
+   featuredPromo = first mise_en_avant row, used for OfferSchema JSON-LD. */
+const allPromos = await getActivePromos();
 const featuredPromo = allPromos.find((p) => p.data.mise_en_avant) ?? allPromos[0];
 const promosHome = allPromos.slice(0, 6);
+
+/* Produits vedettes : Supabase-first (ordre asc), fallback static list. */
+const PRODUITS_VEDETTES = await getProduitsVedettes(8);
 
 /* Videos home */
 const videos = (await getCollection("videos", (v) => v.data.actif && v.data.rayon === "home"))

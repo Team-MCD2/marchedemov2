@@ -1,16 +1,19 @@
 /* ------------------------------------------------------------
-   Produits vedettes — placeholder home + /produits.
+   Produits vedettes — emergency fallback list.
 
-   PHASE 1 (MAINTENANT) : 8 produits temporaires construits à partir
-   des images de rayons existantes (`/images/rayons/<slug>/...`),
-   jamais de prix indiqué.
+   CURRENT ROLE : last-ditch fallback for the home showcase when
+   Supabase is completely unreachable at build time. The canonical
+   source is now the public.produits table, queried via
+   src/lib/produits-repo.ts → getProduitsVedettes().
 
-   PHASE 2 (QUAND SUPABASE EST REMPLI) : remplacer cet export par un
-   `await supabase.from('produits').select('*').eq('actif', true)`
-   dans le frontmatter du composant qui consomme.
+   All `.image` values are intentionally empty ("") — we don't
+   want to ship misleading rayon/ambiance photos as product shots.
+   ProduitCard renders a clean branded 'Photo à venir' placeholder
+   when image is falsy. Admins upload the real product photos via
+   /admin/medias + /admin/produits.
 
-   IMPORTANT : pas de prix affichés (cf doctrine, risque juridique
-   de pratique commerciale trompeuse si écart magasin/site).
+   LEGAL : no prices (doctrine — risk of misleading commercial
+   practice if site price differs from store).
    ------------------------------------------------------------ */
 
 import type { RayonSlug } from "@/lib/site";
@@ -18,6 +21,7 @@ import type { RayonSlug } from "@/lib/site";
 export interface ProduitVedette {
   id: string;
   nom: string;
+  /** Empty string = show the branded placeholder card. */
   image: string;
   rayon: RayonSlug;
   /** Petit badge optionnel : "Nouveau", "Halal", "Bio", "Import direct"... */
@@ -30,7 +34,7 @@ export const PRODUITS_VEDETTES: ProduitVedette[] = [
   {
     id: "agneau-halal",
     nom: "Épaule d'agneau halal",
-    image: "/images/rayons/boucherie-halal/11062b-603fa6aa568c43e08182a6e546211812f000.jpg",
+    image: "",
     rayon: "boucherie-halal",
     badge: "Travail sur carcasse",
     origine: "France",
@@ -38,7 +42,7 @@ export const PRODUITS_VEDETTES: ProduitVedette[] = [
   {
     id: "plantain-jaune",
     nom: "Banane plantain jaune",
-    image: "/images/rayons/fruits-legumes/legumes-organiques.jpg",
+    image: "",
     rayon: "fruits-legumes",
     badge: "Arrivage du jour",
     origine: "Côte d'Ivoire",
@@ -46,7 +50,7 @@ export const PRODUITS_VEDETTES: ProduitVedette[] = [
   {
     id: "ras-el-hanout",
     nom: "Ras el hanout — mélange maison",
-    image: "/images/rayons/epices-du-monde/marche-aux-epices-dubai.jpg",
+    image: "",
     rayon: "epices-du-monde",
     badge: "Mélange artisanal",
     origine: "Maroc",
@@ -54,7 +58,7 @@ export const PRODUITS_VEDETTES: ProduitVedette[] = [
   {
     id: "huile-palme-rouge",
     nom: "Huile de palme rouge",
-    image: "/images/rayons/saveurs-afrique/image-de-annie-spratt.jpg",
+    image: "",
     rayon: "saveurs-afrique",
     badge: "Import direct",
     origine: "Afrique de l'Ouest",
@@ -62,7 +66,7 @@ export const PRODUITS_VEDETTES: ProduitVedette[] = [
   {
     id: "kimchi-coreen",
     nom: "Kimchi de chou — bocal",
-    image: "/images/rayons/saveurs-asie/image-de-jason-leung.jpg",
+    image: "",
     rayon: "saveurs-asie",
     badge: "Fermenté",
     origine: "Corée",
@@ -70,7 +74,7 @@ export const PRODUITS_VEDETTES: ProduitVedette[] = [
   {
     id: "olives-maghreb",
     nom: "Olives noires du Maghreb",
-    image: "/images/rayons/saveur-mediterranee.jpg",
+    image: "",
     rayon: "saveur-mediterranee",
     badge: "Sélection maison",
     origine: "Maroc",
@@ -78,7 +82,7 @@ export const PRODUITS_VEDETTES: ProduitVedette[] = [
   {
     id: "borek-fromage",
     nom: "Börek au fromage blanc",
-    image: "/images/rayons/balkans-turques.jpg",
+    image: "",
     rayon: "balkans-turques",
     badge: "Spécialité turque",
     origine: "Turquie",
@@ -86,7 +90,7 @@ export const PRODUITS_VEDETTES: ProduitVedette[] = [
   {
     id: "samoussa-boeuf",
     nom: "Samoussas bœuf halal — surgelés",
-    image: "/images/rayons/surgeles/vitrines-congelees.jpg",
+    image: "",
     rayon: "surgeles",
     badge: "Halal",
   },

@@ -1,0 +1,95 @@
+---
+export const prerender = false;
+
+import Layout from "@layouts/Layout.astro";
+import AdminTopbar from "@components/admin/AdminTopbar.astro";
+import MediasManager from "@components/islands/admin/MediasManager.jsx";
+import { SITE } from "@/lib/site";
+import { isAuthenticated } from "@/lib/auth";
+import { supabaseAdmin } from "@/lib/supabase";
+
+if (!(await isAuthenticated(Astro.cookies))) {
+  return Astro.redirect("/admin/login");
+}
+
+/* SSR-fetch the default folder so the first paint already shows content. */
+const DEFAULT_FOLDER = "promos";
+let initialFiles: any[] = [];
+let errorMsg: string | null = null;
+
+if (!supabaseAdmin) {
+  errorMsg = "SUPABASE_SERVICE_ROLE_KEY non configurée.";
+} else {
+  const { data, error } = await supabaseAdmin.storage
+    .from("medias")
+    .list(DEFAULT_FOLDER, { limit: 500, sortBy: { column: "updated_at", order: "desc" } });
+  if (error) {
+    errorMsg = `Supabase Storage : ${error.message}`;
+  } else {
+    initialFiles = (data ?? [])
+      .filter((f) => f.id)
+      .map((f) => {
+        const path = `${DEFAULT_FOLDER}/${f.name}`;
+        const { data: pub } = supabaseAdmin!.storage.from("medias").getPublicUrl(path);
+        return {
+          name: f.name,
+          path,
+          size: f.metadata?.size ?? null,
+          mime: f.metadata?.mimetype ?? null,
+          updated_at: f.updated_at,
+          created_at: f.created_at,
+          publicUrl: pub.publicUrl,
+        };
+      });
+  }
+}
+
+const FOLDERS = [
+  { id: "promos",    label: "Promos" },
+  { id: "produits",  label: "Produits" },
+  { id: "rayons",    label: "Rayons" },
+  { id: "recettes",  label: "Recettes" },
+  { id: "home",      label: "Accueil" },
+  { id: "magasins",  label: "Magasins" },
+  { id: "postes",    label: "Recrutement" },
+];
+---
+
+<Layout
+  title={`Gestion des images · ${SITE.name} — Admin`}
+  description="Gestion des images du bucket Supabase Storage."
+  noIndex
+  hideChrome
+>
+  <div class="min-h-screen bg-creme">
+    <AdminTopbar current="medias" />
+
+    <main class="container-mo py-8 md:py-12">
+      <section class="mb-8">
+        <span class="eyebrow">Images</span>
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mt-3">
+          <h1 class="display-sm leading-tight">
+            Images & médias
+          </h1>
+          <p class="text-[13px] text-neutral-500 max-w-md md:text-right">
+            Bucket public <code class="bg-white px-1.5 py-0.5 rounded text-[12px]">medias</code> sur Supabase Storage. URL CDN stable copiable en un clic.
+          </p>
+        </div>
+      </section>
+
+      {errorMsg ? (
+        <div class="bg-rouge/5 border border-rouge/30 text-rouge rounded-3xl p-6 md:p-8">
+          <p class="font-bold text-[15px]">⚠ Supabase Storage indisponible</p>
+          <p class="text-[14px] mt-2 whitespace-pre-line">{errorMsg}</p>
+        </div>
+      ) : (
+        <MediasManager
+          client:load
+          initialFolder={DEFAULT_FOLDER}
+          initialFiles={initialFiles}
+          folders={FOLDERS}
+        />
+      )}
+    </main>
+  </div>
+</Layout>
