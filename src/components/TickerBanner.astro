@@ -1,0 +1,50 @@
+---
+/**
+ * TickerBanner — bandeau défilant au-dessus du header.
+ * Messages clés répétés en boucle, vitesse lente (~40 s/cycle).
+ * Stop au hover. Statique si prefers-reduced-motion.
+ *
+ * Classes CSS dans global.css : .ticker, .ticker-track, @keyframes ticker-scroll.
+ */
+
+interface Props {
+  /** Messages affichés, séparés par le <span> puce. */
+  items?: string[];
+}
+
+const defaultItems = [
+  "Arrivage quotidien en fruits et légumes exotiques",
+  "Boucherie halal sur carcasse — sans électronarcose",
+  "10 000+ références, toutes les saveurs du monde",
+  "2 magasins à Toulouse, ouverts 7j/7",
+  "Livraison le matin depuis Rungis",
+  "Promos mises à jour chaque lundi",
+];
+
+const { items = defaultItems } = Astro.props as Props;
+
+/* Duplique la liste pour un défilement seamless (loop continue). */
+const doubled = [...items, ...items];
+---
+
+<aside
+  class="ticker bg-vert text-white text-[13px] font-pro font-bold tracking-wide overflow-hidden relative"
+  aria-label="Annonces du magasin"
+>
+  <div class="ticker-track flex items-center gap-10 whitespace-nowrap py-2 will-change-transform">
+    {doubled.map((msg, i) => (
+      <span class="inline-flex items-center gap-10">
+        <span class="inline-flex items-center gap-2">
+          <span
+            class="inline-block w-1.5 h-1.5 rounded-full bg-white/70"
+            aria-hidden="true"
+          ></span>
+          {msg}
+        </span>
+        {i < doubled.length - 1 && (
+          <span aria-hidden="true" class="text-white/50 select-none">·</span>
+        )}
+      </span>
+    ))}
+  </div>
+</aside>

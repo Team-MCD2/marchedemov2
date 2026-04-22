@@ -141,7 +141,7 @@ const schemas = [
   {/* ====================== 4 · RAYONS ====================== */}
   <section class="section bg-blanc">
     <div class="container-mo">
-      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 reveal">
         <div class="max-w-2xl">
           <span class="eyebrow">Nos 10 rayons</span>
           <h2 class="display-lg mt-4 text-balance">
@@ -223,7 +223,7 @@ const schemas = [
   {/* ====================== 6 · ENGAGEMENTS ====================== */}
   <section class="section bg-creme">
     <div class="container-mo">
-      <div class="text-center max-w-3xl mx-auto mb-14">
+      <div class="text-center max-w-3xl mx-auto mb-14 reveal">
         <span class="eyebrow !justify-center">Nos 4 engagements</span>
         <h2 class="display-lg mt-4 text-balance">
           Un supermarché, oui.<br/>
@@ -231,8 +231,11 @@ const schemas = [
         </h2>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
-        {ENGAGEMENTS.map((e) => (
-          <article class="bg-white rounded-3xl p-8 shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1">
+        {ENGAGEMENTS.map((e, i) => (
+          <article
+            class="bg-white rounded-3xl p-8 shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 reveal"
+            style={`--reveal-delay: ${i * 80}ms`}
+          >
             <div class="w-14 h-14 rounded-2xl bg-vert/10 text-vert flex items-center justify-center mb-6">
               {e.icone === "heart" && (
                 <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
@@ -271,7 +274,7 @@ const schemas = [
   {videos.length > 0 && (
     <section class="section bg-blanc">
       <div class="container-mo">
-        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 reveal">
           <div class="max-w-2xl">
             <span class="eyebrow">Marché de Mo' en vidéos</span>
             <h2 class="display-lg mt-4 text-balance">
@@ -305,7 +308,7 @@ const schemas = [
   {promosHome.length > 0 && (
     <section class="section bg-creme">
       <div class="container-mo">
-        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 reveal">
           <div class="max-w-2xl">
             <span class="eyebrow !text-rouge">Promos de la semaine</span>
             <h2 class="display-lg mt-4 text-balance">
@@ -343,7 +346,7 @@ const schemas = [
   {/* ====================== 9 · MAGASINS ====================== */}
   <section class="section bg-blanc">
     <div class="container-mo">
-      <div class="text-center max-w-3xl mx-auto mb-14">
+      <div class="text-center max-w-3xl mx-auto mb-14 reveal">
         <span class="eyebrow !justify-center">Nos magasins</span>
         <h2 class="display-lg mt-4 text-balance">
           2 magasins à Toulouse.<br/>

@@ -5,8 +5,10 @@
  * Each page passes its own title/description/og/faq/schema via Astro.props.
  */
 import "@styles/global.css";
+import { ViewTransitions } from "astro:transitions";
 import Header from "@components/Header.astro";
 import Footer from "@components/Footer.astro";
+import TickerBanner from "@components/TickerBanner.astro";
 import { SITE } from "@/lib/site";
 import { faqSchema } from "@/lib/schema";
 import type { FAQItem } from "@/lib/faqs";
@@ -138,18 +140,61 @@ const schemas = Array.isArray(schema) ? schema : schema ? [schema] : [];
     {schemas.map((s) => (
       <script type="application/ld+json" set:html={JSON.stringify(s)} />
     ))}
+
+    <!-- Astro View Transitions : fondu inter-pages + SPA-like navigation -->
+    <ViewTransitions />
   </head>
 
   <body
     class={`min-h-screen flex flex-col bg-white text-[color:var(--color-texte)] font-pro antialiased ${bodyClass}`}
     data-rayon={bodyDataRayon}
   >
-    {!hideChrome && <Header />}
+    {!hideChrome && (
+      <>
+        <TickerBanner />
+        <Header />
+      </>
+    )}
 
     <main class="flex-1">
       <slot />
     </main>
 
     {!hideChrome && <Footer />}
+
+    <!--
+      Scroll-reveal observer — ajoute .is-visible aux éléments .reveal
+      quand ils entrent dans le viewport. Re-déclenché après chaque
+      ViewTransition via astro:page-load.
+      Respecte prefers-reduced-motion (CSS force les éléments visibles).
+    -->
+    <script is:inline>
+      (function () {
+        const mount = () => {
+          const els = document.querySelectorAll(".reveal:not(.is-visible)");
+          if (!els.length || !("IntersectionObserver" in window)) {
+            // Fallback : tout visible immédiatement (pas d'IO dispo).
+            els.forEach((el) => el.classList.add("is-visible"));
+            return;
+          }
+          const io = new IntersectionObserver(
+            (entries) => {
+              entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                  entry.target.classList.add("is-visible");
+                  io.unobserve(entry.target);
+                }
+              });
+            },
+            { rootMargin: "0px 0px -10% 0px", threshold: 0.1 }
+          );
+          els.forEach((el) => io.observe(el));
+        };
+        document.addEventListener("astro:page-load", mount);
+        // 1er chargement (avant ViewTransitions init).
+        if (document.readyState !== "loading") mount();
+        else document.addEventListener("DOMContentLoaded", mount);
+      })();
+    </script>
   </body>
 </html>

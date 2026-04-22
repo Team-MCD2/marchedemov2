@@ -30,30 +30,108 @@ const isDark = variant === "dark";
 <section class={`section-sm ${isDark ? "bg-noir text-white" : "bg-creme"}`}>
   <div class="container-mo">
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-y-12 gap-x-8">
-      {items.map((stat, i) => (
-        <div class="group">
-          <div class="flex items-baseline gap-1">
-            <span class={`stat-number ${isDark ? "!text-white" : ""}`}>{stat.chiffre}</span>
-            {stat.suffixe && (
-              <span class={`font-soft font-bold text-[clamp(1.5rem,3vw,2.5rem)] leading-none -ml-0.5 ${
-                isDark ? "text-vert-light" : "text-vert"
-              }`}>
-                {stat.suffixe}
+      {items.map((stat, i) => {
+        /* Extrait la valeur numérique si possible (ex : "10 000" → 10000).
+           Sinon on passe la chaîne brute (ex : "Halal") qui reste statique. */
+        const parsed = parseInt(stat.chiffre.replace(/\s/g, ""), 10);
+        const animatable = !isNaN(parsed) && parsed > 0;
+        return (
+          <div class="group reveal" style={`--reveal-delay: ${i * 80}ms`}>
+            <div class="flex items-baseline gap-1">
+              <span
+                class={`stat-number ${isDark ? "!text-white" : ""}`}
+                data-count={animatable ? String(parsed) : undefined}
+                data-count-raw={stat.chiffre}
+              >
+                {stat.chiffre}
               </span>
+              {stat.suffixe && (
+                <span class={`font-soft font-bold text-[clamp(1.5rem,3vw,2.5rem)] leading-none -ml-0.5 ${
+                  isDark ? "text-vert-light" : "text-vert"
+                }`}>
+                  {stat.suffixe}
+                </span>
+              )}
+            </div>
+            <div class={`mt-2 font-pro font-bold text-[15px] tracking-wide uppercase ${
+              isDark ? "text-white/80" : "text-noir"
+            }`}>
+              {stat.label}
+            </div>
+            {stat.hint && (
+              <div class={`text-[13px] mt-0.5 ${isDark ? "text-white/50" : "text-neutral-500"}`}>
+                {stat.hint}
+              </div>
             )}
           </div>
-          <div class={`mt-2 font-pro font-bold text-[15px] tracking-wide uppercase ${
-            isDark ? "text-white/80" : "text-noir"
-          }`}>
-            {stat.label}
-          </div>
-          {stat.hint && (
-            <div class={`text-[13px] mt-0.5 ${isDark ? "text-white/50" : "text-neutral-500"}`}>
-              {stat.hint}
-            </div>
-          )}
-        </div>
-      ))}
+        );
+      })}
     </div>
   </div>
 </section>
+
+<script is:inline>
+  /**
+   * Stats counter : anime `data-count` de 0 à la valeur finale en ~1.4 s
+   * quand l'élément entre dans le viewport. Une seule fois par vue.
+   * Respecte prefers-reduced-motion (affiche directement la valeur finale).
+   */
+  (function () {
+    const prefersReduced =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+    const formatFR = (n) => n.toLocaleString("fr-FR").replace(/\u202F/g, " ");
+
+    const runCounter = (el) => {
+      const target = parseInt(el.getAttribute("data-count") || "0", 10);
+      const raw = el.getAttribute("data-count-raw") || String(target);
+      if (!target || prefersReduced) {
+        el.textContent = raw;
+        return;
+      }
+      const duration = 1400;
+      const start = performance.now();
+      const from = 0;
+      const step = (now) => {
+        const t = Math.min(1, (now - start) / duration);
+        /* easeOutExpo pour un feeling "count qui se pose" */
+        const eased = t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+        const current = Math.round(from + (target - from) * eased);
+        el.textContent = formatFR(current);
+        if (t < 1) requestAnimationFrame(step);
+        else el.textContent = raw; /* snap à la valeur exacte finale */
+      };
+      requestAnimationFrame(step);
+    };
+
+    const mount = () => {
+      const nums = document.querySelectorAll("[data-count]");
+      if (!nums.length) return;
+      if (!("IntersectionObserver" in window)) {
+        nums.forEach(runCounter);
+        return;
+      }
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              runCounter(entry.target);
+              io.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.3 }
+      );
+      nums.forEach((el) => {
+        /* Départ : 0 visible, évite le flash du chiffre final */
+        el.textContent = "0";
+        io.observe(el);
+      });
+    };
+
+    document.addEventListener("astro:page-load", mount);
+    if (document.readyState !== "loading") mount();
+    else document.addEventListener("DOMContentLoaded", mount);
+  })();
+</script>

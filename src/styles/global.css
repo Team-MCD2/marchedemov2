@@ -345,6 +345,74 @@
   }
 
   /* ------------------------------------------------------------
+     Ticker banner (défilement en boucle au-dessus du header)
+     ------------------------------------------------------------ */
+  .ticker {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  }
+  .ticker-track {
+    animation: ticker-scroll 45s linear infinite;
+  }
+  .ticker:hover .ticker-track { animation-play-state: paused; }
+  @keyframes ticker-scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* ------------------------------------------------------------
+     Scroll reveal — opacity 0→1 + translateY(20px→0) quand visible.
+     Déclenché côté JS par IntersectionObserver (script dans Layout).
+     Usage : ajouter class="reveal" sur un élément + data-reveal-delay
+             optionnel en ms pour staggériser.
+     ------------------------------------------------------------ */
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition:
+      opacity 0.6s var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1)),
+      transform 0.6s var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1));
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ------------------------------------------------------------
+     Badge "effet tampon" — entrée scale+rotation.
+     Ajouter class="badge-stamp" sur le badge promo. Déclenchée
+     automatiquement à l'apparition (IntersectionObserver .reveal
+     ajoute .is-visible sur le parent, on cascade).
+     ------------------------------------------------------------ */
+  .badge-stamp {
+    transform-origin: center;
+    animation: badge-stamp-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  @keyframes badge-stamp-in {
+    0%   { opacity: 0; transform: scale(1.4) rotate(-6deg); }
+    60%  { opacity: 1; transform: scale(0.95) rotate(2deg); }
+    100% { opacity: 1; transform: scale(1) rotate(0); }
+  }
+
+  /* ------------------------------------------------------------
+     Counter animé (Stats).
+     L'élément reste invisible jusqu'à la 1re mise à jour JS.
+     ------------------------------------------------------------ */
+  .stat-number[data-count] {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ------------------------------------------------------------
+     prefers-reduced-motion : désactive TOUTES nos animations custom.
+     ------------------------------------------------------------ */
+  @media (prefers-reduced-motion: reduce) {
+    .ticker-track       { animation: none !important; }
+    .marquee-track      { animation: none !important; }
+    .reveal             { opacity: 1 !important; transform: none !important; transition: none !important; }
+    .badge-stamp        { animation: none !important; }
+  }
+
+  /* ------------------------------------------------------------
      RayonCard slideshow — crossfade entre 2 à 4 images
      ------------------------------------------------------------
      Chaque image est affichée 4 s, fade-in/out 0.5 s.
