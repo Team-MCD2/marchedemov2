@@ -14,15 +14,19 @@ import type { ProduitVedette } from "@/lib/produits-vedettes";
 
 interface Props {
   produit: ProduitVedette;
+  /** Override destination. Default: /produits/[slug] (detail page). */
+  linkTo?: "produit" | "rayon";
 }
 
-const { produit } = Astro.props as Props;
+const { produit, linkTo = "produit" } = Astro.props as Props;
 const rayonData = RAYONS[produit.rayon];
 const accent = rayonData?.accent ?? "#1C6B35";
+const href =
+  linkTo === "rayon" ? `/rayons/${produit.rayon}` : `/produits/${produit.id}`;
 ---
 
 <a
-  href={`/rayons/${produit.rayon}`}
+  href={href}
   data-tilt
   data-tilt-max="3"
   class="group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1"

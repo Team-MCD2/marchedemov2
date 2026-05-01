@@ -7,7 +7,7 @@ import RecetteCard from "@components/RecetteCard.astro";
 import Stats from "@components/Stats.astro";
 import FAQAccordion from "@components/FAQAccordion.astro";
 import NewsletterInline from "@components/NewsletterInline.astro";
-import TikTokEmbed from "@components/islands/TikTokEmbed.jsx";
+import LocalVideoPlayer from "@components/islands/LocalVideoPlayer.jsx";
 import PromoCarousel from "@components/PromoCarousel.astro";
 import PromoHero, { type ExtraSlide } from "@components/PromoHero.astro";
 import ActuCarousel from "@components/ActuCarousel.astro";
@@ -18,12 +18,8 @@ import { RAYONS_LIST, ENGAGEMENTS, MAGASINS, SITE } from "@/lib/site";
 import { getRecettesVedettes } from "@/lib/recettes";
 import { FAQ_HOME } from "@/lib/faqs";
 import { organizationSchema, websiteSchema, allMagasinsSchema, offerSchema } from "@/lib/schema";
-import tiktokEmbedsRaw from "@/generated/tiktok-embeds.json";
 import { getActivePromos } from "@/lib/promos-repo";
 import { getProduitsVedettes } from "@/lib/produits-repo";
-
-type TikTokCacheEntry = { thumbnail?: string; html?: string };
-const tiktokEmbeds = tiktokEmbedsRaw as Record<string, TikTokCacheEntry>;
 
 /* Promos : Supabase-first (actif=true), fallback Content Collection.
    featuredPromo = first mise_en_avant row, used for OfferSchema JSON-LD. */
@@ -140,51 +136,26 @@ const schemas = [
         </div>
       </div>
 
-      <!-- Hero visual : phone mockup montrant le site sur téléphone -->
+      <!-- Hero visual : phone mockup montrant le site sur téléphone.
+           Le screen est une vraie capture mobile de la home rendue à 360×780
+           via Playwright (script: scripts/capture-mobile-home.mjs).
+           Pour rafraîchir la capture après un changement de hero :
+             1. npm run dev
+             2. node scripts/capture-mobile-home.mjs -->
       <div class="lg:col-span-5 relative flex items-center justify-center pt-4 lg:pt-0">
         <div class="phone-mockup">
           <div class="phone-mockup-screen">
-            <!--
-              Écran : aperçu du site en mode mobile.
-              MVP : on réutilise l'image hero du souk de Dubaï en cadrage portrait
-              + un overlay de "barre de navigation" + tagline pour
-              simuler une vue mobile du site.
-              TODO : remplacer par une vraie capture d'écran mobile de la home.
-            -->
             <div class="phone-screen-content relative">
               <img
-                src="/images/rayons/epices-du-monde/marche-aux-epices-dubai.jpg"
+                src="/images/home/mobile-home-screen.jpg"
                 alt="Aperçu du site Marché de Mo' sur téléphone"
                 fetchpriority="high"
                 width="360"
                 height="780"
                 class="absolute inset-0 w-full h-full object-cover"
               />
-              <div class="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/85 via-black/30 to-transparent"></div>
-              <!-- Mini header -->
-              <div class="absolute top-12 left-0 right-0 px-4 flex items-center justify-between">
-                <img
-                  src="/logos/logo-marchedemo-rond-contourgreen.png"
-                  alt=""
-                  aria-hidden="true"
-                  class="w-7 h-7 rounded-full bg-white/90 p-0.5"
-                />
-                <span class="text-white/80 text-[10px] font-pro font-bold tracking-wider uppercase">Saveurs du monde</span>
-                <span class="w-7 h-7 rounded-full bg-white/15 backdrop-blur flex items-center justify-center">
-                  <svg class="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12h18M3 6h18M3 18h18" stroke-linecap="round"/></svg>
-                </span>
-              </div>
-              <!-- Tagline + CTA -->
-              <div class="absolute inset-x-0 bottom-0 p-4 text-white">
-                <div class="text-[8px] font-pro font-bold tracking-widest uppercase text-vert-light/90">Supermarché ethnique · Toulouse</div>
-                <div class="font-soft font-bold text-[18px] leading-[1.05] mt-1">
-                  <span class="text-vert-light">Saveurs</span> du monde.<br/>
-                  Prix de <span class="text-rouge">quartier</span>.
-                </div>
-                <div class="mt-2.5 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-vert text-white text-[9px] font-bold">
-                  Voir les rayons →
-                </div>
-              </div>
+              <!-- Liseré intérieur pour la profondeur de l'écran. -->
+              <div class="absolute inset-0 ring-1 ring-inset ring-black/10 pointer-events-none"></div>
             </div>
           </div>
         </div>
@@ -496,14 +467,12 @@ const schemas = [
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {videos.slice(0, 3).map((v) => {
-            const cached = tiktokEmbeds[v.data.id];
             return (
-              <TikTokEmbed
+              <LocalVideoPlayer
                 client:visible
-                url={v.data.url_tiktok}
+                src={v.data.src_local}
                 title={v.data.titre}
-                thumbnail={cached?.thumbnail ?? v.data.thumbnail}
-                embedHtml={cached?.html}
+                href={v.data.url_tiktok}
               />
             );
           })}

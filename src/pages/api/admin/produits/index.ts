@@ -75,6 +75,12 @@ function normalizeProduit(raw: any) {
     prix_indicatif,
     unite: raw.unite ? String(raw.unite).trim() : null,
     rayon,
+    /* Hiérarchie catégorielle pour drill-down. Optionnels — null si vide.
+       Les slugs sont validés par la SQL CHECK via taxonomie.ts si besoin,
+       mais on accepte ici n'importe quelle string non-vide pour rester
+       flexible sur les imports massifs.                                */
+    categorie: raw.categorie ? String(raw.categorie).trim() : null,
+    sous_categorie: raw.sous_categorie ? String(raw.sous_categorie).trim() : null,
     origine: raw.origine ? String(raw.origine).trim() : null,
     badge: raw.badge ? String(raw.badge).trim() : null,
     actif: raw.actif !== false,

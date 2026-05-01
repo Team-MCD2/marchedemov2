@@ -215,10 +215,13 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
     image: "/images/rayons/boucherie-halal.jpg",
     imageAlt:
       "Boucherie halal Marché de Mo' Toulouse — viande fraîche travaillée sur carcasse",
+    // Slide 1 = image principale (cutlets + romarin, identique à
+    // image-de-cindie-hansen.jpg — on ne la re-liste pas dans le slideshow).
+    // Note : l'ancienne image "slaughterhouse carcasses" a été retirée car trop
+    // graphique pour un site grand public — cf. CREDITS.md §Réorganisations.
     heroSlideshow: [
       "/images/rayons/boucherie-halal.jpg",
       "/images/rayons/boucherie-halal/11062b-603fa6aa568c43e08182a6e546211812f000.jpg",
-      "/images/rayons/boucherie-halal/image-de-cindie-hansen.jpg",
     ],
     culturel: false,
     ordre: 1,
@@ -367,7 +370,6 @@ export const RAYONS: Record<RayonSlug, Rayon> = {
     imageAlt: "Rayon saveur méditerranéenne Marché de Mo' Toulouse — olives, huile d'olive, épices",
     heroSlideshow: [
       "/images/rayons/saveur-mediterranee.jpg",
-      "/images/rayons/saveur-mediterranee/ouvrier-d-x27-epicerie.jpg",
     ],
     culturel: true,
     ordre: 6,

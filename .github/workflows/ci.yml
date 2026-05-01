@@ -1,0 +1,44 @@
+name: CI
+
+# Validate every push and PR :
+#   - install with the lock file
+#   - run `astro check` — catches TS regressions, Astro template errors,
+#     missing imports, broken types in lib & islands
+#
+# Vercel itself runs the actual `astro build` on each push to `main`,
+# so we don't duplicate that work here. If you want a full CI build
+# (e.g. to catch SSR runtime errors), add the build job below and wire
+# the Supabase secrets into the repo's Actions settings — see DEPLOY.md.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Cancel previous runs on the same ref when a new commit lands.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: astro check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Type & template check
+        run: npx astro check

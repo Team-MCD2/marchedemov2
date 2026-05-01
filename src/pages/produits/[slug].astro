@@ -1,0 +1,300 @@
+---
+/**
+ * /produits/[slug] — Product detail page.
+ *
+ * Mo' doctrine (no e-commerce) :
+ *   - NO prices, NO stock, NO cart
+ *   - Destination : "Disponible en magasin" → links to /magasins + /rayons
+ *   - Rich related products + cross-rayon discovery
+ *
+ * SSG : one static page per produit slug (358 pages from the unified
+ * catalogue today, up to 1000+ when the full catalogue is seeded).
+ */
+import Layout from "@layouts/Layout.astro";
+import Breadcrumb from "@components/Breadcrumb.astro";
+import ProduitCard from "@components/ProduitCard.astro";
+import NewsletterInline from "@components/NewsletterInline.astro";
+import { RAYONS, MAGASINS, SITE } from "@/lib/site";
+import type { RayonSlug } from "@/lib/site";
+import {
+  getAllProduitSlugs,
+  getProduitBySlug,
+  getProduitsByRayon,
+} from "@/lib/produits-repo";
+import { breadcrumbSchema } from "@/lib/schema";
+
+export async function getStaticPaths() {
+  const slugs = await getAllProduitSlugs();
+  const paths = [] as Array<{ params: { slug: string }; props: any }>;
+  for (const slug of slugs) {
+    const produit = await getProduitBySlug(slug);
+    if (!produit) continue;
+    paths.push({ params: { slug }, props: { produit } });
+  }
+  return paths;
+}
+
+const { produit } = Astro.props as {
+  produit: NonNullable<Awaited<ReturnType<typeof getProduitBySlug>>>;
+};
+
+const rayon = RAYONS[produit.rayon as RayonSlug];
+const accent = rayon?.accent ?? "#1C6B35";
+
+/* Related produits : same rayon, same categorie first, then rayon at large. */
+const rayonProduits = await getProduitsByRayon(produit.rayon);
+const rest = rayonProduits.filter((p) => p.slug !== produit.slug);
+const relatedByCat = rest.filter(
+  (p) => produit.categorie && p.categorie === produit.categorie,
+);
+const related = [...relatedByCat, ...rest.filter((p) => !relatedByCat.includes(p))].slice(
+  0,
+  6,
+);
+
+const relatedCards = related.map((p) => ({
+  id: p.slug,
+  nom: p.nom,
+  image: p.image ?? "",
+  rayon: p.rayon as RayonSlug,
+  badge: p.badge ?? undefined,
+  origine: p.origine ?? undefined,
+}));
+
+const bc = breadcrumbSchema([
+  { name: "Produits", url: "/produits" },
+  { name: rayon?.nom ?? produit.rayon, url: `/produits/${produit.rayon}` },
+  { name: produit.nom, url: `/produits/${produit.slug}` },
+]);
+
+/* Product schema WITHOUT offers (no price) — Google still indexes this. */
+const productSchema = {
+  "@context": "https://schema.org",
+  "@type": "Product",
+  name: produit.nom,
+  description:
+    produit.description ||
+    `${produit.nom} disponible au Marché de Mo' — ${rayon?.nomCourt ?? produit.rayon}.`,
+  image: produit.image ? produit.image : undefined,
+  category: rayon?.nom ?? produit.rayon,
+  brand: { "@type": "Brand", name: SITE.name },
+  ...(produit.origine ? { countryOfOrigin: produit.origine } : {}),
+};
+
+const combinedSchema = [bc, productSchema];
+
+const tagline = produit.description?.trim() || rayon?.tagline || "";
+---
+
+<Layout
+  title={`${produit.nom} · ${rayon?.nom ?? "Produits"} — ${SITE.name}`}
+  description={
+    produit.description ||
+    `${produit.nom} — disponible au rayon ${rayon?.nom ?? produit.rayon} du Marché de Mo' à Toulouse et Portet-sur-Garonne.`
+  }
+  schema={combinedSchema}
+>
+  <Breadcrumb
+    items={[
+      { name: "Produits", href: "/produits" },
+      { name: rayon?.nom ?? produit.rayon, href: `/produits/${produit.rayon}` },
+      { name: produit.nom },
+    ]}
+  />
+
+  {/* ---------- DETAIL ---------- */}
+  <section class="bg-blanc pb-16 md:pb-24">
+    <div class="container-mo">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 lg:gap-16 items-start">
+        {/* Image side */}
+        <div
+          class="relative rounded-3xl overflow-hidden bg-creme shadow-card aspect-square"
+          style={`--rayon-accent: ${accent}`}
+        >
+          {produit.image ? (
+            <img
+              src={produit.image}
+              alt={produit.nom}
+              loading="eager"
+              fetchpriority="high"
+              decoding="async"
+              class="absolute inset-0 w-full h-full object-cover reveal-mask"
+              data-parallax="0.04"
+            />
+          ) : (
+            <div class="absolute inset-0 bg-gradient-to-br from-creme via-creme-warm to-[#EEEAE0] flex flex-col items-center justify-center p-10 text-center">
+              <img
+                src="/logos/favicon-marchedemo.png"
+                alt=""
+                aria-hidden="true"
+                width="120"
+                height="120"
+                class="w-24 h-24 opacity-20 mb-6"
+              />
+              <p class="font-soft font-bold text-[17px] leading-snug text-neutral-500 uppercase tracking-wider line-clamp-4">
+                {produit.nom}
+              </p>
+              <span class="mt-3 text-[11px] text-neutral-400 italic font-pro">
+                Photo à venir — disponible en magasin
+              </span>
+            </div>
+          )}
+          {produit.badge && (
+            <span
+              class="absolute top-4 left-4 inline-flex items-center px-3 py-1.5 rounded-full bg-white/95 text-[12px] font-pro font-bold tracking-wide uppercase shadow-md"
+              style={`color: ${accent}`}
+            >
+              {produit.badge}
+            </span>
+          )}
+        </div>
+
+        {/* Text side */}
+        <div>
+          <a
+            href={`/produits/${produit.rayon}`}
+            class="inline-flex items-center gap-2 text-[12px] font-pro font-bold uppercase tracking-wider link-draw"
+            style={`color: ${accent}`}
+          >
+            <span
+              class="w-1.5 h-1.5 rounded-full"
+              style={`background: ${accent}`}
+            ></span>
+            {rayon?.nom ?? produit.rayon}
+          </a>
+
+          <h1 class="display-lg mt-4 text-balance" data-split-reveal>
+            {produit.nom}
+          </h1>
+
+          {tagline && (
+            <p class="mt-6 text-[17px] md:text-[18px] leading-relaxed text-neutral-700 max-w-xl">
+              {tagline}
+            </p>
+          )}
+
+          {/* Meta pills */}
+          <dl class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl">
+            {produit.origine && (
+              <div class="flex items-start gap-3 bg-creme rounded-2xl px-4 py-3">
+                <svg
+                  class="w-5 h-5 mt-0.5 text-neutral-500 shrink-0"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                </svg>
+                <div>
+                  <dt class="text-[11px] font-pro font-bold uppercase tracking-wider text-neutral-500">
+                    Origine
+                  </dt>
+                  <dd class="text-[15px] font-soft font-bold text-noir mt-0.5">
+                    {produit.origine}
+                  </dd>
+                </div>
+              </div>
+            )}
+            {produit.categorie && (
+              <div class="flex items-start gap-3 bg-creme rounded-2xl px-4 py-3">
+                <svg
+                  class="w-5 h-5 mt-0.5 text-neutral-500 shrink-0"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z" />
+                </svg>
+                <div>
+                  <dt class="text-[11px] font-pro font-bold uppercase tracking-wider text-neutral-500">
+                    Catégorie
+                  </dt>
+                  <dd class="text-[15px] font-soft font-bold text-noir mt-0.5">
+                    {produit.sous_categorie
+                      ? `${produit.categorie} · ${produit.sous_categorie}`
+                      : produit.categorie}
+                  </dd>
+                </div>
+              </div>
+            )}
+          </dl>
+
+          {/* CTA bloc */}
+          <div class="mt-10 p-6 md:p-8 rounded-3xl border border-black/8 bg-gradient-to-br from-white to-creme">
+            <p class="text-[13px] font-pro font-bold uppercase tracking-wider text-neutral-500">
+              Où le trouver
+            </p>
+            <h2 class="mt-2 font-soft font-bold text-[22px] md:text-[26px] leading-tight">
+              Disponible en magasin dans nos 2 adresses
+            </h2>
+            <p class="mt-3 text-[14px] text-neutral-600 leading-relaxed">
+              Produits frais, rotations quotidiennes. Appelez ou passez pour
+              confirmer l'arrivage du jour.
+            </p>
+            <div class="mt-5 flex flex-wrap gap-3">
+              <a
+                href={`/magasins/${MAGASINS.portet.slug}`}
+                class="btn btn-primary btn-sheen"
+              >
+                Magasin Portet →
+              </a>
+              <a
+                href={`/magasins/${MAGASINS["toulouse-sud"].slug}`}
+                class="btn btn-secondary"
+              >
+                Magasin Toulouse Sud →
+              </a>
+              <a
+                href={`tel:${SITE.phoneE164}`}
+                class="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-transparent border border-black/15 hover:border-black/35 hover:bg-black/5 text-[14px] font-pro font-bold transition-all"
+              >
+                <span aria-hidden="true">📞</span> {SITE.phone}
+              </a>
+            </div>
+          </div>
+
+          {/* Rayon discovery */}
+          {rayon && (
+            <div class="mt-8 flex flex-wrap gap-3">
+              <a href={`/rayons/${produit.rayon}`} class="link-draw text-[14px] font-pro font-bold">
+                → Découvrir l'univers {rayon.nom}
+              </a>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* ---------- RELATED ---------- */}
+  {relatedCards.length > 0 && (
+    <section class="section-sm bg-creme">
+      <div class="container-mo">
+        <div class="flex items-end justify-between gap-4 mb-8">
+          <div>
+            <span class="eyebrow">Dans le même rayon</span>
+            <h2 class="display-md mt-3 text-balance">
+              Vous aimerez peut-être aussi.
+            </h2>
+          </div>
+          <a
+            href={`/produits/${produit.rayon}`}
+            class="btn btn-secondary shrink-0"
+          >
+            Tout le rayon →
+          </a>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
+          {relatedCards.map((p) => (
+            <ProduitCard produit={p as any} />
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <NewsletterInline />
+</Layout>

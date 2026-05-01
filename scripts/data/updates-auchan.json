@@ -1,0 +1,24 @@
+{
+  "_generated_at": "2026-04-29T18:58:26.790Z",
+  "_source": "local",
+  "_min": 0.05,
+  "_margin": 0,
+  "_only_missing": true,
+  "_catalogue_total": 358,
+  "_wanted": 1,
+  "_auchan": 2486,
+  "_updates": 1,
+  "updates": [
+    {
+      "slug": "manioc-frais",
+      "rayon": "fruits-legumes",
+      "origin": "local",
+      "nom": "Manioc frais",
+      "image_url": "https://images.openfoodfacts.org/images/products/341/600/901/1010/front_fr.12.400.jpg",
+      "source_url": "https://world.openfoodfacts.org/product/3416009011010",
+      "confidence": 0.477,
+      "gap": 0.477,
+      "auchan_name": "Manioc nettoyé congelé"
+    }
+  ]
+}

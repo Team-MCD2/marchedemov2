@@ -87,9 +87,8 @@ const schemas = Array.isArray(schema) ? schema : schema ? [schema] : [];
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <!-- Favicon officiel : portrait sketch de Mo' -->
-    <link rel="icon" type="image/png" href="/logos/favicon-marchedemo.png" />
-    <link rel="apple-touch-icon" href="/logos/logo-marchedemo-rond-contourgreen.png" />
+    <link rel="icon" type="image/png" href="/logos/logo-marchedemo.png" />
+    <link rel="apple-touch-icon" href="/logos/logo-marchedemo.png" />
     <meta name="theme-color" content="#1C6B35" />
 
     <!-- Typekit : Filson Pro + Filson Soft -->
@@ -159,6 +158,12 @@ const schemas = Array.isArray(schema) ? schema : schema ? [schema] : [];
 
     <!-- Astro View Transitions : fondu inter-pages + SPA-like navigation -->
     <ViewTransitions />
+
+    <!--
+      Note : le script Vercel Web Analytics est injecté automatiquement
+      par l'adaptateur @astrojs/vercel quand `webAnalytics.enabled = true`
+      dans astro.config.mjs. Voir DEPLOY.md §5 pour la procédure d'activation.
+    -->
   </head>
 
   <body

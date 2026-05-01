@@ -6,16 +6,17 @@
 import { SITE } from "@/lib/site";
 
 interface Props {
-  current?: "dashboard" | "promos" | "produits" | "medias";
+  current?: "dashboard" | "promos" | "produits" | "medias" | "images-gap";
 }
 
 const { current } = Astro.props as Props;
 
 const navItems = [
-  { id: "dashboard", label: "Tableau de bord", href: "/admin" },
-  { id: "promos",    label: "Promos",           href: "/admin/promos" },
-  { id: "produits",  label: "Produits",         href: "/admin/produits" },
-  { id: "medias",    label: "Images",           href: "/admin/medias" },
+  { id: "dashboard",  label: "Tableau de bord", href: "/admin" },
+  { id: "promos",     label: "Promos",           href: "/admin/promos" },
+  { id: "produits",   label: "Produits",         href: "/admin/produits" },
+  { id: "medias",     label: "Images",           href: "/admin/medias" },
+  { id: "images-gap", label: "Manquantes",       href: "/admin/images-gap" },
 ] as const;
 ---
 

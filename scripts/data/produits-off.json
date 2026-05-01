@@ -1,0 +1,5187 @@
+{
+  "_source": "OpenFoodFacts (CC-BY-SA 3.0)",
+  "_fetched_at": "2026-04-22T20:25:14.342Z",
+  "_count": 286,
+  "produits": [
+    {
+      "slug": "sel-fin-iode-3252378001319",
+      "nom": "Sel fin iodé",
+      "description": "Sel Fin iodé",
+      "image_url": "https://images.openfoodfacts.org/images/products/325/237/800/1319/front.4.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": "Maghreb",
+      "sous_categorie": null,
+      "origine": "Réunion",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3252378001319",
+      "_brands": [
+        "Cerebos"
+      ]
+    },
+    {
+      "slug": "cannelle-moulue-3166290200197",
+      "nom": "Cannelle moulue",
+      "description": "Cannelle moulue",
+      "image_url": "https://images.openfoodfacts.org/images/products/316/629/020/0197/front.8.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": "Maghreb",
+      "sous_categorie": null,
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3166290200197",
+      "_brands": [
+        "Ducros"
+      ]
+    },
+    {
+      "slug": "arome-loriginal-7613036501354",
+      "nom": "Arome l'Original",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/761/303/650/1354/front_fr.64.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": "Maghreb",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "7613036501354",
+      "_brands": [
+        "Nestlé"
+      ]
+    },
+    {
+      "slug": "pringles-classic-paprika-5053990167883",
+      "nom": "Pringles classic paprika",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/505/399/016/7883/front_fr.76.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": "Maghreb",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "5053990167883",
+      "_brands": [
+        "Pringles"
+      ]
+    },
+    {
+      "slug": "moulin-5-baies-3166296550432",
+      "nom": "Moulin 5 Baies",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/316/629/655/0432/front_fr.21.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": "Maghreb",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3166296550432",
+      "_brands": [
+        "Ducros"
+      ]
+    },
+    {
+      "slug": "guacamole-0046000815213",
+      "nom": "guacamole",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/004/600/081/5213/front.5.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": "Maghreb",
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "0046000815213",
+      "_brands": [
+        "Old El Paso"
+      ]
+    },
+    {
+      "slug": "harissa-du-cap-bon-6194049100105",
+      "nom": "Harissa du Cap-Bon",
+      "description": "Harissa",
+      "image_url": "https://images.openfoodfacts.org/images/products/619/404/910/0105/front.4.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": "Piments",
+      "sous_categorie": null,
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "6194049100105",
+      "_brands": [
+        "Le phare du Cap-Bon"
+      ]
+    },
+    {
+      "slug": "knorr-assaisonnement-en-poudre-aromat-tube-70g-3011360000767",
+      "nom": "Knorr Assaisonnement En Poudre Aromat Tube 70g",
+      "description": "Assaisonnement déshydraté.",
+      "image_url": "https://images.openfoodfacts.org/images/products/301/136/000/0767/front.4.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": "Maghreb",
+      "sous_categorie": null,
+      "origine": "Suisse",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3011360000767",
+      "_brands": [
+        "Knorr"
+      ]
+    },
+    {
+      "slug": "persillade-provencale-20226572",
+      "nom": "Persillade provençale",
+      "description": "Herbes aromatiques lyophilisées pour salades avec 10% de poivre noir séché",
+      "image_url": "https://images.openfoodfacts.org/images/products/20226572/front.9.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": "Maghreb",
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "20226572",
+      "_brands": [
+        "Kania"
+      ]
+    },
+    {
+      "slug": "tajin-clasico-seasoning-with-lime-imp-0633148100013",
+      "nom": "Tajín Clasico Seasoning with Lime imp",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/063/314/810/0013/front_en.28.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": "Piments",
+      "sous_categorie": null,
+      "origine": "Mexique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "0633148100013",
+      "_brands": [
+        "Tajin",
+        " Tajín Clasico"
+      ]
+    },
+    {
+      "slug": "peperoncini-macinati-in-olio-extra-vergine-di-oliva-20422103",
+      "nom": "Peperoncini Macinati in Olio Extra Vergine di Oliva",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/20422103/front_en.683.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": "Piments",
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "20422103",
+      "_brands": [
+        "LIDL",
+        "italiamo"
+      ]
+    },
+    {
+      "slug": "moulin-poivre-noir-3166296550371",
+      "nom": "Moulin Poivre Noir",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/316/629/655/0371/front_fr.13.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": "Maghreb",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3166296550371",
+      "_brands": [
+        "Ducros"
+      ]
+    },
+    {
+      "slug": "poivre-gris-moulu-3166296204267",
+      "nom": "Poivre gris moulu",
+      "description": "Poivre gris moulu",
+      "image_url": "https://images.openfoodfacts.org/images/products/316/629/620/4267/front_en.3.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": "Maghreb",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3166296204267",
+      "_brands": [
+        "Ducros"
+      ]
+    },
+    {
+      "slug": "bouillon-de-legumes-4056489168096",
+      "nom": "Bouillon de légumes",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/405/648/916/8096/front_en.65.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": "Maghreb",
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "4056489168096",
+      "_brands": [
+        "Kania",
+        "LIDL"
+      ]
+    },
+    {
+      "slug": "sel-fin-iode-3252378000114",
+      "nom": "Sel fin iodé",
+      "description": "Sel de table iodé",
+      "image_url": "https://images.openfoodfacts.org/images/products/325/237/800/0114/front.29.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": "Maghreb",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3252378000114",
+      "_brands": [
+        "Cérébos"
+      ]
+    },
+    {
+      "slug": "arome-vanille-bourbon-3179142720200",
+      "nom": "Arôme vanille Bourbon",
+      "description": "Vanille liquide",
+      "image_url": "https://images.openfoodfacts.org/images/products/317/914/272/0200/front.10.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": "Maghreb",
+      "sous_categorie": null,
+      "origine": "Suisse",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3179142720200",
+      "_brands": [
+        "Vahiné"
+      ]
+    },
+    {
+      "slug": "piment-de-cayenne-extra-fort-3166290200852",
+      "nom": "Piment de Cayenne Extra Fort",
+      "description": "piment de cayenne",
+      "image_url": "https://images.openfoodfacts.org/images/products/316/629/020/0852/front.9.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": "Piments",
+      "sous_categorie": null,
+      "origine": "Espagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3166290200852",
+      "_brands": [
+        "Ducros"
+      ]
+    },
+    {
+      "slug": "fleur-de-sel-de-guerande-3445850002151",
+      "nom": "Fleur de sel de Guérande",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/344/585/000/2151/front.7.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": "Maghreb",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3445850002151",
+      "_brands": [
+        "Le guerandais"
+      ]
+    },
+    {
+      "slug": "curry-poudre-3166296204236",
+      "nom": "Curry Poudre",
+      "description": "Assaisonnement poudre de curry",
+      "image_url": "https://images.openfoodfacts.org/images/products/316/629/620/4236/front_en.142.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": "Inde",
+      "sous_categorie": "Simples",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3166296204236",
+      "_brands": [
+        "Ducros"
+      ]
+    },
+    {
+      "slug": "sel-de-guerande-3564709000374",
+      "nom": "Sel de Guérande",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/356/470/900/0374/front.15.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": "Maghreb",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3564709000374",
+      "_brands": [
+        "Nos regions ont du talent"
+      ]
+    },
+    {
+      "slug": "original-herbamare-sel-marin-plantes-et-legumes-frais-303562",
+      "nom": "Original Herbamare • Sel marin, plantes et légumes frais",
+      "description": "Sel marin aux légumes et herbes aromatiques",
+      "image_url": "https://images.openfoodfacts.org/images/products/303/562/680/3558/front.7.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": "Maghreb",
+      "sous_categorie": null,
+      "origine": "Suisse",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3035626803558",
+      "_brands": [
+        "A.Vogel"
+      ]
+    },
+    {
+      "slug": "curcuma-moulu-3166296555338",
+      "nom": "Curcuma Moulu",
+      "description": "Curcuma moulu",
+      "image_url": "https://images.openfoodfacts.org/images/products/316/629/655/5338/front_fr.18.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": "Maghreb",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3166296555338",
+      "_brands": [
+        "Ducros"
+      ]
+    },
+    {
+      "slug": "madras-spice-paste-5011308002400",
+      "nom": "Madras Spice Paste",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/501/130/800/2400/front_en.23.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": "Inde",
+      "sous_categorie": "Simples",
+      "origine": "Australie",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "5011308002400",
+      "_brands": [
+        "Patak's"
+      ]
+    },
+    {
+      "slug": "sel-de-mer-fin-3183280013766",
+      "nom": "Sel de mer fin",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/318/328/001/3766/front.3.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": "Maghreb",
+      "sous_categorie": null,
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3183280013766",
+      "_brands": [
+        "La Baleine"
+      ]
+    },
+    {
+      "slug": "poivre-noir-moulu-3166296203116",
+      "nom": "Poivre noir moulu",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/316/629/620/3116/front.5.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": "Maghreb",
+      "sous_categorie": null,
+      "origine": "Liban",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3166296203116",
+      "_brands": [
+        "Ducros"
+      ]
+    },
+    {
+      "slug": "oregano-gerebelt-4056489416685",
+      "nom": "Oregano gerebelt",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/405/648/941/6685/front_en.31.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": "Maghreb",
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "4056489416685",
+      "_brands": [
+        "Kania"
+      ]
+    },
+    {
+      "slug": "puree-de-piments-suzi-wan-100-g-3233783625000",
+      "nom": "Purée de piments Suzi Wan 100 g",
+      "description": "Purrée de piments",
+      "image_url": "https://images.openfoodfacts.org/images/products/323/378/362/5000/front.7.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": "Piments",
+      "sous_categorie": null,
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3233783625000",
+      "_brands": [
+        "Suzi Wan"
+      ]
+    },
+    {
+      "slug": "the-vert-saveur-menthe-3124480195326",
+      "nom": "Thé vert saveur menthe",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/312/448/019/5326/front_fr.33.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3124480195326",
+      "_brands": [
+        "May Tea"
+      ]
+    },
+    {
+      "slug": "black-ice-tea-peach-5449000236623",
+      "nom": "Black Ice Tea Peach",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/544/900/023/6623/front_en.67.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "5449000236623",
+      "_brands": [
+        "FuzeTea"
+      ]
+    },
+    {
+      "slug": "the-earl-grey-5055953902531",
+      "nom": "Thé earl grey",
+      "description": "Thé aromatisé bergamote",
+      "image_url": "https://images.openfoodfacts.org/images/products/505/595/390/2531/front_fr.64.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "5055953902531",
+      "_brands": [
+        "Twinings",
+        "Twinings Of London"
+      ]
+    },
+    {
+      "slug": "gunpowder-the-vert-nature-5055953900292",
+      "nom": "Gunpowder Thé Vert Nature",
+      "description": "Thé vert en vrac",
+      "image_url": "https://images.openfoodfacts.org/images/products/505/595/390/0292/front.5.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "5055953900292",
+      "_brands": [
+        "TWININGS"
+      ]
+    },
+    {
+      "slug": "the-vert-glace-saveur-citron-vert-menthe-5449000266002",
+      "nom": "Thé vert glacé saveur citron vert & menthe",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/544/900/026/6002/front_fr.55.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "5449000266002",
+      "_brands": [
+        "FUZE TEA"
+      ]
+    },
+    {
+      "slug": "tea-lemon-lemongrass-5449000235947",
+      "nom": "Tea Lemon Lemongrass",
+      "description": "Thé Noir Glacé au Citron et Citronnelle",
+      "image_url": "https://images.openfoodfacts.org/images/products/544/900/023/5947/front_de.37.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Autriche",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "5449000235947",
+      "_brands": [
+        "Fusetea",
+        " coca cola"
+      ]
+    },
+    {
+      "slug": "the-vert-glace-3168930170693",
+      "nom": "Thé vert glacé",
+      "description": "Boisson rafraîchissante aux extraits de thé vert saveur citron vert menthe, avec sucres et édulcorant.",
+      "image_url": "https://images.openfoodfacts.org/images/products/316/893/017/0693/front_fr.21.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3168930170693",
+      "_brands": [
+        "Lipton"
+      ]
+    },
+    {
+      "slug": "infusion-a-froid-detox-cranberry-framboise-hibiscus-87113275",
+      "nom": "Infusion à froid Detox cranberry framboise hibiscus",
+      "description": "Préparation aromatisée pour infusion.",
+      "image_url": "https://images.openfoodfacts.org/images/products/871/132/750/1119/front_fr.56.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8711327501119",
+      "_brands": [
+        "Elephant"
+      ]
+    },
+    {
+      "slug": "yellow-label-8720608007417",
+      "nom": "Yellow label",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/872/060/800/7417/front_fr.24.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8720608007417",
+      "_brands": [
+        "lipton",
+        " unilever"
+      ]
+    },
+    {
+      "slug": "the-vert-menthe-x-30-sachets-8712100824586",
+      "nom": "Thé vert menthe x 30 sachets",
+      "description": "30 sachets enveloppés Thé vert aromatisé",
+      "image_url": "https://images.openfoodfacts.org/images/products/871/210/082/4586/front.3.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Espagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8712100824586",
+      "_brands": [
+        "Lipton"
+      ]
+    },
+    {
+      "slug": "infuse-a-froid-peche-framboise-8720608002849",
+      "nom": "Infuse a froid pêche-framboise",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/872/060/800/2849/front_fr.39.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8720608002849",
+      "_brands": [
+        "Lipton"
+      ]
+    },
+    {
+      "slug": "lipton-the-5-fruits-rouges-20-sachets-3228881010971",
+      "nom": "Lipton Thé 5 Fruits Rouges 20 Sachets",
+      "description": "Thé aromatisé fruits rouges",
+      "image_url": "https://images.openfoodfacts.org/images/products/322/888/101/0971/front.6.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Guadeloupe",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3228881010971",
+      "_brands": [
+        "Lipton"
+      ]
+    },
+    {
+      "slug": "sal-marina-con-hierbas-8413700190285",
+      "nom": "Sal Marina con Hierbas",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/841/370/019/0285/front_es.17.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Bolivie",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8413700190285",
+      "_brands": [
+        "Carmencita"
+      ]
+    },
+    {
+      "slug": "sel-3183280001800",
+      "nom": "sel",
+      "description": "Sel fin iodé",
+      "image_url": "https://images.openfoodfacts.org/images/products/318/328/000/1800/front.10.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Suisse",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3183280001800",
+      "_brands": [
+        "baleine"
+      ]
+    },
+    {
+      "slug": "sel-moulu-de-mediterranee-3183280000728",
+      "nom": "Sel Moulu de Méditerranée",
+      "description": "Sel de table Iodé",
+      "image_url": "https://images.openfoodfacts.org/images/products/318/328/000/0728/front.13.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3183280000728",
+      "_brands": [
+        "la baleine"
+      ]
+    },
+    {
+      "slug": "sel-de-mer-3183280012875",
+      "nom": "Sel de mer",
+      "description": "Sel de table iodé et fluoré",
+      "image_url": "https://images.openfoodfacts.org/images/products/318/328/001/2875/front_fr.84.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3183280012875",
+      "_brands": [
+        "La baleine"
+      ]
+    },
+    {
+      "slug": "sel-fin-3183280017337",
+      "nom": "Sel Fin",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/318/328/001/7337/front.3.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Luxembourg",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3183280017337",
+      "_brands": [
+        "La baleine"
+      ]
+    },
+    {
+      "slug": "sel-fin-20020811",
+      "nom": "Sel fin",
+      "description": "Sel de table extra fin",
+      "image_url": "https://images.openfoodfacts.org/images/products/20020811/front.9.400.jpg",
+      "rayon": "epices-du-monde",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "20020811",
+      "_brands": [
+        "Chantesel",
+        ""
+      ]
+    },
+    {
+      "slug": "sauce-soja-8715035110106",
+      "nom": "Sauce soja",
+      "description": "Sauce soja",
+      "image_url": "https://images.openfoodfacts.org/images/products/871/503/511/0106/front.15.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Sauces & condiments",
+      "sous_categorie": "Soja",
+      "origine": "Croatie",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8715035110106",
+      "_brands": [
+        "Kikkoman"
+      ]
+    },
+    {
+      "slug": "sauce-soja-8715035110304",
+      "nom": "Sauce soja",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/871/503/511/0304/front_fr.169.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Sauces & condiments",
+      "sous_categorie": "Soja",
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8715035110304",
+      "_brands": [
+        "Kikkoman"
+      ]
+    },
+    {
+      "slug": "soja-sauce-8715035110809",
+      "nom": "Soja Sauce",
+      "description": "Sauce Soja",
+      "image_url": "https://images.openfoodfacts.org/images/products/871/503/511/0809/front.3.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Sauces & condiments",
+      "sous_categorie": "Soja",
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8715035110809",
+      "_brands": [
+        "Kikkoman",
+        " kinnoman"
+      ]
+    },
+    {
+      "slug": "tamari-sauce-soja-8715035150300",
+      "nom": "Tamari Sauce soja",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/871/503/515/0300/front.4.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Sauces & condiments",
+      "sous_categorie": "Soja",
+      "origine": "Croatie",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8715035150300",
+      "_brands": [
+        "HAUGEN-GRUPPEN AS"
+      ]
+    },
+    {
+      "slug": "sauce-soja-teneur-reduite-en-sel-8715035130302",
+      "nom": "Sauce soja teneur réduite en sel",
+      "description": "Sauce Soja",
+      "image_url": "https://images.openfoodfacts.org/images/products/871/503/513/0302/front.15.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Sauces & condiments",
+      "sous_categorie": "Soja",
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8715035130302",
+      "_brands": [
+        "Kikkoman"
+      ]
+    },
+    {
+      "slug": "sauce-soja-8715035110502",
+      "nom": "Sauce Soja",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/871/503/511/0502/front.3.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Sauces & condiments",
+      "sous_categorie": "Soja",
+      "origine": "Croatie",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8715035110502",
+      "_brands": [
+        "Kikkoman"
+      ]
+    },
+    {
+      "slug": "sauce-soja-sucree-8715035250307",
+      "nom": "Sauce soja sucrée",
+      "description": "Sauce soja sucrée",
+      "image_url": "https://images.openfoodfacts.org/images/products/871/503/525/0307/front_en.88.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Sauces & condiments",
+      "sous_categorie": "Soja",
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8715035250307",
+      "_brands": [
+        "Kikkoman"
+      ]
+    },
+    {
+      "slug": "sauce-soja-8715035110205",
+      "nom": "Sauce Soja",
+      "description": "Sauce soja fermentée",
+      "image_url": "https://images.openfoodfacts.org/images/products/871/503/511/0205/front.15.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Sauces & condiments",
+      "sous_categorie": "Soja",
+      "origine": "Autriche",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8715035110205",
+      "_brands": [
+        "Kikkoman"
+      ]
+    },
+    {
+      "slug": "sauce-soja-sucree-kikkoman-8715035250109",
+      "nom": "Sauce Soja Sucrée kikkoman",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/871/503/525/0109/front_it.62.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Sauces & condiments",
+      "sous_categorie": "Soja",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8715035250109",
+      "_brands": [
+        "Kikkoman"
+      ]
+    },
+    {
+      "slug": "sauce-soja-3229820762050",
+      "nom": "Sauce soja",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/322/982/076/2050/front.3.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Sauces & condiments",
+      "sous_categorie": "Soja",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3229820762050",
+      "_brands": [
+        "Tanoshi"
+      ]
+    },
+    {
+      "slug": "sauce-soja-salee-4002359018268",
+      "nom": "Sauce soja salée",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/400/235/901/8268/front_fr.27.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Sauces & condiments",
+      "sous_categorie": "Soja",
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "4002359018268",
+      "_brands": [
+        "Suzi Wan"
+      ]
+    },
+    {
+      "slug": "sauce-soja-reduite-en-sel-40-3229820792262",
+      "nom": "Sauce Soja (réduite en sel -40%)",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/322/982/079/2262/front_fr.31.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Sauces & condiments",
+      "sous_categorie": "Soja",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3229820792262",
+      "_brands": [
+        "Tanoshi"
+      ]
+    },
+    {
+      "slug": "riz-basmati-du-penjab-3038359007224",
+      "nom": "Riz basmati du Penjab",
+      "description": "Riz Basmati Long grain naturellement parfumé",
+      "image_url": "https://images.openfoodfacts.org/images/products/303/835/900/7224/front_fr.84.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Riz & nouilles",
+      "sous_categorie": "Riz",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3038359007224",
+      "_brands": [
+        "Taureau Ailé"
+      ]
+    },
+    {
+      "slug": "le-basmati-du-penjab-3038359007217",
+      "nom": "Le Basmati du Penjab",
+      "description": "Riz Basmati long grain naturellement parfumé",
+      "image_url": "https://images.openfoodfacts.org/images/products/303/835/900/7217/front_en.54.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Riz & nouilles",
+      "sous_categorie": "Riz",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3038359007217",
+      "_brands": [
+        "Taureau Ailé"
+      ]
+    },
+    {
+      "slug": "riz-long-grain-5410673005052",
+      "nom": "Riz long grain",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/541/067/300/5052/front_fr.3.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Riz & nouilles",
+      "sous_categorie": "Riz",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "5410673005052",
+      "_brands": [
+        "Ben's Original"
+      ]
+    },
+    {
+      "slug": "riz-complet-3560070510771",
+      "nom": "Riz Complet",
+      "description": "Riz complet long grain étuvé de qualité supérieure.",
+      "image_url": "https://images.openfoodfacts.org/images/products/356/007/051/0771/front.5.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Riz & nouilles",
+      "sous_categorie": "Riz",
+      "origine": "Maroc",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3560070510771",
+      "_brands": [
+        "Carrefour"
+      ]
+    },
+    {
+      "slug": "riz-basmati-3038354534008",
+      "nom": "Riz basmati",
+      "description": "Riz Basmati Long Grain naturellement parfumé",
+      "image_url": "https://images.openfoodfacts.org/images/products/303/835/453/4008/front.14.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Riz & nouilles",
+      "sous_categorie": "Riz",
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3038354534008",
+      "_brands": [
+        "Lustucru"
+      ]
+    },
+    {
+      "slug": "riz-complet-5410673004970",
+      "nom": "Riz complet",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/541/067/300/4970/front_fr.36.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Riz & nouilles",
+      "sous_categorie": "Riz",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "5410673004970",
+      "_brands": [
+        "Uncle Ben's"
+      ]
+    },
+    {
+      "slug": "riz-pour-risotto-3038354586403",
+      "nom": "Riz pour risotto",
+      "description": "Riz long de qualité supérieure",
+      "image_url": "https://images.openfoodfacts.org/images/products/303/835/458/6403/front.6.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Riz & nouilles",
+      "sous_categorie": "Riz",
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3038354586403",
+      "_brands": [
+        "Taureau Ailé",
+        "Lustucru",
+        " Taureau Ailé"
+      ]
+    },
+    {
+      "slug": "arroz-8410830001016",
+      "nom": "Arroz",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/841/083/000/1016/front_en.48.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Riz & nouilles",
+      "sous_categorie": "Riz",
+      "origine": "Espagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8410830001016",
+      "_brands": [
+        "Sos"
+      ]
+    },
+    {
+      "slug": "riz-thai-3038359007248",
+      "nom": "Riz thaï",
+      "description": "Riz Thaï long grain naturellement parfumé",
+      "image_url": "https://images.openfoodfacts.org/images/products/303/835/900/7248/front_fr.59.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Riz & nouilles",
+      "sous_categorie": "Riz",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3038359007248",
+      "_brands": [
+        "Taureau Ailé"
+      ]
+    },
+    {
+      "slug": "riz-basmati-4056489095736",
+      "nom": "Riz Basmati",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/405/648/909/5736/front_de.49.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Riz & nouilles",
+      "sous_categorie": "Riz",
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "4056489095736",
+      "_brands": [
+        "Golden Sun"
+      ]
+    },
+    {
+      "slug": "basmati-3560070837984",
+      "nom": "Basmati",
+      "description": "Riz basmati long grain de qualité supérieure.",
+      "image_url": "https://images.openfoodfacts.org/images/products/356/007/083/7984/front.6.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Riz & nouilles",
+      "sous_categorie": "Riz",
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3560070837984",
+      "_brands": [
+        "Carrefour"
+      ]
+    },
+    {
+      "slug": "riz-mediterraneen-de-camargue-3038359005626",
+      "nom": "Riz Méditerranéen de Camargue",
+      "description": "Riz blanc long grain de qualité supérieure",
+      "image_url": "https://images.openfoodfacts.org/images/products/303/835/900/5626/front_fr.106.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Riz & nouilles",
+      "sous_categorie": "Riz",
+      "origine": "Suisse",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3038359005626",
+      "_brands": [
+        "Taureau Ailé"
+      ]
+    },
+    {
+      "slug": "riz-aux-champignons-de-paris-3487400006967",
+      "nom": "Riz aux champignons de Paris",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/348/740/000/6967/front_fr.11.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Riz & nouilles",
+      "sous_categorie": "Riz",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3487400006967",
+      "_brands": [
+        "BEN'S ORIGINAL"
+      ]
+    },
+    {
+      "slug": "tilda-steamed-brown-basmati-rice-5011157888132",
+      "nom": "Tilda Steamed Brown Basmati Rice",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/501/115/788/8132/front_en.19.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Riz & nouilles",
+      "sous_categorie": "Riz",
+      "origine": "Australie",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "5011157888132",
+      "_brands": [
+        "Tilda"
+      ]
+    },
+    {
+      "slug": "riz-a-la-mediterraneenne-3487400005502",
+      "nom": "Riz à la méditerranéenne",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/348/740/000/5502/front_fr.15.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Riz & nouilles",
+      "sous_categorie": "Riz",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3487400005502",
+      "_brands": [
+        "Ben's Original"
+      ]
+    },
+    {
+      "slug": "poulet-au-curry-et-noix-de-coco-3248832940539",
+      "nom": "Poulet🐔 au Curry et Noix de Coco 🥥",
+      "description": "Poulet sauce au curry et riz aux éclats de légumes",
+      "image_url": "https://images.openfoodfacts.org/images/products/324/883/294/0539/front_fr.173.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Riz & nouilles",
+      "sous_categorie": "Riz",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3248832940539",
+      "_brands": [
+        "WW",
+        "Weight Watchers"
+      ]
+    },
+    {
+      "slug": "pataks-tikka-masala-paste-5011308000994",
+      "nom": "Patak's Tikka Masala Paste",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/501/130/800/0994/front_en.14.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Sauces & condiments",
+      "sous_categorie": "Pâtes curry",
+      "origine": "Australie",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "5011308000994",
+      "_brands": [
+        "Patak's"
+      ]
+    },
+    {
+      "slug": "korma-spice-paste-5011308000314",
+      "nom": "Korma Spice Paste",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/501/130/800/0314/front_en.19.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Sauces & condiments",
+      "sous_categorie": "Pâtes curry",
+      "origine": "Australie",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "5011308000314",
+      "_brands": [
+        "Patak's"
+      ]
+    },
+    {
+      "slug": "golden-curry-medium-4901002075354",
+      "nom": "Golden curry medium",
+      "description": "Mélange pour sauce Cari Golden Curry",
+      "image_url": "https://images.openfoodfacts.org/images/products/490/100/207/5354/front.8.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Sauces & condiments",
+      "sous_categorie": "Pâtes curry",
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "4901002075354",
+      "_brands": [
+        "S&B"
+      ]
+    },
+    {
+      "slug": "red-curry-paste-50-g-5010338304089",
+      "nom": "Red Curry Paste 50 g",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/501/033/830/4089/front_en.24.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Sauces & condiments",
+      "sous_categorie": "Pâtes curry",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "5010338304089",
+      "_brands": [
+        "Haugen-Gruppen AS"
+      ]
+    },
+    {
+      "slug": "balti-paste-283g-5011308000338",
+      "nom": "Balti Paste 283G",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/501/130/800/0338/front_en.19.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Sauces & condiments",
+      "sous_categorie": "Pâtes curry",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "5011308000338",
+      "_brands": [
+        "Patak’s"
+      ]
+    },
+    {
+      "slug": "pate-de-curry-rouge-5021047101319",
+      "nom": "Pâte de curry rouge",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/502/104/710/1319/front_fr.6.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Sauces & condiments",
+      "sous_categorie": "Pâtes curry",
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "5021047101319",
+      "_brands": [
+        "Thai Kitchen"
+      ]
+    },
+    {
+      "slug": "lait-de-coco-3596710429615",
+      "nom": "Lait de coco",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/359/671/042/9615/front_fr.9.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Épicerie",
+      "sous_categorie": "Lait coco",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3596710429615",
+      "_brands": [
+        "Auchan"
+      ]
+    },
+    {
+      "slug": "lait-de-coco-3596710484881",
+      "nom": "Lait de Coco",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/359/671/048/4881/front_fr.3.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Épicerie",
+      "sous_categorie": "Lait coco",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3596710484881",
+      "_brands": [
+        "Auchan"
+      ]
+    },
+    {
+      "slug": "sweet-chilli-sauce-20170196",
+      "nom": "Sweet Chilli sauce",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/20170196/front_de.66.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "20170196",
+      "_brands": [
+        "Vitasia"
+      ]
+    },
+    {
+      "slug": "flying-goose-brand-sriracha-scharfe-chilisauce-8853662056012",
+      "nom": "Flying Goose Brand Sriracha Scharfe Chilisauce",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/885/366/205/6012/front_en.76.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Autriche",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8853662056012",
+      "_brands": [
+        "Exotic Food",
+        "Flying Goose Brand",
+        "Flying Goose"
+      ]
+    },
+    {
+      "slug": "sriracha-sauce-8710605030051",
+      "nom": "Sriracha sauce",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/871/060/503/0051/front_nl.107.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8710605030051",
+      "_brands": [
+        "Haugen - gruppen as"
+      ]
+    },
+    {
+      "slug": "tabasco-sauce-epicee-sriracha-256ml-0011210697003",
+      "nom": "Tabasco Sauce Epicée Sriracha 256ml",
+      "description": "Sauce Pimentée",
+      "image_url": "https://images.openfoodfacts.org/images/products/001/121/069/7003/front_en.105.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "0011210697003",
+      "_brands": [
+        "Haugen - gruppen as"
+      ]
+    },
+    {
+      "slug": "piri-piri-spicy-hot-sauce-20026752",
+      "nom": "Piri-Piri Spicy Hot Sauce",
+      "description": "Sauce au piment fort",
+      "image_url": "https://images.openfoodfacts.org/images/products/20026752/front.9.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "20026752",
+      "_brands": [
+        "Sol & Mar"
+      ]
+    },
+    {
+      "slug": "tabasco-rouge-60ml-8714100903506",
+      "nom": "Tabasco rouge 60ml",
+      "description": "Condiment au piment rouge",
+      "image_url": "https://images.openfoodfacts.org/images/products/871/410/090/3506/front_fr.77.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8714100903506",
+      "_brands": [
+        "McIlhenny Company"
+      ]
+    },
+    {
+      "slug": "salsa-mexicana-style-spicy-dip-20108618",
+      "nom": "Salsa Mexicana Style Spicy Dip",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/20108618/front_en.73.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "20108618",
+      "_brands": [
+        "El tequito",
+        " Snack Day"
+      ]
+    },
+    {
+      "slug": "cauvin-huile-vierge-de-sesame-grille-bio-3336590106264",
+      "nom": "CAUVIN - Huile vierge de sésame grillé BIO",
+      "description": "Huile de sésame grillé Bio",
+      "image_url": "https://images.openfoodfacts.org/images/products/333/659/010/6264/front.14.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3336590106264",
+      "_brands": [
+        "Cauvin"
+      ]
+    },
+    {
+      "slug": "huile-de-sesame-grille-3336590106561",
+      "nom": "Huile de sésame grillé",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/333/659/010/6561/front_fr.25.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3336590106561",
+      "_brands": [
+        "Cauvin"
+      ]
+    },
+    {
+      "slug": "huile-vierge-de-sesame-toaste-3250392850685",
+      "nom": "Huile vierge de sésame Toasté",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/325/039/285/0685/front_fr.18.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3250392850685",
+      "_brands": [
+        "Les Créations"
+      ]
+    },
+    {
+      "slug": "huile-de-sesame-3270190129639",
+      "nom": "Huile de Sésame",
+      "description": "Huile vierge de Sésame pour assaisonnement.",
+      "image_url": "https://images.openfoodfacts.org/images/products/327/019/012/9639/front.12.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3270190129639",
+      "_brands": [
+        "Carrefour Sélection",
+        "Carrefour"
+      ]
+    },
+    {
+      "slug": "sesam-ol-gerostet-0078895710922",
+      "nom": "Sesam-Öl geröstet",
+      "description": "huile de sésame ",
+      "image_url": "https://images.openfoodfacts.org/images/products/007/889/571/0922/front.3.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "0078895710922",
+      "_brands": [
+        "Lee Kim Kee"
+      ]
+    },
+    {
+      "slug": "huile-de-sesame-toaste-3245270000665",
+      "nom": "Huile de sésame toasté",
+      "description": "huile gastronomique",
+      "image_url": "https://images.openfoodfacts.org/images/products/324/527/000/0665/front.9.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Pays-Bas",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3245270000665",
+      "_brands": [
+        "La Tourangelle"
+      ]
+    },
+    {
+      "slug": "rice-noodles-8851876200412",
+      "nom": "Rice noodles",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/885/187/620/0412/front_en.16.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Riz & nouilles",
+      "sous_categorie": "Riz",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8851876200412",
+      "_brands": [
+        "mams"
+      ]
+    },
+    {
+      "slug": "thai-peanut-noodle-kit-includes-stir-fry-rice-noodles-thai-p",
+      "nom": "Thai peanut noodle kit includes stir-fry rice noodles & thai peanut seasoning",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/073/762/806/4502/front.6.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Riz & nouilles",
+      "sous_categorie": "Riz",
+      "origine": "États-Unis",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "0737628064502",
+      "_brands": [
+        "Thai Kitchen",
+        "Simply Asia"
+      ]
+    },
+    {
+      "slug": "pack-gluten-free-organic-black-rice-pasta-noodles-0619286609",
+      "nom": "Pack gluten free organic black rice pasta noodles",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/061/928/660/9038/front_en.27.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Riz & nouilles",
+      "sous_categorie": "Riz",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "0619286609038",
+      "_brands": [
+        "King soba"
+      ]
+    },
+    {
+      "slug": "oh-ricey-rice-noodles-8934563207014",
+      "nom": "Oh! Ricey Rice Noodles",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/893/456/320/7014/front_fr.23.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Riz & nouilles",
+      "sous_categorie": "Riz",
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8934563207014",
+      "_brands": [
+        "Acecook"
+      ]
+    },
+    {
+      "slug": "brown-rice-noodles-chicken-flavor-8852018900184",
+      "nom": "Brown rice noodles chicken flavor",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/885/201/890/0184/front_fr.4.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Riz & nouilles",
+      "sous_categorie": "Riz",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8852018900184",
+      "_brands": [
+        "Yum Yum"
+      ]
+    },
+    {
+      "slug": "rice-vermicelli-noodles-00568456",
+      "nom": "Rice vermicelli noodles",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/00568456/front_en.13.400.jpg",
+      "rayon": "saveurs-asie",
+      "categorie": "Riz & nouilles",
+      "sous_categorie": "Riz",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "00568456",
+      "_brands": [
+        "Marks & Spencer"
+      ]
+    },
+    {
+      "slug": "huile-de-palme-5412093130130",
+      "nom": "Huile de Palme",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/541/209/313/0130/front_fr.11.400.jpg",
+      "rayon": "saveurs-afrique",
+      "categorie": "Huiles",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "5412093130130",
+      "_brands": null
+    },
+    {
+      "slug": "huile-de-palme-guinee-8719747020883",
+      "nom": "Huile de palme Guinée",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/871/974/702/0883/front_fr.3.400.jpg",
+      "rayon": "saveurs-afrique",
+      "categorie": "Huiles",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8719747020883",
+      "_brands": null
+    },
+    {
+      "slug": "100-huile-de-palme-pure-8718481578339",
+      "nom": "100% Huile de Palme Pure",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/871/848/157/8339/front_fr.3.400.jpg",
+      "rayon": "saveurs-afrique",
+      "categorie": "Huiles",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8718481578339",
+      "_brands": [
+        "Nigerian Heritage"
+      ]
+    },
+    {
+      "slug": "huile-rouge-de-palme-9555008101224",
+      "nom": "Huile rouge de palme",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/955/500/810/1224/front_fr.18.400.jpg",
+      "rayon": "saveurs-afrique",
+      "categorie": "Huiles",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "9555008101224",
+      "_brands": null
+    },
+    {
+      "slug": "huile-de-palme-3700019511050",
+      "nom": "Huile de palme",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/370/001/951/1050/front_fr.4.400.jpg",
+      "rayon": "saveurs-afrique",
+      "categorie": "Huiles",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3700019511050",
+      "_brands": null
+    },
+    {
+      "slug": "azeite-de-dende-7896025800113",
+      "nom": "Azeite de dendê",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/789/602/580/0113/front_pt.9.400.jpg",
+      "rayon": "saveurs-afrique",
+      "categorie": "Huiles",
+      "sous_categorie": null,
+      "origine": "Bolivie",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "7896025800113",
+      "_brands": [
+        "Cepêra"
+      ]
+    },
+    {
+      "slug": "huile-de-palme-biologique-5701043550273",
+      "nom": "Huile de palme biologique",
+      "description": "Huile obtenue de la pulpe des fruits du palmier à huile elaeis guineensis",
+      "image_url": "https://images.openfoodfacts.org/images/products/570/104/355/0273/front.7.400.jpg",
+      "rayon": "saveurs-afrique",
+      "categorie": "Huiles",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "5701043550273",
+      "_brands": [
+        "Philippe Vigean"
+      ]
+    },
+    {
+      "slug": "huile-de-palme-rouge-5425013641531",
+      "nom": "Huile De Palme Rouge",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/542/501/364/1531/front_de.15.400.jpg",
+      "rayon": "saveurs-afrique",
+      "categorie": "Huiles",
+      "sous_categorie": null,
+      "origine": "Pays-Bas",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "5425013641531",
+      "_brands": [
+        "Aman Prana"
+      ]
+    },
+    {
+      "slug": "bouillon-cube-legumes-sans-sel-sans-gluten-3760020505936",
+      "nom": "Bouillon cube Légumes sans sel sans gluten",
+      "description": "Bouillon cube déshydraté aux légumes bio",
+      "image_url": "https://images.openfoodfacts.org/images/products/376/002/050/5936/front_fr.133.400.jpg",
+      "rayon": "saveurs-afrique",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "UE / non UE",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3760020505936",
+      "_brands": "Jardin Bio, Jardin biologique, Léa Nature"
+    },
+    {
+      "slug": "maggi-bouillon-kub-bio-legumes-80g-8585002484093",
+      "nom": "MAGGI Bouillon KUB BIO Légumes 80g",
+      "description": "Bouillon déshydraté aux légumes, aromatisé.",
+      "image_url": "https://images.openfoodfacts.org/images/products/858/500/248/4093/front_fr.324.400.jpg",
+      "rayon": "saveurs-afrique",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8585002484093",
+      "_brands": "Maggi"
+    },
+    {
+      "slug": "maggi-bouillon-kub-legumes-180g-7613035781627",
+      "nom": "MAGGI Bouillon KUB Légumes 180g",
+      "description": "Bouillon déshydraté aux légumes, aromatisé.",
+      "image_url": "https://images.openfoodfacts.org/images/products/761/303/578/1627/front_fr.274.400.jpg",
+      "rayon": "saveurs-afrique",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "7613035781627",
+      "_brands": "Maggi"
+    },
+    {
+      "slug": "kubor-7613036891530",
+      "nom": "Kubor",
+      "description": "Bouillon déshydraté en cubes.",
+      "image_url": "https://images.openfoodfacts.org/images/products/761/303/689/1530/front_fr.184.400.jpg",
+      "rayon": "saveurs-afrique",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "7613036891530",
+      "_brands": "Nestlé"
+    },
+    {
+      "slug": "maggi-bouillon-de-volaille-18-cubes-180g-7613033687884",
+      "nom": "MAGGI Bouillon de Volaille 18 cubes - 180g",
+      "description": "Bouillon déshydraté à la volaille, aromatisé.",
+      "image_url": "https://images.openfoodfacts.org/images/products/761/303/368/7884/front_fr.269.400.jpg",
+      "rayon": "saveurs-afrique",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "7613033687884",
+      "_brands": "Nestlé, Maggi"
+    },
+    {
+      "slug": "bouillon-kub-legumes-25-de-sel-7613036750011",
+      "nom": "BOUILLON KUB LEGUMES - 25% DE SEL",
+      "description": "Bouillon déshydraté aux légumes, aromatisé",
+      "image_url": "https://images.openfoodfacts.org/images/products/761/303/675/0011/front_fr.275.400.jpg",
+      "rayon": "saveurs-afrique",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Non indiqué",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "7613036750011",
+      "_brands": "Maggi"
+    },
+    {
+      "slug": "maggi-bouillon-kub-bio-volaille-80g-8585002484079",
+      "nom": "MAGGI Bouillon KUB BIO Volaille 80g",
+      "description": "Bouillon déshydraté à la volaille, aromatisé.",
+      "image_url": "https://images.openfoodfacts.org/images/products/858/500/248/4079/front_fr.309.400.jpg",
+      "rayon": "saveurs-afrique",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8585002484079",
+      "_brands": "Bio+, Maggi"
+    },
+    {
+      "slug": "bouillon-cube-volaille-3760020505998",
+      "nom": "Bouillon cube Volaille",
+      "description": "Bouillon cube déshydraté de volaille bio",
+      "image_url": "https://images.openfoodfacts.org/images/products/376/002/050/5998/front_fr.107.400.jpg",
+      "rayon": "saveurs-afrique",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3760020505998",
+      "_brands": "Jardin bio'"
+    },
+    {
+      "slug": "huile-d-olive-vierge-extra-produit-de-france-3451080155161",
+      "nom": "Huile D’olive Vierge Extra Produit De France",
+      "description": "Huile d'olive vierge extra issue de l'agriculture biologique",
+      "image_url": "https://images.openfoodfacts.org/images/products/345/108/015/5161/front_fr.19.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": "Huiles & vinaigres",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3451080155161",
+      "_brands": [
+        "Domaine de Bournissac"
+      ]
+    },
+    {
+      "slug": "huile-dolive-vierge-extra-4056489141877",
+      "nom": "Huile d'olive vierge extra",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/405/648/914/1877/front_fr.71.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": "Huiles & vinaigres",
+      "sous_categorie": null,
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "4056489141877",
+      "_brands": [
+        "Primadona",
+        "Lidl"
+      ]
+    },
+    {
+      "slug": "huile-dolive-vierge-extra-3560070910366",
+      "nom": "Huile d'olive vierge extra",
+      "description": "Huile d'olive vierge extra issue de l'agriculture biologique. Huile d'olive de catégorie supérieure obtenue directement des olives et uniquement par des procédés mécaniques. Assemblage d'huiles d'olive originaires de l'Union Européenne et n",
+      "image_url": "https://images.openfoodfacts.org/images/products/356/007/091/0366/front_fr.104.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": "Huiles & vinaigres",
+      "sous_categorie": null,
+      "origine": "Pologne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3560070910366",
+      "_brands": [
+        "Carrefour Bio",
+        "Carrefour"
+      ]
+    },
+    {
+      "slug": "huile-dolive-3178050000749",
+      "nom": "Huile d'olive",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/317/805/000/0749/front_fr.95.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": "Huiles & vinaigres",
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3178050000749",
+      "_brands": [
+        "Puget"
+      ]
+    },
+    {
+      "slug": "huile-dolive-vierge-extra-bio-classico-8002470023727",
+      "nom": "Huile d'olive vierge extra Bio Classico",
+      "description": "Huile d'olive extra vierge",
+      "image_url": "https://images.openfoodfacts.org/images/products/800/247/002/3727/front_fr.85.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": "Huiles & vinaigres",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8002470023727",
+      "_brands": [
+        "Carapelli"
+      ]
+    },
+    {
+      "slug": "huile-dolive-vierge-extra-8410179009391",
+      "nom": "Huile d'olive vierge extra",
+      "description": "Huile d'olive de catégorie supérieure obtenue par",
+      "image_url": "https://images.openfoodfacts.org/images/products/841/017/900/9391/front_fr.14.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": "Huiles & vinaigres",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8410179009391",
+      "_brands": [
+        "Tramier"
+      ]
+    },
+    {
+      "slug": "huile-dolive-vierge-extra-classico-8002470030923",
+      "nom": "Huile d'olive vierge extra Classico",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/800/247/003/0923/front_fr.48.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": "Huiles & vinaigres",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8002470030923",
+      "_brands": [
+        "Carapelli"
+      ]
+    },
+    {
+      "slug": "huile-d-olive-vierge-extra-8410179012230",
+      "nom": "huile d’olive vierge extra",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/841/017/901/2230/front_fr.62.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": "Huiles & vinaigres",
+      "sous_categorie": null,
+      "origine": "Réunion",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8410179012230",
+      "_brands": [
+        "tramier"
+      ]
+    },
+    {
+      "slug": "huile-d-olive-3270190008262",
+      "nom": "Huile d\\'olive",
+      "description": "Huile d'olive vierge extra. Huile d'olive de catégorie supérieure obtenue directement des olives et uniquement par des procédés mécaniques. Assemblage d'huiles d'olives originaires de l'Union Européenne.",
+      "image_url": "https://images.openfoodfacts.org/images/products/327/019/000/8262/front.6.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": "Huiles & vinaigres",
+      "sous_categorie": null,
+      "origine": "Guadeloupe",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3270190008262",
+      "_brands": [
+        "Carrefour"
+      ]
+    },
+    {
+      "slug": "huile-dolive-vierge-extra-granfruttato-8005510001525",
+      "nom": "Huile d'olive vierge extra GranFruttato",
+      "description": "Huile d'olive vierge extra",
+      "image_url": "https://images.openfoodfacts.org/images/products/800/551/000/1525/front.3.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": "Huiles & vinaigres",
+      "sous_categorie": null,
+      "origine": "Suisse",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8005510001525",
+      "_brands": [
+        "Monini"
+      ]
+    },
+    {
+      "slug": "huile-dolive-vierge-extra-6191509900664",
+      "nom": "Huile d'olive vierge extra",
+      "description": "Huile d'olive",
+      "image_url": "https://images.openfoodfacts.org/images/products/619/150/990/0664/front.94.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": "Huiles & vinaigres",
+      "sous_categorie": null,
+      "origine": "Suisse",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "6191509900664",
+      "_brands": [
+        "Terra Delyssa"
+      ]
+    },
+    {
+      "slug": "huile-dolive-vierge-extra-origine-espagne-extraite-a-froid-b",
+      "nom": "Huile d'olive vierge extra origine Espagne extraite à froid bio",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/405/648/909/5897/front_hr.42.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": "Huiles & vinaigres",
+      "sous_categorie": null,
+      "origine": "Croatie",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "4056489095897",
+      "_brands": [
+        "PRIMADONNA",
+        "LIDL"
+      ]
+    },
+    {
+      "slug": "huile-dolive-vierge-extra-3178050000725",
+      "nom": "Huile d'Olive Vierge Extra",
+      "description": "Huile d'olive vierge extra",
+      "image_url": "https://images.openfoodfacts.org/images/products/317/805/000/0725/front.13.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": "Huiles & vinaigres",
+      "sous_categorie": null,
+      "origine": "Martinique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3178050000725",
+      "_brands": [
+        "Puget",
+        "Lesieur",
+        "Groupe Avril"
+      ]
+    },
+    {
+      "slug": "huile-dolive-vierge-extra-3564707000031",
+      "nom": "Huile d'Olive Vierge Extra",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/356/470/700/0031/front.16.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": "Huiles & vinaigres",
+      "sous_categorie": null,
+      "origine": "Réunion",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3564707000031",
+      "_brands": [
+        "Bio Village",
+        "Marque Repère"
+      ]
+    },
+    {
+      "slug": "huile-dolive-vierge-extra-vivace-8002470023147",
+      "nom": "Huile d'olive vierge extra Vivace",
+      "description": "huile d'olive",
+      "image_url": "https://images.openfoodfacts.org/images/products/800/247/002/3147/front_fr.52.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": "Huiles & vinaigres",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8002470023147",
+      "_brands": [
+        "Carapelli"
+      ]
+    },
+    {
+      "slug": "green-olives-20443375",
+      "nom": "Green olives",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/20443375/front_en.141.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "20443375",
+      "_brands": [
+        "Baresa"
+      ]
+    },
+    {
+      "slug": "olives-noires-confites-denoyautees-bocal-150g-3017230000059",
+      "nom": "Olives noires confites dénoyautées bocal 150g",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/301/723/000/0059/front.3.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3017230000059",
+      "_brands": [
+        "Tramier"
+      ]
+    },
+    {
+      "slug": "olives-noires-denoyautees-a-la-grecque-3017239003860",
+      "nom": "Olives noires dénoyautées à la grecque",
+      "description": "Olives en conserve",
+      "image_url": "https://images.openfoodfacts.org/images/products/301/723/900/3860/front_fr.57.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3017239003860",
+      "_brands": [
+        "Tramier"
+      ]
+    },
+    {
+      "slug": "olives-vertes-anchois-20033361",
+      "nom": "Olives vertes anchois",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/20033361/front.5.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "20033361",
+      "_brands": [
+        "Aceitunas Cazorla",
+        " S.L."
+      ]
+    },
+    {
+      "slug": "oliven-20878979",
+      "nom": "Oliven",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/20878979/front_en.104.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "20878979",
+      "_brands": [
+        "Baresa",
+        " Lidl"
+      ]
+    },
+    {
+      "slug": "olives-vertes-denoyautees-25-sel-3017239003723",
+      "nom": "Olives vertes dénoyautées -25% sel",
+      "description": "Olives vertes dénoyautées réduites en sel",
+      "image_url": "https://images.openfoodfacts.org/images/products/301/723/900/3723/front_fr.53.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3017239003723",
+      "_brands": [
+        "Tramier"
+      ]
+    },
+    {
+      "slug": "olives-vertes-denoyautees-3564700252147",
+      "nom": "Olives vertes dénoyautées",
+      "description": "Olives",
+      "image_url": "https://images.openfoodfacts.org/images/products/356/470/025/2147/front.10.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3564700252147",
+      "_brands": [
+        "Rustica",
+        "Marque Repère"
+      ]
+    },
+    {
+      "slug": "490g-950g-20033347",
+      "nom": "490g 950g",
+      "description": "Olives vertes dénoyautées - Produit pasteurisé. Classe commerciale: I (premier choix).",
+      "image_url": "https://images.openfoodfacts.org/images/products/20033347/front.8.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Royaume-Uni",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "20033347",
+      "_brands": [
+        "Baresa"
+      ]
+    },
+    {
+      "slug": "olives-vertes-denoyautees-3560070230228",
+      "nom": "Olives vertes DENOYAUTEES",
+      "description": "Olives vertes dénoyautées pasteurisées",
+      "image_url": "https://images.openfoodfacts.org/images/products/356/007/023/0228/front.6.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3560070230228",
+      "_brands": [
+        "Carrefour"
+      ]
+    },
+    {
+      "slug": "olives-vertes-denoyautees-3076820005188",
+      "nom": "Olives vertes dénoyautées",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/307/682/000/5188/front.3.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Suisse",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3076820005188",
+      "_brands": [
+        "Crespo"
+      ]
+    },
+    {
+      "slug": "olives-vertes-denoyautees-3017233001008",
+      "nom": "Olives vertes dénoyautées",
+      "description": "Olives vertes dénoyautées",
+      "image_url": "https://images.openfoodfacts.org/images/products/301/723/300/1008/front_fr.72.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3017233001008",
+      "_brands": [
+        "Tramier"
+      ]
+    },
+    {
+      "slug": "feta-aop-grecque-3272770015523",
+      "nom": "FETA AOP GRECQUE",
+      "description": "Fromage",
+      "image_url": "https://images.openfoodfacts.org/images/products/327/277/001/5523/front_fr.43.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": "Fromages",
+      "sous_categorie": "AOP",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3272770015523",
+      "_brands": [
+        "Islos",
+        "Fromarsac",
+        "Savencia"
+      ]
+    },
+    {
+      "slug": "feta-aop-brebis-chevre-5202258025773",
+      "nom": "Fêta AOP brebis-chèvre",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/520/225/802/5773/front_fr.47.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": "Fromages",
+      "sous_categorie": "AOP",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "5202258025773",
+      "_brands": [
+        "SALAKIS"
+      ]
+    },
+    {
+      "slug": "feta-3760056264937",
+      "nom": "Feta",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/376/005/626/4937/front_en.43.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": "Fromages",
+      "sous_categorie": "AOP",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3760056264937",
+      "_brands": [
+        "Casa Azzurra"
+      ]
+    },
+    {
+      "slug": "feta-grecque-au-lait-de-brebis-et-de-chevre-3368956466699",
+      "nom": "Féta grecque au lait de brebis et de chèvre",
+      "description": "Fromage à pâte caillée en saumure, lait de brebis & chèvres",
+      "image_url": "https://images.openfoodfacts.org/images/products/336/895/646/6699/front.11.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": "Fromages",
+      "sous_categorie": "AOP",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3368956466699",
+      "_brands": [
+        "U Saveurs",
+        " U"
+      ]
+    },
+    {
+      "slug": "fromage-de-brebis-feta-3560070108558",
+      "nom": "Fromage de brebis (Fêta)",
+      "description": "Fromage de brebis au lait pasteurisé.",
+      "image_url": "https://images.openfoodfacts.org/images/products/356/007/010/8558/front.3.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": "Fromages",
+      "sous_categorie": "AOP",
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3560070108558",
+      "_brands": [
+        "Carrefour"
+      ]
+    },
+    {
+      "slug": "feta-grecque-au-lait-de-brebis-et-de-chevre-3250391226078",
+      "nom": "Feta grecque au lait de brebis et de chèvre",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/325/039/122/6078/front.5.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": "Fromages",
+      "sous_categorie": "AOP",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3250391226078",
+      "_brands": [
+        "Itineraire des saveurs",
+        "Intermaché",
+        "Roussas"
+      ]
+    },
+    {
+      "slug": "feta-fromage-3560070149278",
+      "nom": "Feta - Fromage",
+      "description": "Feta Appellation d'Origine Protégée - fromage au lait pasteurisé de brebis et de chèvre.",
+      "image_url": "https://images.openfoodfacts.org/images/products/356/007/014/9278/front.7.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": "Fromages",
+      "sous_categorie": "AOP",
+      "origine": "Italie",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3560070149278",
+      "_brands": [
+        "Carrefour"
+      ]
+    },
+    {
+      "slug": "feta-3564706614673",
+      "nom": "Feta",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/356/470/661/4673/front_fr.22.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": "Fromages",
+      "sous_categorie": "AOP",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3564706614673",
+      "_brands": [
+        "Les Croisés"
+      ]
+    },
+    {
+      "slug": "tipiak-graine-parfume-3600900021050",
+      "nom": "Tipiak Graine Parfumé",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/360/090/002/1050/front_fr.41.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": "Semoules & couscous",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3600900021050",
+      "_brands": [
+        "Tipiak"
+      ]
+    },
+    {
+      "slug": "couscous-oriental-legumes-cuisines-et-poulet-emince-32488329",
+      "nom": "Couscous Oriental légumes cuisinés et poulet émincé",
+      "description": "Couscous oriental, légumes cuisinés et poulet émincé",
+      "image_url": "https://images.openfoodfacts.org/images/products/324/883/294/0522/front.6.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": "Semoules & couscous",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3248832940522",
+      "_brands": [
+        "WW",
+        "Weight Watchers"
+      ]
+    },
+    {
+      "slug": "tipiak-epices-douces-3165440008782",
+      "nom": "Tipiak épices douces",
+      "description": "Graine de couscous précuite aromatisée aux épices",
+      "image_url": "https://images.openfoodfacts.org/images/products/316/544/000/8782/front.9.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": "Semoules & couscous",
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3165440008782",
+      "_brands": [
+        "Tipiak"
+      ]
+    },
+    {
+      "slug": "couscous-grain-moyen-3223920700127",
+      "nom": "Couscous Grain Moyen",
+      "description": "Graine de Couscous",
+      "image_url": "https://images.openfoodfacts.org/images/products/322/392/070/0127/front.25.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": "Semoules & couscous",
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3223920700127",
+      "_brands": [
+        "Ferrero"
+      ]
+    },
+    {
+      "slug": "le-couscous-a-la-marocaine-3302740003868",
+      "nom": "Le couscous à la Marocaine",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/330/274/000/3868/front_fr.26.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": "Semoules & couscous",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3302740003868",
+      "_brands": [
+        "Fleury Michon"
+      ]
+    },
+    {
+      "slug": "couscous-vegetal-bio-3760257091035",
+      "nom": "Couscous végétal bio",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/376/025/709/1035/front_fr.3.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": "Semoules & couscous",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3760257091035",
+      "_brands": [
+        "HARI&CO"
+      ]
+    },
+    {
+      "slug": "couscous-moyen-3270190008606",
+      "nom": "Couscous moyen",
+      "description": "Couscous grain moyen",
+      "image_url": "https://images.openfoodfacts.org/images/products/327/019/000/8606/front.17.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": "Semoules & couscous",
+      "sous_categorie": null,
+      "origine": "Italie",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3270190008606",
+      "_brands": [
+        "Carrefour"
+      ]
+    },
+    {
+      "slug": "couscous-20860929",
+      "nom": "Couscous",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/20860929/front_fr.37.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": "Semoules & couscous",
+      "sous_categorie": null,
+      "origine": "Pays-Bas",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "20860929",
+      "_brands": [
+        "GOLDENSUN"
+      ]
+    },
+    {
+      "slug": "couscous-semi-complet-3270190156208",
+      "nom": "Couscous semi-complet",
+      "description": "Couscous semi-complet issu de l'agriculture biologique.",
+      "image_url": "https://images.openfoodfacts.org/images/products/327/019/015/6208/front.10.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": "Semoules & couscous",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3270190156208",
+      "_brands": [
+        "Carrefour Bio",
+        "Carrefour"
+      ]
+    },
+    {
+      "slug": "couscous-fin-3223920630134",
+      "nom": "Couscous Fin",
+      "description": "Graine de couscous",
+      "image_url": "https://images.openfoodfacts.org/images/products/322/392/063/0134/front.12.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": "Semoules & couscous",
+      "sous_categorie": null,
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3223920630134",
+      "_brands": [
+        "Ferrero"
+      ]
+    },
+    {
+      "slug": "miel-de-fleurs-liquide-doseur-500g-3088545004001",
+      "nom": "Miel de Fleurs Liquide Doseur 500g",
+      "description": "Miel",
+      "image_url": "https://images.openfoodfacts.org/images/products/308/854/500/4001/front_fr.130.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3088545004001",
+      "_brands": [
+        "Lune de Miel"
+      ]
+    },
+    {
+      "slug": "tartimiel-lune-de-miel-doseur-250-g-3088540004440",
+      "nom": "Tartimiel® Lune de Miel® doseur 250 g",
+      "description": "Miel",
+      "image_url": "https://images.openfoodfacts.org/images/products/308/854/000/4440/front.6.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Réunion",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3088540004440",
+      "_brands": [
+        "Lune de Miel"
+      ]
+    },
+    {
+      "slug": "miel-cremeux-francais-responsable-4056489361855",
+      "nom": "Miel crémeux français & responsable",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/405/648/936/1855/front_fr.27.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "4056489361855",
+      "_brands": [
+        "Maribel"
+      ]
+    },
+    {
+      "slug": "miel-de-fleurs-20072803",
+      "nom": "Miel de fleurs",
+      "description": "Miel de Fleurs Liquide blond doré",
+      "image_url": "https://images.openfoodfacts.org/images/products/20072803/front_fr.99.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "20072803",
+      "_brands": [
+        "Maribel"
+      ]
+    },
+    {
+      "slug": "runny-honey-imp-5011273040698",
+      "nom": "Runny Honey imp",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/501/127/304/0698/front.5.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Royaume-Uni",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "5011273040698",
+      "_brands": [
+        "Rowse"
+      ]
+    },
+    {
+      "slug": "miel-de-montagne-3088540502663",
+      "nom": "Miel de Montagne",
+      "description": "Miel",
+      "image_url": "https://images.openfoodfacts.org/images/products/308/854/050/2663/front.9.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3088540502663",
+      "_brands": [
+        "L'Apiculteur",
+        "Bernard Michaud"
+      ]
+    },
+    {
+      "slug": "miel-lapiculteur-de-nos-terroirs-3088540502298",
+      "nom": "Miel l'apiculteur de nos terroirs",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/308/854/050/2298/front_fr.89.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3088540502298",
+      "_brands": [
+        "Michaud Yves"
+      ]
+    },
+    {
+      "slug": "miel-de-fleurs-bio-liquide-doseur-500g-3088540255279",
+      "nom": "Miel de Fleurs BIO liquide Doseur 500g",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/308/854/025/5279/front.3.400.jpg",
+      "rayon": "saveur-mediterranee",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3088540255279",
+      "_brands": [
+        "Lune de miel"
+      ]
+    },
+    {
+      "slug": "organic-black-beans-5032722309791",
+      "nom": "Organic black beans",
+      "description": "Haricots noir biologiques",
+      "image_url": "https://images.openfoodfacts.org/images/products/503/272/230/9791/front_en.37.400.jpg",
+      "rayon": "saveur-sud-amer",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Royaume-Uni",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "5032722309791",
+      "_brands": [
+        "Biona Organic"
+      ]
+    },
+    {
+      "slug": "haricots-noirs-touche-de-citronnelle-feuille-de-combava-3083",
+      "nom": "Haricots noirs, touche de citronnelle & feuille de combava",
+      "description": "Haricots noirs préparés",
+      "image_url": "https://images.openfoodfacts.org/images/products/308/368/111/8605/front_fr.33.400.jpg",
+      "rayon": "saveur-sud-amer",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3083681118605",
+      "_brands": [
+        "Cassegrain",
+        "Bonduelle"
+      ]
+    },
+    {
+      "slug": "black-beans-0041331124669",
+      "nom": "Black beans",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/004/133/112/4669/front_en.24.400.jpg",
+      "rayon": "saveur-sud-amer",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "0041331124669",
+      "_brands": [
+        "Goya",
+        "Goya Foods  Inc."
+      ]
+    },
+    {
+      "slug": "haricots-black-eyed-3281780897098",
+      "nom": "Haricots black eyed",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/328/178/089/7098/front_fr.14.400.jpg",
+      "rayon": "saveur-sud-amer",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3281780897098",
+      "_brands": [
+        "Pierre Martinet"
+      ]
+    },
+    {
+      "slug": "haricots-noirs-5601151170755",
+      "nom": "haricots noirs",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/560/115/117/0755/front.7.400.jpg",
+      "rayon": "saveur-sud-amer",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "5601151170755",
+      "_brands": [
+        "Compal",
+        "SUMOL+COMPAL"
+      ]
+    },
+    {
+      "slug": "black-beans-in-salted-water-20703769",
+      "nom": "Black beans in salted water",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/20703769/front_en.4.400.jpg",
+      "rayon": "saveur-sud-amer",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "République tchèque",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "20703769",
+      "_brands": [
+        "El Tequito"
+      ]
+    },
+    {
+      "slug": "tortilla-wraps-carrot-4056489476665",
+      "nom": "Tortilla Wraps Carrot",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/405/648/947/6665/front_fr.24.400.jpg",
+      "rayon": "saveur-sud-amer",
+      "categorie": "Farines",
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "4056489476665",
+      "_brands": [
+        "Vermondo"
+      ]
+    },
+    {
+      "slug": "durum-3276650115570",
+      "nom": "Durum",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/327/665/011/5570/front_fr.23.400.jpg",
+      "rayon": "saveur-sud-amer",
+      "categorie": "Farines",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3276650115570",
+      "_brands": [
+        "Samia"
+      ]
+    },
+    {
+      "slug": "tortillas-5412514933289",
+      "nom": "Tortillas",
+      "description": "Tortillas de farine de blé",
+      "image_url": "https://images.openfoodfacts.org/images/products/541/251/493/3289/front_fr.18.400.jpg",
+      "rayon": "saveur-sud-amer",
+      "categorie": "Farines",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "5412514933289",
+      "_brands": [
+        "Antalia"
+      ]
+    },
+    {
+      "slug": "kit-burritos-tortillas-26021942",
+      "nom": "Kit burritos & tortillas",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/26021942/front_fr.3.400.jpg",
+      "rayon": "saveur-sud-amer",
+      "categorie": "Farines",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "26021942",
+      "_brands": [
+        "Mannapain"
+      ]
+    },
+    {
+      "slug": "wraps-de-ble-3263850459511",
+      "nom": "Wraps de Blé",
+      "description": "Tortillas à base de farine de blé",
+      "image_url": "https://images.openfoodfacts.org/images/products/326/385/045/9511/front_fr.46.400.jpg",
+      "rayon": "saveur-sud-amer",
+      "categorie": "Farines",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3263850459511",
+      "_brands": [
+        "Leader Price"
+      ]
+    },
+    {
+      "slug": "pancho-villa-tortillas-22137906",
+      "nom": "Pancho villa tortillas",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/22137906/front.3.400.jpg",
+      "rayon": "saveur-sud-amer",
+      "categorie": "Farines",
+      "sous_categorie": null,
+      "origine": "Suisse",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "22137906",
+      "_brands": [
+        "Pancho Villa"
+      ]
+    },
+    {
+      "slug": "tortillas-de-ble-5901549802337",
+      "nom": "Tortillas de Blé",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/590/154/980/2337/front_fr.30.400.jpg",
+      "rayon": "saveur-sud-amer",
+      "categorie": "Farines",
+      "sous_categorie": null,
+      "origine": "Suisse",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "5901549802337",
+      "_brands": [
+        "Tables du monde"
+      ]
+    },
+    {
+      "slug": "baklava-assortment-20719074",
+      "nom": "Baklava assortment",
+      "description": "Baklava - Assortiment de pâtisseries fourrées aux noix",
+      "image_url": "https://images.openfoodfacts.org/images/products/20719074/front_fr.11.400.jpg",
+      "rayon": "balkans-turques",
+      "categorie": "Pâtisseries",
+      "sous_categorie": "Baklava",
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "20719074",
+      "_brands": [
+        "1001 delights"
+      ]
+    },
+    {
+      "slug": "baklava-20616366",
+      "nom": "Baklava",
+      "description": "Baklava - Pâtisserie fourrée aux noix et à la cannelle sans sirop",
+      "image_url": "https://images.openfoodfacts.org/images/products/20616366/front.9.400.jpg",
+      "rayon": "balkans-turques",
+      "categorie": "Pâtisseries",
+      "sous_categorie": "Baklava",
+      "origine": "République tchèque",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "20616366",
+      "_brands": [
+        "Eridanous"
+      ]
+    },
+    {
+      "slug": "baklawas-cacahuetes-2006050138326",
+      "nom": "Baklawas cacahuètes",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/200/605/013/8326/front_fr.3.400.jpg",
+      "rayon": "balkans-turques",
+      "categorie": "Pâtisseries",
+      "sous_categorie": "Baklava",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "2006050138326",
+      "_brands": null
+    },
+    {
+      "slug": "mixed-baklava-6297000999807",
+      "nom": "Mixed Baklava",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/629/700/099/9807/front_fr.3.400.jpg",
+      "rayon": "balkans-turques",
+      "categorie": "Pâtisseries",
+      "sous_categorie": "Baklava",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "6297000999807",
+      "_brands": null
+    },
+    {
+      "slug": "baklavas-5205564000540",
+      "nom": "Baklavas",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/520/556/400/0540/front_fr.3.400.jpg",
+      "rayon": "balkans-turques",
+      "categorie": "Pâtisseries",
+      "sous_categorie": "Baklava",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "5205564000540",
+      "_brands": null
+    },
+    {
+      "slug": "damak-baklava-8690632710426",
+      "nom": "Damak baklava",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/869/063/271/0426/front_fr.3.400.jpg",
+      "rayon": "balkans-turques",
+      "categorie": "Pâtisseries",
+      "sous_categorie": "Baklava",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8690632710426",
+      "_brands": null
+    },
+    {
+      "slug": "dattes-20534479",
+      "nom": "Dattes",
+      "description": "Dattes sèches entières dénoyautées et réhydratées",
+      "image_url": "https://images.openfoodfacts.org/images/products/20534479/front_de.82.400.jpg",
+      "rayon": "fruits-legumes",
+      "categorie": "Dattes & fruits secs",
+      "sous_categorie": "Dattes",
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "20534479",
+      "_brands": [
+        "Alesto",
+        " LIDL"
+      ]
+    },
+    {
+      "slug": "dattes-deglet-nour-de-tunisie-3068233500404",
+      "nom": "Dattes Deglet Nour de Tunisie",
+      "description": "Dattes Deglet Nour",
+      "image_url": "https://images.openfoodfacts.org/images/products/306/823/350/0404/front_fr.51.400.jpg",
+      "rayon": "fruits-legumes",
+      "categorie": "Dattes & fruits secs",
+      "sous_categorie": "Dattes",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3068233500404",
+      "_brands": [
+        "La Favorite",
+        "Color Foods"
+      ]
+    },
+    {
+      "slug": "dattes-denoyautees-4008258252017",
+      "nom": "Dattes dénoyautées",
+      "description": "Dattes dénoyautées, séchées, non sulfitées",
+      "image_url": "https://images.openfoodfacts.org/images/products/400/825/825/2017/front.5.400.jpg",
+      "rayon": "fruits-legumes",
+      "categorie": "Dattes & fruits secs",
+      "sous_categorie": "Dattes",
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "4008258252017",
+      "_brands": [
+        "Seeberger"
+      ]
+    },
+    {
+      "slug": "dattes-3433791013602",
+      "nom": "Dattes",
+      "description": "Dattes",
+      "image_url": "https://images.openfoodfacts.org/images/products/343/379/101/3602/front.10.400.jpg",
+      "rayon": "fruits-legumes",
+      "categorie": "Dattes & fruits secs",
+      "sous_categorie": "Dattes",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3433791013602",
+      "_brands": [
+        "LA FAVORITE"
+      ]
+    },
+    {
+      "slug": "dattes-medjool-l-a-typique-8717953145109",
+      "nom": "Dattes Medjool l'(a)typique",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/871/795/314/5109/front_fr.22.400.jpg",
+      "rayon": "fruits-legumes",
+      "categorie": "Dattes & fruits secs",
+      "sous_categorie": "Dattes",
+      "origine": "Espagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8717953145109",
+      "_brands": [
+        "BROUSSE & FILS"
+      ]
+    },
+    {
+      "slug": "dattes-3250392396220",
+      "nom": "Dattes",
+      "description": "dattes",
+      "image_url": "https://images.openfoodfacts.org/images/products/325/039/239/6220/front_fr.22.400.jpg",
+      "rayon": "fruits-legumes",
+      "categorie": "Dattes & fruits secs",
+      "sous_categorie": "Dattes",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3250392396220",
+      "_brands": [
+        "Paquito"
+      ]
+    },
+    {
+      "slug": "dattes-denoyautees-moelleuses-4056489194477",
+      "nom": "Dattes denoyautées moelleuses",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/405/648/919/4477/front_fr.13.400.jpg",
+      "rayon": "fruits-legumes",
+      "categorie": "Dattes & fruits secs",
+      "sous_categorie": "Dattes",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "4056489194477",
+      "_brands": [
+        "Alesto",
+        "Lidl"
+      ]
+    },
+    {
+      "slug": "melange-de-fruits-secs-20047238",
+      "nom": "Mélange de fruits secs",
+      "description": "Mélange de fruits secs",
+      "image_url": "https://images.openfoodfacts.org/images/products/20047238/front_pl.250.400.jpg",
+      "rayon": "fruits-legumes",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "20047238",
+      "_brands": [
+        "Alesto",
+        "Lidl",
+        " Alesto Selection",
+        " Alesto Lidl"
+      ]
+    },
+    {
+      "slug": "melange-de-noix-fruits-secs-20815394",
+      "nom": "Mélange de Noix & Fruits Secs",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/20815394/front_en.134.400.jpg",
+      "rayon": "fruits-legumes",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "20815394",
+      "_brands": [
+        "Alesto",
+        "Lidl"
+      ]
+    },
+    {
+      "slug": "canneberges-sechees-sucrees-20150907",
+      "nom": "Canneberges (séchées/sucrées)",
+      "description": "Canneberges entières séchées et sucrées - Cranberries Séchées et Sucrées",
+      "image_url": "https://images.openfoodfacts.org/images/products/20150907/front.23.400.jpg",
+      "rayon": "fruits-legumes",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "20150907",
+      "_brands": [
+        "Alesto"
+      ]
+    },
+    {
+      "slug": "noix-de-cajou-cranberries-20815400",
+      "nom": "Noix de cajou & cranberries",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/20815400/front_en.99.400.jpg",
+      "rayon": "fruits-legumes",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "20815400",
+      "_brands": [
+        "Alesto"
+      ]
+    },
+    {
+      "slug": "alesto-mixed-nuts-20816445",
+      "nom": "Alesto  Mixed Nuts",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/20816445/front_en.84.400.jpg",
+      "rayon": "fruits-legumes",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "20816445",
+      "_brands": [
+        "Alesto"
+      ]
+    },
+    {
+      "slug": "studentenfutter-mendiant-de-luxe-4008258154229",
+      "nom": "Studentenfutter (Mendiant de Luxe)",
+      "description": "Studentenfutter",
+      "image_url": "https://images.openfoodfacts.org/images/products/400/825/815/4229/front_de.79.400.jpg",
+      "rayon": "fruits-legumes",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "4008258154229",
+      "_brands": [
+        "Seeberger"
+      ]
+    },
+    {
+      "slug": "pruneaux-dagen-denoyautes-3502490171606",
+      "nom": "Pruneaux d'Agen dénoyautés",
+      "description": "Pruneaux d'Agen géants dénoyautés, réhydratés à 35% d'humidité maximum et pasteurisés.",
+      "image_url": "https://images.openfoodfacts.org/images/products/350/249/017/1606/front_fr.149.400.jpg",
+      "rayon": "fruits-legumes",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3502490171606",
+      "_brands": [
+        "Maître PRUNILLE"
+      ]
+    },
+    {
+      "slug": "formule-boost-3270720001596",
+      "nom": "Formule boost",
+      "description": "Mélange de fruits secs à coque, fruits séchés sucrés et graines",
+      "image_url": "https://images.openfoodfacts.org/images/products/327/072/000/1596/front.3.400.jpg",
+      "rayon": "fruits-legumes",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3270720001596",
+      "_brands": [
+        "Daco Bello"
+      ]
+    },
+    {
+      "slug": "melange-de-fruits-secs-et-de-cramberries-20933920",
+      "nom": "Mélange de fruits secs et de cramberries",
+      "description": "Mélange de cacahuètes grillées, de raisins secs sultanines, de cranberries séchées et sucrées, de noisettes et d'amandes blanchies",
+      "image_url": "https://images.openfoodfacts.org/images/products/20933920/front_de.70.400.jpg",
+      "rayon": "fruits-legumes",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Autriche",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "20933920",
+      "_brands": [
+        "Alesto"
+      ]
+    },
+    {
+      "slug": "pompotes-compotes-gourdes-pomme-nature-1x90g-3021769505602",
+      "nom": "POM'POTES Compotes Gourdes Pomme Nature 1x90g",
+      "description": "Spécialité de pomme sans sucres ajoutés (contient des sucres naturellement présents).",
+      "image_url": "https://images.openfoodfacts.org/images/products/302/176/950/5602/front.18.400.jpg",
+      "rayon": "fruits-legumes",
+      "categorie": "Fruits",
+      "sous_categorie": "Transformés",
+      "origine": "Suisse",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3021769505602",
+      "_brands": [
+        "Materne",
+        "POM'POTES",
+        " Sans sucres ajoutés"
+      ]
+    },
+    {
+      "slug": "compote-pomme-nature-3608580789758",
+      "nom": "Compote Pomme Nature",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/360/858/078/9758/front_fr.80.400.jpg",
+      "rayon": "fruits-legumes",
+      "categorie": "Fruits",
+      "sous_categorie": "Transformés",
+      "origine": "Luxembourg",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3608580789758",
+      "_brands": [
+        "Andros"
+      ]
+    },
+    {
+      "slug": "puree-de-pommes-sans-sucres-ajoutes-4056489223191",
+      "nom": "Purée de pommes sans sucres ajoutés",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/405/648/922/3191/front_fr.32.400.jpg",
+      "rayon": "fruits-legumes",
+      "categorie": "Fruits",
+      "sous_categorie": "Transformés",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "4056489223191",
+      "_brands": [
+        "Vergers Gourmands",
+        " Lidl"
+      ]
+    },
+    {
+      "slug": "compote-pommes-allegee-en-sucres-4056489027768",
+      "nom": "Compote pommes allégée en sucres",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/405/648/902/7768/front_fr.69.400.jpg",
+      "rayon": "fruits-legumes",
+      "categorie": "Fruits",
+      "sous_categorie": "Transformés",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "4056489027768",
+      "_brands": [
+        "Freshona"
+      ]
+    },
+    {
+      "slug": "compote-de-pomme-allegee-3045320517101",
+      "nom": "Compote de pomme allégée",
+      "description": "Compote de Pomme",
+      "image_url": "https://images.openfoodfacts.org/images/products/304/532/051/7101/front.12.400.jpg",
+      "rayon": "fruits-legumes",
+      "categorie": "Fruits",
+      "sous_categorie": "Transformés",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3045320517101",
+      "_brands": [
+        "Andros"
+      ]
+    },
+    {
+      "slug": "pompotes-pomme-3021760400012",
+      "nom": "Pom'Potes Pomme",
+      "description": "Compote pomme nature allégée en sucres (30 % de sucres en moins)",
+      "image_url": "https://images.openfoodfacts.org/images/products/302/176/040/0012/front_fr.70.400.jpg",
+      "rayon": "fruits-legumes",
+      "categorie": "Fruits",
+      "sous_categorie": "Transformés",
+      "origine": "Réunion",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3021760400012",
+      "_brands": [
+        "Materne",
+        "Pom' Potes"
+      ]
+    },
+    {
+      "slug": "compote-de-pomme-biologique-20759131",
+      "nom": "compote de pomme biologique",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/20759131/front_fr.4.400.jpg",
+      "rayon": "fruits-legumes",
+      "categorie": "Fruits",
+      "sous_categorie": "Transformés",
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "20759131",
+      "_brands": [
+        "Freshona",
+        " Freshona Lidl"
+      ]
+    },
+    {
+      "slug": "pomme-poire-3045320083446",
+      "nom": "pomme poire",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/304/532/008/3446/front_fr.142.400.jpg",
+      "rayon": "fruits-legumes",
+      "categorie": "Fruits",
+      "sous_categorie": "Transformés",
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3045320083446",
+      "_brands": [
+        "Andros"
+      ]
+    },
+    {
+      "slug": "tropicana-100-oranges-pressees-sans-pulpe-1-l-3502110009449",
+      "nom": "Tropicana 100% oranges pressées sans pulpe 1 L",
+      "description": "Jus d'orange.",
+      "image_url": "https://images.openfoodfacts.org/images/products/350/211/000/9449/front_en.151.400.jpg",
+      "rayon": "fruits-legumes",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3502110009449",
+      "_brands": [
+        "Tropicana"
+      ]
+    },
+    {
+      "slug": "jus-de-citron-a-base-de-concentre-20019907",
+      "nom": "Jus de citron à base de concentré",
+      "description": "Jus de citron à base de jus de citron concentré",
+      "image_url": "https://images.openfoodfacts.org/images/products/20019907/front.9.400.jpg",
+      "rayon": "fruits-legumes",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "20019907",
+      "_brands": [
+        "Solevita"
+      ]
+    },
+    {
+      "slug": "shot-de-gingembre-bio-4056489028109",
+      "nom": "Shot de gingembre bio",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/405/648/902/8109/front_bg.266.400.jpg",
+      "rayon": "fruits-legumes",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "4056489028109",
+      "_brands": [
+        "Solevita"
+      ]
+    },
+    {
+      "slug": "pago-ace-orange-carotte-citron-9002515601018",
+      "nom": "Pago Ace - Orange - Carotte - Citron",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/900/251/560/1018/front_fr.66.400.jpg",
+      "rayon": "fruits-legumes",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "9002515601018",
+      "_brands": [
+        "pago"
+      ]
+    },
+    {
+      "slug": "tropicana-100-oranges-pressees-sans-pulpe-format-familial-1-",
+      "nom": "Tropicana 100% oranges pressées sans pulpe format familial 1,5 L",
+      "description": "Jus d'orange.",
+      "image_url": "https://images.openfoodfacts.org/images/products/350/211/000/6790/front.4.400.jpg",
+      "rayon": "fruits-legumes",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Suisse",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3502110006790",
+      "_brands": [
+        "Tropicana"
+      ]
+    },
+    {
+      "slug": "le-bio-orange-3254691586085",
+      "nom": "Le Bio Orange",
+      "description": "Nectar d'orange",
+      "image_url": "https://images.openfoodfacts.org/images/products/325/469/158/6085/front_fr.95.400.jpg",
+      "rayon": "fruits-legumes",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3254691586085",
+      "_brands": [
+        "Pressade"
+      ]
+    },
+    {
+      "slug": "pur-jus-citron-bio-20065355",
+      "nom": "Pur jus citron bio",
+      "description": "jus de citron bio",
+      "image_url": "https://images.openfoodfacts.org/images/products/20065355/front_fr.114.400.jpg",
+      "rayon": "fruits-legumes",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "20065355",
+      "_brands": [
+        "Solevita"
+      ]
+    },
+    {
+      "slug": "le-pur-jus-orange-sans-pulpe-3123349011227",
+      "nom": "LE PUR JUS Orange sans pulpe",
+      "description": "Jus d'Orange sans pulpe sans sucres ajoutés.",
+      "image_url": "https://images.openfoodfacts.org/images/products/312/334/901/1227/front_fr.163.400.jpg",
+      "rayon": "fruits-legumes",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3123349011227",
+      "_brands": [
+        "Joker"
+      ]
+    },
+    {
+      "slug": "fa-bu-bleu-5038862130929",
+      "nom": "FA-BU-BLEU",
+      "description": "Un mélange de jus de plusieurs fruits, d'eau de coco et extrait de spiruline, vitamines ajoutées",
+      "image_url": "https://images.openfoodfacts.org/images/products/503/886/213/0929/front_fr.12.400.jpg",
+      "rayon": "fruits-legumes",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Suisse",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "5038862130929",
+      "_brands": [
+        "Innocent"
+      ]
+    },
+    {
+      "slug": "tropicana-100-oranges-pressees-avec-pulpe-1-l-3502110009401",
+      "nom": "Tropicana 100% oranges pressées avec pulpe 1 L",
+      "description": "Jus d'orange avec pulpe.",
+      "image_url": "https://images.openfoodfacts.org/images/products/350/211/000/9401/front_fr.145.400.jpg",
+      "rayon": "fruits-legumes",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3502110009401",
+      "_brands": [
+        "Tropicana"
+      ]
+    },
+    {
+      "slug": "poelee-la-parisienne-3083681116908",
+      "nom": "Poêlée La Parisienne",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/308/368/111/6908/front_fr.29.400.jpg",
+      "rayon": "surgeles",
+      "categorie": "Légumes",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3083681116908",
+      "_brands": [
+        "Bonduelle"
+      ]
+    },
+    {
+      "slug": "poelee-la-mediterraneenne-3083681117011",
+      "nom": "Poêlée La Méditerranéenne",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/308/368/111/7011/front_fr.27.400.jpg",
+      "rayon": "surgeles",
+      "categorie": "Légumes",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3083681117011",
+      "_brands": [
+        "Bonduelle"
+      ]
+    },
+    {
+      "slug": "poelee-la-paysanne-3083681116939",
+      "nom": "Poêlée La Paysanne",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/308/368/111/6939/front_fr.30.400.jpg",
+      "rayon": "surgeles",
+      "categorie": "Légumes",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3083681116939",
+      "_brands": [
+        "Bonduelle"
+      ]
+    },
+    {
+      "slug": "puree-delice-haricots-verts-courgettes-epinards-pois-creme-4",
+      "nom": "Purée délice - haricots verts, courgettes, épinards, pois, crème - 4 saveurs",
+      "description": "Purée de légumes cuisinée surgelée",
+      "image_url": "https://images.openfoodfacts.org/images/products/308/368/106/6838/front_fr.37.400.jpg",
+      "rayon": "surgeles",
+      "categorie": "Légumes",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3083681066838",
+      "_brands": [
+        "Bonduelle"
+      ]
+    },
+    {
+      "slug": "la-poelee-champetre-3083681117042",
+      "nom": "La Poêlée Champêtre",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/308/368/111/7042/front_fr.13.400.jpg",
+      "rayon": "surgeles",
+      "categorie": "Légumes",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3083681117042",
+      "_brands": [
+        "Bonduelle"
+      ]
+    },
+    {
+      "slug": "ratatouille-cuisinee-3270160114382",
+      "nom": "Ratatouille cuisinée",
+      "description": "Ratatouille cuisinée - tomate, aubergine, courgette, poivron; oignon à l'huile d'olive 3% - surgelée",
+      "image_url": "https://images.openfoodfacts.org/images/products/327/016/011/4382/front.12.400.jpg",
+      "rayon": "surgeles",
+      "categorie": "Légumes",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3270160114382",
+      "_brands": [
+        "Picard"
+      ]
+    },
+    {
+      "slug": "duo-quinoa-pois-doux-3083681085150",
+      "nom": "Duo quinoa pois doux",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/308/368/108/5150/front_fr.65.400.jpg",
+      "rayon": "surgeles",
+      "categorie": "Légumes",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3083681085150",
+      "_brands": [
+        "Bonduelle"
+      ]
+    },
+    {
+      "slug": "haricots-verts-extra-fins-precuits-vapeur-3083680019408",
+      "nom": "Haricots Verts Extra-fins Précuits Vapeur",
+      "description": "Haricots verts extra fins surgelés OU haricots verts extra fins entiers surgelés",
+      "image_url": "https://images.openfoodfacts.org/images/products/308/368/001/9408/front.7.400.jpg",
+      "rayon": "surgeles",
+      "categorie": "Légumes",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3083680019408",
+      "_brands": [
+        "Bonduelle"
+      ]
+    },
+    {
+      "slug": "legumes-a-la-mexicaine-3270160873227",
+      "nom": "Légumes à la mexicaine",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/327/016/087/3227/front_fr.18.400.jpg",
+      "rayon": "surgeles",
+      "categorie": "Légumes",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3270160873227",
+      "_brands": [
+        "Picard"
+      ]
+    },
+    {
+      "slug": "wok-de-legumes-et-nouilles-a-lasiatique-3270160863150",
+      "nom": "Wok de légumes et nouilles à l'Asiatique",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/327/016/086/3150/front_fr.48.400.jpg",
+      "rayon": "surgeles",
+      "categorie": "Légumes",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3270160863150",
+      "_brands": [
+        "Picard"
+      ]
+    },
+    {
+      "slug": "ristorante-pizza-vegetale-4001724039143",
+      "nom": "Ristorante - Pizza vegetale",
+      "description": "Pizza à pâte fine et croustillante richement garnie de tomates, de poivrons, de piments et d'oignons, surgelée.",
+      "image_url": "https://images.openfoodfacts.org/images/products/400/172/403/9143/front_de.3.400.jpg",
+      "rayon": "surgeles",
+      "categorie": "Plats préparés halal",
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "4001724039143",
+      "_brands": [
+        "Dr. Oetker"
+      ]
+    },
+    {
+      "slug": "pizza-mozzarella-4001724039112",
+      "nom": "Pizza Mozzarella",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/400/172/403/9112/front_de.24.400.jpg",
+      "rayon": "surgeles",
+      "categorie": "Plats préparés halal",
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "4001724039112",
+      "_brands": [
+        "Dr. Oetker"
+      ]
+    },
+    {
+      "slug": "ristorante-pizza-tonno-4001724038993",
+      "nom": "Ristorante Pizza Tonno",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/400/172/403/8993/front_de.74.400.jpg",
+      "rayon": "surgeles",
+      "categorie": "Plats préparés halal",
+      "sous_categorie": null,
+      "origine": "Autriche",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "4001724038993",
+      "_brands": [
+        "Dr. Oetker"
+      ]
+    },
+    {
+      "slug": "pizza-cuite-sur-pierre-margherita-4056489443025",
+      "nom": "Pizza Cuite Sur Pierre - Margherita",
+      "description": "Pizza garnie de sauce tomate, de Mozzarella, et de fromage Edam, préte à cuire, Surgelée",
+      "image_url": "https://images.openfoodfacts.org/images/products/405/648/944/3025/front_fr.67.400.jpg",
+      "rayon": "surgeles",
+      "categorie": "Plats préparés halal",
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "4056489443025",
+      "_brands": [
+        "Trattoria - Alfredo",
+        "Alfredo",
+        "Lidl"
+      ]
+    },
+    {
+      "slug": "pizza-margherita-tomate-mozzarella-3270160833900",
+      "nom": "Pizza Margherita tomate, mozzarella",
+      "description": "Pizza Margherita (tomate, mozzarella), surgelée",
+      "image_url": "https://images.openfoodfacts.org/images/products/327/016/083/3900/front.9.400.jpg",
+      "rayon": "surgeles",
+      "categorie": "Plats préparés halal",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3270160833900",
+      "_brands": [
+        "Picard"
+      ]
+    },
+    {
+      "slug": "pizza-n-9-b-uf-merguez-sauce-salsa-3270160890163",
+      "nom": "Pizza N°9 - Bœuf, merguez, sauce Salsa",
+      "description": "Pizza garni de bœuf, merguez, légumes : poivrons verts, poivrons rouges, oignons et de fromage mozzarella",
+      "image_url": "https://images.openfoodfacts.org/images/products/327/016/089/0163/front_fr.77.400.jpg",
+      "rayon": "surgeles",
+      "categorie": "Plats préparés halal",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3270160890163",
+      "_brands": [
+        "Picard"
+      ]
+    },
+    {
+      "slug": "mochi-sesame-4712928343775",
+      "nom": "Mochi sésame",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/471/292/834/3775/front_fr.3.400.jpg",
+      "rayon": "surgeles",
+      "categorie": "Desserts",
+      "sous_categorie": null,
+      "origine": "Croatie",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "4712928343775",
+      "_brands": "szu Chen po"
+    },
+    {
+      "slug": "mochi-the-vert-8805957024251",
+      "nom": "Mochi thé vert",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/880/595/702/4251/front_fr.3.400.jpg",
+      "rayon": "surgeles",
+      "categorie": "Desserts",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8805957024251",
+      "_brands": "Maison de Corée"
+    },
+    {
+      "slug": "mochi-aux-arachides-4711931031792",
+      "nom": "Mochi aux Arachides",
+      "description": "Mochi aux Arachides - Peanut Mochi",
+      "image_url": "https://images.openfoodfacts.org/images/products/471/193/103/1792/front_fr.23.400.jpg",
+      "rayon": "surgeles",
+      "categorie": "Desserts",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "4711931031792",
+      "_brands": "Royal Family"
+    },
+    {
+      "slug": "mochi-au-haricot-rouge-4711931031808",
+      "nom": "Mochi au haricot rouge",
+      "description": "Mochi au haricot rouge (azuki) - Red Bean Mochi",
+      "image_url": "https://images.openfoodfacts.org/images/products/471/193/103/1808/front_fr.20.400.jpg",
+      "rayon": "surgeles",
+      "categorie": "Desserts",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "4711931031808",
+      "_brands": "Royal Family"
+    },
+    {
+      "slug": "touche-de-feves-edamame-3083681079647",
+      "nom": "Touche de fèves edamame",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/308/368/107/9647/front_es.61.400.jpg",
+      "rayon": "surgeles",
+      "categorie": "Légumes",
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3083681079647",
+      "_brands": [
+        "Bonduelle"
+      ]
+    },
+    {
+      "slug": "edamame-et-sauce-epicee-3270160723010",
+      "nom": "Edamame et sauce épicée",
+      "description": "Graines de soja dans leur gousse",
+      "image_url": "https://images.openfoodfacts.org/images/products/327/016/072/3010/front.4.400.jpg",
+      "rayon": "surgeles",
+      "categorie": "Légumes",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3270160723010",
+      "_brands": [
+        "Picard"
+      ]
+    },
+    {
+      "slug": "feves-edamame-3255691008713",
+      "nom": "Fèves edamamé",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/325/569/100/8713/front_fr.19.400.jpg",
+      "rayon": "surgeles",
+      "categorie": "Légumes",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3255691008713",
+      "_brands": [
+        "Rochefontaine"
+      ]
+    },
+    {
+      "slug": "edamame-sales-surgeles-5702008236799",
+      "nom": "Edamame salés surgelés",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/570/200/823/6799/front_fr.33.400.jpg",
+      "rayon": "surgeles",
+      "categorie": "Légumes",
+      "sous_categorie": null,
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "5702008236799",
+      "_brands": [
+        "GEIA FOOD AS"
+      ]
+    },
+    {
+      "slug": "pates-penne-rigate-ble-complet-integral-500g-8076809529433",
+      "nom": "Pätes penne rigate blé complet integral 500g",
+      "description": "Pâtes alimentaires de semoule complète de blé dur",
+      "image_url": "https://images.openfoodfacts.org/images/products/807/680/952/9433/front.19.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8076809529433",
+      "_brands": [
+        "BARILLA NORGE AS"
+      ]
+    },
+    {
+      "slug": "penne-rigate-n-73-8076802085738",
+      "nom": "Penne Rigate N°73",
+      "description": "Pâtes alimentaires de semoule de blé dur de qualité supérieure",
+      "image_url": "https://images.openfoodfacts.org/images/products/807/680/208/5738/front_en.3506.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Australie",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8076802085738",
+      "_brands": [
+        "Barilla"
+      ]
+    },
+    {
+      "slug": "pates-spaghetti-au-ble-complet-integral-500g-8076809529419",
+      "nom": "Pâtes spaghetti au blé complet integral 500g",
+      "description": "Pâtes alimentaires de semoule complète de blé dur",
+      "image_url": "https://images.openfoodfacts.org/images/products/807/680/952/9419/front_fr.1573.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Autriche",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8076809529419",
+      "_brands": [
+        "Barilla",
+        "Barilla Teigwaren",
+        " Barilla - Barilla G. e R. Fratelli - Società per Azioni - Via Mantova",
+        " 166",
+        " 43122 Parma - Italy"
+      ]
+    },
+    {
+      "slug": "pates-fusilli-500g-8076802085981",
+      "nom": "Pâtes fusilli 500g",
+      "description": "Pâtes alimentaires de semoule de blé dur de qualité supérieure",
+      "image_url": "https://images.openfoodfacts.org/images/products/807/680/208/5981/front.4.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Australie",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8076802085981",
+      "_brands": [
+        "Barilla"
+      ]
+    },
+    {
+      "slug": "nouille-instantanees-gout-poulet-8852018101024",
+      "nom": "Nouille instantanées goût poulet",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/885/201/810/1024/front_de.219.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "République tchèque",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8852018101024",
+      "_brands": [
+        "YumYum",
+        "Yum Yum"
+      ]
+    },
+    {
+      "slug": "barilla-lasagne-alluovo-500g-8076800376999",
+      "nom": "BARILLA LASAGNE ALL'UOVO 500g",
+      "description": "Pâtes alimentaires aux oeufs",
+      "image_url": "https://images.openfoodfacts.org/images/products/807/680/037/6999/front.23.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8076800376999",
+      "_brands": [
+        "Barilla"
+      ]
+    },
+    {
+      "slug": "pates-linguine-collezione-500g-8076809523509",
+      "nom": "Pâtes linguine collezione 500g",
+      "description": "Pâtes alimentaires de semoule de blé dur de qualité supérieure",
+      "image_url": "https://images.openfoodfacts.org/images/products/807/680/952/3509/front.6.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8076809523509",
+      "_brands": [
+        "Barilla"
+      ]
+    },
+    {
+      "slug": "capellini-500g-eu-8076800195019",
+      "nom": "Capellini 500g eu",
+      "description": "Pâtes alimentaires de semoule de blé dur de qualité supérieure",
+      "image_url": "https://images.openfoodfacts.org/images/products/807/680/019/5019/front.18.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8076800195019",
+      "_brands": [
+        "Barilla",
+        " Barilla - Barilla G. e R. Fratelli - Società per Azioni - Via Mantova",
+        " 166",
+        " 43122 Parma - Italy"
+      ]
+    },
+    {
+      "slug": "pates-spaghetti-n-5-1kg-8076800105056",
+      "nom": "Pâtes spaghetti n°5 1kg",
+      "description": "Pâtes alimentaires de semoule de blé dur de qualité supérieure",
+      "image_url": "https://images.openfoodfacts.org/images/products/807/680/010/5056/front.28.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Autriche",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8076800105056",
+      "_brands": [
+        "Barilla"
+      ]
+    },
+    {
+      "slug": "ma-farine-de-ble-supreme-premiere-extraction-du-grain-de-ble",
+      "nom": "ma farine de blé suprême première extraction du grain de blé tout usage t45",
+      "description": "Farine première extraction",
+      "image_url": "https://images.openfoodfacts.org/images/products/306/811/070/3232/front.6.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": "Épicerie salée",
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3068110703232",
+      "_brands": [
+        "Francine"
+      ]
+    },
+    {
+      "slug": "farine-de-ble-complete-t150-3068111301246",
+      "nom": "Farine de blé complète - T150",
+      "description": "Farine de blé complète T150",
+      "image_url": "https://images.openfoodfacts.org/images/products/306/811/130/1246/front.12.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": "Épicerie salée",
+      "sous_categorie": null,
+      "origine": "Suisse",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3068111301246",
+      "_brands": [
+        "Francine"
+      ]
+    },
+    {
+      "slug": "farine-de-ble-20003142",
+      "nom": "Farine de blé",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/20003142/front.9.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": "Épicerie salée",
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "20003142",
+      "_brands": [
+        "Belbake"
+      ]
+    },
+    {
+      "slug": "amandes-en-poudre-20003432",
+      "nom": "Amandes en poudre",
+      "description": "Amandes en poudre",
+      "image_url": "https://images.openfoodfacts.org/images/products/20003432/front.3.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": "Épicerie salée",
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "20003432",
+      "_brands": [
+        "Belbake",
+        "Lidl",
+        "August Töpfer & Co.",
+        "Belbake Lidl"
+      ]
+    },
+    {
+      "slug": "farine-de-ble-t45-3068110702235",
+      "nom": "Farine de blé T45",
+      "description": "Farine de blé",
+      "image_url": "https://images.openfoodfacts.org/images/products/306/811/070/2235/front.21.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": "Épicerie salée",
+      "sous_categorie": null,
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3068110702235",
+      "_brands": [
+        "Francine"
+      ]
+    },
+    {
+      "slug": "farine-de-ble-bio-3068110703249",
+      "nom": "Farine de blé bio",
+      "description": "Farine de blé",
+      "image_url": "https://images.openfoodfacts.org/images/products/306/811/070/3249/front.24.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": "Épicerie salée",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3068110703249",
+      "_brands": [
+        "Francine"
+      ]
+    },
+    {
+      "slug": "amandes-en-poudre-3179142054633",
+      "nom": "Amandes en poudre",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/317/914/205/4633/front_fr.29.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": "Épicerie salée",
+      "sous_categorie": null,
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3179142054633",
+      "_brands": [
+        "Vahiné"
+      ]
+    },
+    {
+      "slug": "farine-de-ble-type-55-3450970120302",
+      "nom": "Farine de blé Type 55",
+      "description": "Farine de blé type 55",
+      "image_url": "https://images.openfoodfacts.org/images/products/345/097/012/0302/front.6.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": "Épicerie salée",
+      "sous_categorie": null,
+      "origine": "Portugal",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3450970120302",
+      "_brands": [
+        "€.C.O.+",
+        "Eco+"
+      ]
+    },
+    {
+      "slug": "poudre-stevia-3329757002998",
+      "nom": "Poudre stevia",
+      "description": "Édulcorant de table à base de glycosides de stéviol",
+      "image_url": "https://images.openfoodfacts.org/images/products/332/975/700/2998/front.12.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": "Épicerie sucrée",
+      "sous_categorie": null,
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3329757002998",
+      "_brands": [
+        "Pure Via"
+      ]
+    },
+    {
+      "slug": "ppk-cassonade-pure-canne-kraft-daddy-750g-3165433724019",
+      "nom": "Ppk cassonade pure canne kraft daddy 750g",
+      "description": "Ppk cassonade pure canne kraft daddy 750g",
+      "image_url": "https://images.openfoodfacts.org/images/products/316/543/372/4019/front_en.46.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": "Épicerie sucrée",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3165433724019",
+      "_brands": [
+        "Daddy"
+      ]
+    },
+    {
+      "slug": "cassonade-3174660084513",
+      "nom": "cassonade",
+      "description": "sucre roux de canne en poudre",
+      "image_url": "https://images.openfoodfacts.org/images/products/317/466/008/4513/front.7.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": "Épicerie sucrée",
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3174660084513",
+      "_brands": [
+        "Béghin Say",
+        "La Perruche",
+        "Tereos"
+      ]
+    },
+    {
+      "slug": "sucre-cmplet-muscovado-3700214610480",
+      "nom": "Sucre Cmplet Muscovado",
+      "description": "Sucre Complet Muscovado",
+      "image_url": "https://images.openfoodfacts.org/images/products/370/021/461/0480/front.7.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": "Épicerie sucrée",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3700214610480",
+      "_brands": [
+        "Alter Eco"
+      ]
+    },
+    {
+      "slug": "sucre-poudre-3174660000896",
+      "nom": "Sucre Poudre",
+      "description": "Sucre en poudre",
+      "image_url": "https://images.openfoodfacts.org/images/products/317/466/000/0896/front.6.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": "Épicerie sucrée",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3174660000896",
+      "_brands": [
+        "Béghin SayTereos"
+      ]
+    },
+    {
+      "slug": "cassonade-20711115",
+      "nom": "cassonade",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/20711115/front_fr.90.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": "Épicerie sucrée",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "20711115",
+      "_brands": [
+        "navarre"
+      ]
+    },
+    {
+      "slug": "lentilles-cuisinees-a-lauvergnate-3021690201123",
+      "nom": "Lentilles Cuisinées à l'Auvergnate",
+      "description": "Lentilles cuisinées",
+      "image_url": "https://images.openfoodfacts.org/images/products/302/169/020/1123/front.6.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Suisse",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3021690201123",
+      "_brands": [
+        "raynal"
+      ]
+    },
+    {
+      "slug": "lentilles-preparees-3083680613576",
+      "nom": "Lentilles préparées",
+      "description": "Plat préparé en conserve",
+      "image_url": "https://images.openfoodfacts.org/images/products/308/368/061/3576/front.11.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3083680613576",
+      "_brands": [
+        "Cassegrain"
+      ]
+    },
+    {
+      "slug": "lentilles-cuisinees-a-lauvergnate-3021690201116",
+      "nom": "Lentilles cuisinées à l'Auvergnate",
+      "description": "Lentilles",
+      "image_url": "https://images.openfoodfacts.org/images/products/302/169/020/1116/front.7.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Guadeloupe",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3021690201116",
+      "_brands": [
+        "Raynal et Roquelaure"
+      ]
+    },
+    {
+      "slug": "protein-packed-lentil-cakes-5013665114017",
+      "nom": "Protein packed lentil cakes",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/501/366/511/4017/front_en.24.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "5013665114017",
+      "_brands": [
+        "Kallo"
+      ]
+    },
+    {
+      "slug": "lentilles-cuisinees-riz-soja-3175681170872",
+      "nom": "Lentilles cuisinées, riz & soja",
+      "description": "Plat cuisiné à base de céréales",
+      "image_url": "https://images.openfoodfacts.org/images/products/317/568/117/0872/front.3.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Belgique",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3175681170872",
+      "_brands": [
+        "Céréal Bio"
+      ]
+    },
+    {
+      "slug": "lentilles-preparees-3083680652094",
+      "nom": "Lentilles préparées",
+      "description": "Lentilles préparées, carottes et oignons",
+      "image_url": "https://images.openfoodfacts.org/images/products/308/368/065/2094/front.6.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3083680652094",
+      "_brands": [
+        "Cassegrain"
+      ]
+    },
+    {
+      "slug": "pois-chiches-20475598",
+      "nom": "Pois chiches",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/20475598/front.3.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "20475598",
+      "_brands": [
+        "Freshona - Lidl"
+      ]
+    },
+    {
+      "slug": "kichererbsen-20468583",
+      "nom": "Kichererbsen",
+      "description": "Pois chiches, cuits",
+      "image_url": "https://images.openfoodfacts.org/images/products/20468583/front.3.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "République tchèque",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "20468583",
+      "_brands": [
+        "Freshona",
+        " Lidl"
+      ]
+    },
+    {
+      "slug": "pois-chiches-cuits-dans-tres-peu-de-jus-3083681085860",
+      "nom": "Pois Chiches cuits dans très peu de jus",
+      "description": "Pois chiches sous vide",
+      "image_url": "https://images.openfoodfacts.org/images/products/308/368/108/5860/front_fr.23.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3083681085860",
+      "_brands": [
+        "Bonduelle"
+      ]
+    },
+    {
+      "slug": "pois-chiches-3017800078860",
+      "nom": "Pois chiches",
+      "description": "Pois chiches",
+      "image_url": "https://images.openfoodfacts.org/images/products/301/780/007/8860/front.30.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3017800078860",
+      "_brands": [
+        "Compagnie Générale De Conserve",
+        "Sultanines"
+      ]
+    },
+    {
+      "slug": "pois-chiches-3560070273546",
+      "nom": "Pois chiches",
+      "description": "Pois chiches.",
+      "image_url": "https://images.openfoodfacts.org/images/products/356/007/027/3546/front.27.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "3560070273546",
+      "_brands": [
+        "Carrefour"
+      ]
+    },
+    {
+      "slug": "kichererbsen-20166083",
+      "nom": "Kichererbsen",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/20166083/front_de.104.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": null,
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "20166083",
+      "_brands": [
+        "Freshona"
+      ]
+    },
+    {
+      "slug": "tomates-pelees-20004132",
+      "nom": "Tomates pelées",
+      "description": "Tomates pelées en morceaux",
+      "image_url": "https://images.openfoodfacts.org/images/products/20004132/front_hr.303.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": "Épicerie salée",
+      "sous_categorie": null,
+      "origine": "Autriche",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "20004132",
+      "_brands": [
+        "Baresa",
+        " Freshona"
+      ]
+    },
+    {
+      "slug": "t-tomaten-geschalte-8005110060007",
+      "nom": "T-Tomaten-Geschälte",
+      "description": "Tomates pelées",
+      "image_url": "https://images.openfoodfacts.org/images/products/800/511/006/0007/front.6.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": "Épicerie salée",
+      "sous_categorie": null,
+      "origine": "Australie",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8005110060007",
+      "_brands": [
+        "Oluf lorentzen as"
+      ]
+    },
+    {
+      "slug": "tomates-pelees-20198107",
+      "nom": "Tomates Pelées",
+      "description": "Tomates pelées au jus de tomate, pasteurisées",
+      "image_url": "https://images.openfoodfacts.org/images/products/20198107/front.3.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": "Épicerie salée",
+      "sous_categorie": null,
+      "origine": "Croatie",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "20198107",
+      "_brands": [
+        "Freshona",
+        "Campo Largo",
+        "Baresa",
+        "Lidl"
+      ]
+    },
+    {
+      "slug": "tomates-pelees-bio-40879321",
+      "nom": "Tomates pelées bio",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/40879321/front_fr.14.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": "Épicerie salée",
+      "sous_categorie": null,
+      "origine": "France",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "40879321",
+      "_brands": [
+        "Freshona",
+        " Baresa"
+      ]
+    },
+    {
+      "slug": "concasse-de-tomates-bio-40879345",
+      "nom": "Concassé de tomates Bio",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/40879345/front_en.78.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": "Épicerie salée",
+      "sous_categorie": null,
+      "origine": "Allemagne",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "40879345",
+      "_brands": [
+        "Freshona",
+        "Baresa"
+      ]
+    },
+    {
+      "slug": "geschalte-tomaten-8005110413544",
+      "nom": "Geschälte Tomaten",
+      "description": "",
+      "image_url": "https://images.openfoodfacts.org/images/products/800/511/041/3544/front.6.400.jpg",
+      "rayon": "produits-courants",
+      "categorie": "Épicerie salée",
+      "sous_categorie": null,
+      "origine": "Australie",
+      "badge": null,
+      "actif": true,
+      "ordre": 100,
+      "_source": "openfoodfacts",
+      "_source_code": "8005110413544",
+      "_brands": [
+        "Oluf lorentzen as"
+      ]
+    }
+  ]
+}

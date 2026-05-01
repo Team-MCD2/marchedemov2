@@ -19,7 +19,7 @@ export default function ChatMo({
   phoneE164,
   phoneDisplay,
   email,
-  whatsappNumber,
+  whatsappNumber = null,
 }) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -81,6 +81,7 @@ export default function ChatMo({
         aria-modal="false"
         aria-label="Contacter Monsieur Mo'"
         aria-hidden={!open}
+        inert={!open ? "" : undefined}
         className={[
           "fixed z-[60] bottom-24 right-4 md:right-6",
           "w-[calc(100vw-2rem)] sm:w-[360px] max-w-[360px]",

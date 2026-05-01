@@ -1,4 +1,6 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import MassImageMatchModal from "./MassImageMatchModal.jsx";
+import ProductImageSearchModal from "./ProductImageSearchModal.jsx";
 
 /**
  * ProduitsManager — admin table for public.produits (catalogue vitrine).
@@ -19,6 +21,8 @@ const EMPTY_PRODUIT = {
   prix_indicatif: "",
   unite: "",
   rayon: "",
+  categorie: "",
+  sous_categorie: "",
   origine: "",
   badge: "",
   actif: true,
@@ -32,11 +36,30 @@ function fmtPrice(n) {
   return num.toFixed(2).replace(".", ",") + " €";
 }
 
+/** Read initial filter values from URL params so /admin/images-gap can
+ *  jump straight into ProduitsManager with `?statut=sans-image` applied. */
+function initialFilterFromURL() {
+  const base = { q: "", rayon: "", statut: "all" };
+  if (typeof window === "undefined") return base;
+  const params = new URLSearchParams(window.location.search);
+  const q = params.get("q");
+  const rayon = params.get("rayon");
+  const statut = params.get("statut");
+  const ALLOWED_STATUT = new Set(["all", "active", "inactive", "sans-image", "avec-image"]);
+  return {
+    q: q ?? base.q,
+    rayon: rayon ?? base.rayon,
+    statut: statut && ALLOWED_STATUT.has(statut) ? statut : base.statut,
+  };
+}
+
 export default function ProduitsManager({ initialProduits, rayonsOptions }) {
   const [produits, setProduits] = useState(initialProduits ?? []);
   const [editing, setEditing] = useState(null);
   const [importing, setImporting] = useState(false);
-  const [filter, setFilter] = useState({ q: "", rayon: "", statut: "all" });
+  const [massMatching, setMassMatching] = useState(false);
+  const [imageSearching, setImageSearching] = useState(/** @type {null | object} */ (null));
+  const [filter, setFilter] = useState(initialFilterFromURL);
   const [toast, setToast] = useState(null);
 
   const rayonNom = useMemo(() => {
@@ -50,6 +73,8 @@ export default function ProduitsManager({ initialProduits, rayonsOptions }) {
       if (filter.rayon && p.rayon !== filter.rayon) return false;
       if (filter.statut === "active" && !p.actif) return false;
       if (filter.statut === "inactive" && p.actif) return false;
+      if (filter.statut === "sans-image" && p.image_url) return false;
+      if (filter.statut === "avec-image" && !p.image_url) return false;
       if (filter.q) {
         const q = filter.q.toLowerCase();
         const hay = `${p.nom} ${p.slug} ${p.description ?? ""} ${p.origine ?? ""}`.toLowerCase();
@@ -120,6 +145,8 @@ export default function ProduitsManager({ initialProduits, rayonsOptions }) {
       prix_indicatif: form.prix_indicatif === "" ? null : Number(form.prix_indicatif),
       unite: form.unite || null,
       rayon: form.rayon,
+      categorie: form.categorie || null,
+      sous_categorie: form.sous_categorie || null,
       origine: form.origine || null,
       badge: form.badge || null,
       actif: form.actif !== false,
@@ -172,6 +199,25 @@ export default function ProduitsManager({ initialProduits, rayonsOptions }) {
     }
   }
 
+  async function refreshProduits() {
+    try {
+      const res = await fetch(`/api/admin/produits`);
+      if (!res.ok) throw new Error(res.statusText);
+      const data = await res.json();
+      setProduits(data.produits ?? []);
+    } catch (err) {
+      notify("err", `Erreur rafraîchissement : ${err.message}`);
+    }
+  }
+
+  async function onMassMatchApplied(summary) {
+    await refreshProduits();
+    const parts = [`${summary.applied} image(s) associée(s)`];
+    if (summary.failed > 0) parts.push(`${summary.failed} échec(s)`);
+    if (summary.skipped > 0) parts.push(`${summary.skipped} ignorée(s)`);
+    notify("ok", parts.join(" · "));
+  }
+
   return (
     <div>
       {/* Toolbar */}
@@ -204,15 +250,29 @@ export default function ProduitsManager({ initialProduits, rayonsOptions }) {
             <option value="all">Tous statuts</option>
             <option value="active">Actifs</option>
             <option value="inactive">Inactifs</option>
+            <option value="sans-image">Sans image</option>
+            <option value="avec-image">Avec image</option>
           </select>
         </div>
-        <div className="flex gap-2 shrink-0">
+        <div className="flex gap-2 shrink-0 flex-wrap">
+          <button
+            type="button"
+            onClick={() => setMassMatching(true)}
+            className="px-4 py-2 rounded-full bg-white border-2 border-noir text-[13px] font-bold hover:bg-noir hover:text-white transition inline-flex items-center gap-1.5"
+            title="Glisser-déposer plusieurs images et les associer automatiquement aux produits"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Images (auto-match)
+          </button>
           <button
             type="button"
             onClick={() => setImporting(true)}
             className="px-4 py-2 rounded-full bg-white border-2 border-black/10 text-[13px] font-bold hover:border-vert hover:text-vert transition"
+            title="Importer un CSV ou JSON (fichier ou copier/coller)"
           >
-            Importer JSON
+            Importer CSV/JSON
           </button>
           <button
             type="button"
@@ -295,6 +355,20 @@ export default function ProduitsManager({ initialProduits, rayonsOptions }) {
                       >
                         {p.actif ? "● Actif" : "○ Inactif"}
                       </button>
+                      {!p.image_url && (
+                        <button
+                          type="button"
+                          onClick={() => setImageSearching(p)}
+                          className="px-3 py-1 rounded-full bg-white border border-vert text-vert text-[12px] font-bold hover:bg-vert hover:text-white transition inline-flex items-center gap-1"
+                          title="Chercher une image pour ce produit via OpenFoodFacts"
+                        >
+                          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <circle cx="11" cy="11" r="7" />
+                            <path d="m21 21-4.3-4.3" strokeLinecap="round" />
+                          </svg>
+                          Image
+                        </button>
+                      )}
                       <button
                         type="button"
                         onClick={() => setEditing(p)}
@@ -335,6 +409,28 @@ export default function ProduitsManager({ initialProduits, rayonsOptions }) {
           currentProduits={produits}
           onCancel={() => setImporting(false)}
           onImport={bulkImport}
+        />
+      )}
+
+      {massMatching && (
+        <MassImageMatchModal
+          rayonsOptions={rayonsOptions}
+          onClose={() => setMassMatching(false)}
+          onApplied={onMassMatchApplied}
+        />
+      )}
+
+      {imageSearching && (
+        <ProductImageSearchModal
+          produit={imageSearching}
+          onCancel={() => setImageSearching(null)}
+          onToast={(level, msg) => notify(level === "error" ? "err" : "ok", msg)}
+          onSaved={(updated) => {
+            setProduits((list) =>
+              list.map((p) => (p.id === updated.id ? { ...p, ...updated } : p)),
+            );
+            setImageSearching(null);
+          }}
         />
       )}
 
@@ -468,6 +564,27 @@ function EditModal({ produit, rayonsOptions, onCancel, onSave }) {
             </Field>
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Field label="Catégorie" hint="Niveau 1 de la taxonomie (drill-down sur la page rayon).">
+              <input
+                type="text"
+                value={form.categorie ?? ""}
+                onChange={(e) => set("categorie", e.target.value)}
+                className="input"
+                placeholder="Fruits, Viandes, Épices…"
+              />
+            </Field>
+            <Field label="Sous-catégorie" hint="Niveau 2 optionnel (ex : « Dattes » sous « Fruits »).">
+              <input
+                type="text"
+                value={form.sous_categorie ?? ""}
+                onChange={(e) => set("sous_categorie", e.target.value)}
+                className="input"
+                placeholder="Dattes, Exotiques…"
+              />
+            </Field>
+          </div>
+
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <Field label="Prix indicatif (€)" hint="Optionnel. Non affiché publiquement par défaut.">
               <input
@@ -570,29 +687,151 @@ function Field({ label, hint, required, inline, children }) {
 }
 
 /* ================================================================ */
-/* Bulk import modal                                                  */
+/* Bulk import modal (JSON or CSV — auto-detected)                    */
 /* ================================================================ */
+
+/** Detect CSV vs JSON from the first non-whitespace character.
+ *  `[` or `{` → JSON ; anything else → CSV. Strips UTF-8 BOM first. */
+function detectFormat(text) {
+  const clean = text.replace(/^\uFEFF/, "").trimStart();
+  if (!clean) return "empty";
+  const c0 = clean[0];
+  if (c0 === "[" || c0 === "{") return "json";
+  return "csv";
+}
+
+/** Minimal RFC-4180 CSV parser that handles :
+ *  - UTF-8 BOM
+ *  - comma OR semicolon separator (auto-detected from header line)
+ *  - quoted fields with embedded separators, newlines, and ""-escaped quotes
+ *  - CRLF and LF line endings
+ *  - blank lines (dropped)
+ *  Header row mandatory. Returns an array of plain objects using
+ *  lower_snake_case header keys. */
+function parseCSV(raw) {
+  const text = raw.replace(/^\uFEFF/, "");
+  const firstLine = text.split(/\r?\n/)[0] ?? "";
+  const semis = (firstLine.match(/;/g) ?? []).length;
+  const commas = (firstLine.match(/,/g) ?? []).length;
+  const sep = semis > commas ? ";" : ",";
+
+  const rows = [];
+  let row = [];
+  let cell = "";
+  let inQuotes = false;
+  const n = text.length;
+  for (let i = 0; i < n; i++) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"') {
+        if (text[i + 1] === '"') {
+          cell += '"';
+          i++;
+        } else {
+          inQuotes = false;
+        }
+      } else {
+        cell += c;
+      }
+    } else {
+      if (c === '"' && cell === "") {
+        inQuotes = true;
+      } else if (c === sep) {
+        row.push(cell);
+        cell = "";
+      } else if (c === "\n" || c === "\r") {
+        if (c === "\r" && text[i + 1] === "\n") i++;
+        row.push(cell);
+        cell = "";
+        if (row.some((v) => v !== "")) rows.push(row);
+        row = [];
+      } else {
+        cell += c;
+      }
+    }
+  }
+  if (cell !== "" || row.length > 0) {
+    row.push(cell);
+    if (row.some((v) => v !== "")) rows.push(row);
+  }
+
+  if (rows.length < 2) throw new Error("CSV vide ou sans en-tête");
+  /* Normalise headers into safe snake_case keys :
+     - strip UTF-8 diacritics    ("Catégorie"   → "Categorie")
+     - lowercase                 ("Categorie"   → "categorie")
+     - turn any non-alphanum run ("Sous-catégorie" → "sous_categorie")
+       into a single underscore
+     - trim leading / trailing underscores                              */
+  const headers = rows[0].map((h) =>
+    String(h)
+      .trim()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, ""),
+  );
+  return rows.slice(1).map((r, idx) => {
+    const obj = {};
+    headers.forEach((h, i) => {
+      if (!h) return;
+      const v = (r[i] ?? "").trim();
+      if (v !== "") obj[h] = v;
+    });
+    /* Boolean normalisation for `actif` if provided as text. */
+    if ("actif" in obj) {
+      const t = String(obj.actif).toLowerCase();
+      obj.actif = !(t === "0" || t === "false" || t === "non" || t === "n" || t === "");
+    }
+    return obj;
+  });
+}
+
 function ImportModal({ currentProduits, onCancel, onImport }) {
   const [text, setText] = useState("");
   const [parsed, setParsed] = useState(null);
+  const [format, setFormat] = useState(null); /* 'json' | 'csv' | null */
   const [err, setErr] = useState(null);
+  const fileInputRef = useRef(null);
 
   function onPaste(v) {
     setText(v);
     if (!v.trim()) {
       setParsed(null);
       setErr(null);
+      setFormat(null);
       return;
     }
+    const fmt = detectFormat(v);
+    setFormat(fmt);
     try {
-      const obj = JSON.parse(v);
-      const arr = Array.isArray(obj) ? obj : obj.produits;
-      if (!Array.isArray(arr)) throw new Error("JSON doit être un tableau ou { produits: [...] }");
-      setParsed(arr);
+      if (fmt === "json") {
+        const obj = JSON.parse(v);
+        const arr = Array.isArray(obj) ? obj : obj.produits;
+        if (!Array.isArray(arr)) throw new Error("JSON doit être un tableau ou { produits: [...] }");
+        setParsed(arr);
+      } else if (fmt === "csv") {
+        setParsed(parseCSV(v));
+      } else {
+        setParsed(null);
+      }
       setErr(null);
     } catch (e) {
       setParsed(null);
       setErr(e.message);
+    }
+  }
+
+  async function onFilePick(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const txt = await file.text();
+      onPaste(txt);
+    } catch (readErr) {
+      setErr(`Lecture du fichier échouée : ${readErr.message}`);
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   }
 
@@ -608,7 +847,12 @@ function ImportModal({ currentProduits, onCancel, onImport }) {
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/40 backdrop-blur-sm p-0 md:p-6">
       <div className="w-full max-w-3xl bg-white rounded-t-3xl md:rounded-3xl shadow-2xl max-h-[95vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b border-black/5 px-6 py-4 flex items-center justify-between z-10">
-          <h2 className="font-soft font-bold text-[20px]">Importer des produits (JSON)</h2>
+          <div>
+            <h2 className="font-soft font-bold text-[20px]">Importer des produits</h2>
+            <p className="text-[12px] text-neutral-500 mt-0.5">
+              Coller du JSON ou CSV, ou charger un fichier. Format détecté automatiquement.
+            </p>
+          </div>
           <button
             type="button"
             onClick={onCancel}
@@ -623,11 +867,48 @@ function ImportModal({ currentProduits, onCancel, onImport }) {
 
         <div className="p-6 space-y-4">
           <div className="bg-creme rounded-2xl p-4 text-[13px] text-neutral-600 leading-relaxed">
-            Collez un tableau JSON ou <code className="bg-white px-1 rounded">{`{ produits: [...] }`}</code>.
-            Les slugs existants sont mis à jour, les nouveaux créés.
+            <strong>JSON :</strong> tableau <code className="bg-white px-1 rounded">[...]</code> ou <code className="bg-white px-1 rounded">{`{ produits: [...] }`}</code>.
+            <br />
+            <strong>CSV :</strong> une ligne d'en-tête puis une ligne par produit. Séparateur <code>,</code> ou <code>;</code> auto-détecté.
             <br />
             <strong>Champs requis :</strong> slug, nom, rayon.
-            <strong> Optionnels :</strong> description, image_url, prix_indicatif, unite, origine, badge, actif, ordre.
+            <strong> Optionnels :</strong> description, image_url, prix_indicatif, unite, categorie, sous_categorie, origine, badge, actif, ordre.
+            <br />
+            Les slugs existants sont mis à jour, les nouveaux créés.
+          </div>
+
+          <div className="flex items-center gap-3 flex-wrap">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv,.json,text/csv,application/json"
+              onChange={onFilePick}
+              className="hidden"
+              id="import-file-input"
+            />
+            <label
+              htmlFor="import-file-input"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border-2 border-black/10 font-bold text-[13px] cursor-pointer hover:border-noir transition"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              Charger un fichier
+            </label>
+            {format && format !== "empty" && (
+              <span className="inline-block px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-bold text-[11px] uppercase tracking-wider">
+                Format détecté : {format}
+              </span>
+            )}
+            {text && (
+              <button
+                type="button"
+                onClick={() => onPaste("")}
+                className="text-[12px] text-neutral-500 hover:text-rouge transition"
+              >
+                Vider
+              </button>
+            )}
           </div>
 
           <textarea
@@ -635,14 +916,14 @@ function ImportModal({ currentProduits, onCancel, onImport }) {
             onChange={(e) => onPaste(e.target.value)}
             className="w-full min-h-[220px] font-mono text-[12px] px-4 py-3 border border-black/10 rounded-2xl bg-creme resize-y focus:outline-none focus:border-vert"
             placeholder={
-              '[{"slug":"riz-basmati","nom":"Riz basmati parfumé","rayon":"produits-courants","origine":"Inde","unite":"kg"}]'
+              'slug,nom,rayon,categorie,sous_categorie,origine\nriz-basmati,Riz basmati parfumé,produits-courants,"Céréales",,Inde\n\n-- ou JSON --\n[{"slug":"riz-basmati","nom":"Riz basmati","rayon":"produits-courants"}]'
             }
             spellCheck={false}
           />
 
           {err && (
             <div className="bg-rouge/5 border border-rouge/20 text-rouge rounded-2xl p-3 text-[13px]">
-              <strong>JSON invalide :</strong> {err}
+              <strong>{format === "csv" ? "CSV" : "JSON"} invalide :</strong> {err}
             </div>
           )}
 
@@ -659,6 +940,7 @@ function ImportModal({ currentProduits, onCancel, onImport }) {
                       <th className="px-3 py-2 font-bold">Slug</th>
                       <th className="px-3 py-2 font-bold">Nom</th>
                       <th className="px-3 py-2 font-bold">Rayon</th>
+                      <th className="px-3 py-2 font-bold">Catégorie</th>
                       <th className="px-3 py-2 font-bold">Origine</th>
                     </tr>
                   </thead>
@@ -679,6 +961,10 @@ function ImportModal({ currentProduits, onCancel, onImport }) {
                         <td className="px-3 py-1.5 font-mono">{p.slug}</td>
                         <td className="px-3 py-1.5">{p.nom}</td>
                         <td className="px-3 py-1.5 text-neutral-500">{p.rayon}</td>
+                        <td className="px-3 py-1.5 text-neutral-500">
+                          {p.categorie ?? "—"}
+                          {p.sous_categorie ? <span className="text-neutral-400"> / {p.sous_categorie}</span> : null}
+                        </td>
                         <td className="px-3 py-1.5 text-neutral-500">{p.origine ?? "—"}</td>
                       </tr>
                     ))}

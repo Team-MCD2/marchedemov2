@@ -41,6 +41,7 @@ const videos = defineCollection({
   schema: z.object({
     id: z.string(),
     url_tiktok: z.string().url(),
+    src_local: z.string().optional(),
     thumbnail: z.string().optional(),
     titre: z.string(),
     rayon: z.enum([

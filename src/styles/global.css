@@ -801,3 +801,89 @@
     -webkit-mask-image: linear-gradient(to right, #000 85%, transparent);
   }
 }
+
+/* ------------------------------------------------------------
+   Image fallback handling and quality improvements
+   ------------------------------------------------------------ */
+.image-fallback {
+  filter: blur(20px);
+  opacity: 0.3;
+}
+
+/* Smooth rendering for photographic images (was pixelated which hurt photos) */
+img {
+  image-rendering: auto;
+}
+
+/* Improved card shadows and hover states */
+.card-float:hover {
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15), 0 8px 16px -8px rgba(0, 0, 0, 0.1);
+}
+
+/* Better text shadows for readability */
+.drop-shadow-lg {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Improved gradient overlays */
+.bg-gradient-enhanced {
+  background: linear-gradient(to top, 
+    rgba(0, 0, 0, 0.85) 0%, 
+    rgba(0, 0, 0, 0.4) 40%, 
+    rgba(0, 0, 0, 0.1) 70%, 
+    transparent 100%);
+}
+
+/* Image optimization and loading states */
+.img-optimizable {
+  transition: opacity 0.3s ease, filter 0.3s ease;
+}
+
+/* Subtle in-loading state; once loaded, .loaded class sharpens it */
+.img-optimizable:not(.loaded) {
+  opacity: 0.92;
+}
+
+.img-optimizable.loaded {
+  opacity: 1;
+  filter: none;
+}
+
+/* Skeleton loading for images */
+.img-skeleton {
+  background: linear-gradient(90deg, 
+    #f0f0f0 25%, 
+    #e0e0e0 50%, 
+    #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading-skeleton 1.5s ease-in-out infinite;
+}
+
+@keyframes loading-skeleton {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Responsive image containers */
+.img-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.img-container img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Better image quality for high-DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .img-container img {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}

@@ -8,6 +8,7 @@
     "dev": "astro dev",
     "start": "astro dev",
     "sync:tiktok": "node ./scripts/fetch-tiktok-thumbs.mjs",
+    "capture:mobile": "node ./scripts/capture-mobile-home.mjs",
     "prebuild": "node ./scripts/fetch-tiktok-thumbs.mjs",
     "build": "astro build",
     "postbuild": "node ./scripts/fix-vercel-runtime.mjs",
@@ -18,6 +19,7 @@
     "node": "22.x"
   },
   "dependencies": {
+    "@astrojs/check": "^0.9.9",
     "@astrojs/react": "^3.6.2",
     "@astrojs/sitemap": "3.2.1",
     "@astrojs/vercel": "^7.8.2",
@@ -26,13 +28,15 @@
     "astro": "^4.16.10",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "tailwindcss": "^3.4.14"
+    "tailwindcss": "^3.4.14",
+    "typescript": "^5.9.3"
   },
   "devDependencies": {
     "@astrojs/tailwind": "^5.1.2",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "autoprefixer": "^10.4.20",
+    "playwright": "^1.55.0",
     "postcss": "^8.4.47"
   }
 }

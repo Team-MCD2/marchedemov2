@@ -1,0 +1,483 @@
+---
+/**
+ * /recherche — Moteur de recherche interne.
+ *
+ * Pattern : index statique embarqué + fuzzy match côté client.
+ *
+ * Pourquoi pas Pagefind ? Pagefind exige un build-step après `astro build`
+ * ce qui casse la deploy chain actuelle (Vercel). Ici on construit l'index
+ * en Astro SSR : 358 produits + 10 rayons + actualités → ~80 KB gzippé.
+ * Zéro latence serveur, zéro dépendance runtime.
+ *
+ * Scoring : score 100 si le terme matche EXACTEMENT le début du nom,
+ * 60 s'il est présent en substring dans nom, 30 dans origine/rayon/badge.
+ * Tri par score desc, puis alpha.
+ */
+import Layout from "@layouts/Layout.astro";
+import Breadcrumb from "@components/Breadcrumb.astro";
+import NewsletterInline from "@components/NewsletterInline.astro";
+import { RAYONS_LIST, RAYONS, SITE } from "@/lib/site";
+import { getAllProduits } from "@/lib/produits-repo";
+import { getCollection } from "astro:content";
+
+const produits = await getAllProduits();
+
+/* Actualités (MD collection) — titre + slug pour index */
+let actus: Array<{ titre: string; slug: string; categorie: string }> = [];
+try {
+  const entries = await getCollection("articles");
+  actus = entries
+    .filter((e: any) => e.data.actif !== false)
+    .map((e: any) => ({
+      titre: e.data.titre,
+      slug: e.slug,
+      categorie: e.data.categorie ?? "Actualité",
+    }));
+} catch {
+  /* collection optional */
+}
+
+/* Recettes */
+let recettes: Array<{ titre: string; slug: string; rayon?: string }> = [];
+try {
+  const entries = await getCollection("recettes" as any);
+  recettes = entries
+    .filter((e: any) => e.data.actif !== false)
+    .map((e: any) => ({
+      titre: e.data.titre,
+      slug: e.slug,
+      rayon: e.data.rayonPrincipal,
+    }));
+} catch {
+  /* collection optional */
+}
+
+/* Index minimal : on serialise uniquement ce qui est utile à la search.
+   Pas de description (lourd, rarement utile pour un match de 1er niveau). */
+const index = {
+  produits: produits.map((p) => ({
+    type: "produit" as const,
+    title: p.nom,
+    slug: p.slug,
+    rayon: p.rayon,
+    origine: p.origine ?? "",
+    badge: p.badge ?? "",
+    image: p.image ?? "",
+    href: `/produits/${p.slug}`,
+  })),
+  rayons: RAYONS_LIST.map((r) => ({
+    type: "rayon" as const,
+    title: r.nom,
+    slug: r.slug,
+    tagline: r.tagline ?? "",
+    image: r.image,
+    accent: r.accent ?? "#1C6B35",
+    href: `/produits/${r.slug}`,
+  })),
+  actus: actus.map((a) => ({
+    type: "actu" as const,
+    title: a.titre,
+    slug: a.slug,
+    categorie: a.categorie,
+    href: `/actualites/${a.slug}`,
+  })),
+  recettes: recettes.map((r) => ({
+    type: "recette" as const,
+    title: r.titre,
+    slug: r.slug,
+    rayon: r.rayon ?? "",
+    href: `/recettes/${r.slug}`,
+  })),
+};
+
+const totalCount =
+  index.produits.length +
+  index.rayons.length +
+  index.actus.length +
+  index.recettes.length;
+
+/* Propositions rapides pour l'empty state (produits populaires variés). */
+const quickSuggestions = [
+  "ras el hanout",
+  "dattes medjool",
+  "plantain",
+  "curry",
+  "harissa",
+  "riz basmati",
+  "kimchi",
+  "baklava",
+];
+---
+
+<Layout
+  title={`Rechercher — ${totalCount}+ produits, rayons, recettes · ${SITE.name}`}
+  description="Recherche interne du Marché de Mo'. Trouvez instantanément un produit, un rayon, une recette parmi 350+ références."
+>
+  <Breadcrumb items={[{ name: "Rechercher" }]} />
+
+  <section class="bg-blanc pb-6 md:pb-10 pt-2">
+    <div class="container-mo max-w-4xl">
+      <span class="eyebrow">Moteur de recherche</span>
+      <h1 class="display-xl mt-4 text-balance" data-split-reveal>
+        Cherchez un produit, <span class="text-vert">un rayon, une recette.</span>
+      </h1>
+      <p class="mt-6 text-[17px] text-neutral-600 leading-relaxed max-w-2xl">
+        Index complet du Marché de Mo' — {totalCount} entrées. Tapez
+        quelques lettres, les résultats s'affichent instantanément.
+      </p>
+
+      <div class="mt-10 relative">
+        <svg
+          class="absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6 text-neutral-400 pointer-events-none"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.35-4.35" stroke-linecap="round" />
+        </svg>
+        <input
+          type="search"
+          id="q"
+          placeholder="Ex. ras el hanout, banane plantain, Ramadan…"
+          class="w-full rounded-2xl border border-black/12 bg-white pl-14 pr-4 py-5 text-[18px] focus:outline-none focus:ring-2 focus:ring-vert/40 focus:border-vert transition-all shadow-card"
+          autocomplete="off"
+          spellcheck="false"
+          autofocus
+        />
+        <button
+          type="button"
+          id="q-clear"
+          class="hidden absolute right-3 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-full bg-creme hover:bg-black/5 text-[12px] font-pro font-bold"
+          aria-label="Effacer la recherche"
+        >
+          Effacer
+        </button>
+      </div>
+
+      <div id="q-suggest" class="mt-5 flex flex-wrap gap-2">
+        <span class="text-[13px] text-neutral-500 font-pro mr-2 self-center">
+          Populaires :
+        </span>
+        {quickSuggestions.map((s) => (
+          <button
+            type="button"
+            class="q-chip px-3 py-1.5 rounded-full bg-creme hover:bg-vert hover:text-white text-[13px] font-pro font-bold transition-all"
+            data-q={s}
+          >
+            {s}
+          </button>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section-sm bg-creme min-h-[60vh]">
+    <div class="container-mo max-w-5xl">
+      {/* Empty state (rendered by default) */}
+      <div id="q-empty" class="text-center py-10 md:py-16">
+        <p class="text-[14px] text-neutral-500 font-pro">
+          Commencez à taper pour voir les résultats.
+        </p>
+      </div>
+
+      {/* No matches (hidden until triggered) */}
+      <div id="q-none" class="hidden text-center py-16 bg-white rounded-3xl shadow-card">
+        <img
+          src="/logos/favicon-marchedemo.png"
+          alt=""
+          aria-hidden="true"
+          class="w-16 h-16 mx-auto opacity-25"
+        />
+        <p class="mt-4 font-soft font-bold text-[22px]">Aucun résultat.</p>
+        <p class="mt-2 text-[14px] text-neutral-500 max-w-sm mx-auto">
+          Essayez une autre orthographe, ou explorez nos rayons directement.
+        </p>
+        <a href="/produits" class="mt-6 btn btn-primary inline-block">
+          Parcourir le catalogue →
+        </a>
+      </div>
+
+      {/* Results grouped */}
+      <div id="q-results" class="hidden space-y-10">
+        <div class="q-section" data-section="produits">
+          <h2 class="eyebrow">Produits</h2>
+          <p class="sr-only">Résultats produits</p>
+          <div class="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3" data-results-grid></div>
+        </div>
+
+        <div class="q-section" data-section="rayons">
+          <h2 class="eyebrow">Rayons</h2>
+          <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" data-results-grid></div>
+        </div>
+
+        <div class="q-section" data-section="actus">
+          <h2 class="eyebrow">Actualités</h2>
+          <div class="mt-4 space-y-2" data-results-list></div>
+        </div>
+
+        <div class="q-section" data-section="recettes">
+          <h2 class="eyebrow">Recettes</h2>
+          <div class="mt-4 space-y-2" data-results-list></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <NewsletterInline />
+</Layout>
+
+<script
+  id="search-index"
+  type="application/json"
+  set:html={JSON.stringify(index)}
+/>
+
+<script>
+  type IdxProduit = {
+    type: "produit";
+    title: string;
+    slug: string;
+    rayon: string;
+    origine: string;
+    badge: string;
+    image: string;
+    href: string;
+  };
+  type IdxRayon = {
+    type: "rayon";
+    title: string;
+    slug: string;
+    tagline: string;
+    image: string;
+    accent: string;
+    href: string;
+  };
+  type IdxActu = {
+    type: "actu";
+    title: string;
+    slug: string;
+    categorie: string;
+    href: string;
+  };
+  type IdxRecette = {
+    type: "recette";
+    title: string;
+    slug: string;
+    rayon: string;
+    href: string;
+  };
+  type Idx = {
+    produits: IdxProduit[];
+    rayons: IdxRayon[];
+    actus: IdxActu[];
+    recettes: IdxRecette[];
+  };
+
+  (() => {
+    const scriptEl = document.getElementById("search-index");
+    if (!scriptEl) return;
+    const idx = JSON.parse(scriptEl.textContent || "{}") as Idx;
+
+    const input = document.getElementById("q") as HTMLInputElement;
+    const clearBtn = document.getElementById("q-clear");
+    const suggest = document.getElementById("q-suggest");
+    const empty = document.getElementById("q-empty");
+    const none = document.getElementById("q-none");
+    const results = document.getElementById("q-results");
+    const chips = Array.from(
+      document.querySelectorAll<HTMLButtonElement>(".q-chip"),
+    );
+
+    function norm(s: string): string {
+      return s
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+    }
+
+    function score(entry: { title: string; [k: string]: any }, q: string): number {
+      const t = norm(entry.title);
+      if (t.startsWith(q)) return 100;
+      if (t.includes(" " + q)) return 80;
+      if (t.includes(q)) return 60;
+      /* Secondary fields */
+      const extra = norm(
+        [entry.origine, entry.badge, entry.rayon, entry.tagline, entry.categorie]
+          .filter(Boolean)
+          .join(" "),
+      );
+      if (extra.includes(q)) return 30;
+      return 0;
+    }
+
+    function searchAll(q: string) {
+      const nq = norm(q.trim());
+      if (!nq) return { produits: [], rayons: [], actus: [], recettes: [] };
+
+      function pick<T extends { title: string }>(arr: T[]): T[] {
+        return arr
+          .map((e) => ({ e, s: score(e as any, nq) }))
+          .filter((x) => x.s > 0)
+          .sort((a, b) => {
+            if (b.s !== a.s) return b.s - a.s;
+            return a.e.title.localeCompare(b.e.title, "fr");
+          })
+          .map((x) => x.e);
+      }
+
+      return {
+        produits: pick(idx.produits).slice(0, 30),
+        rayons: pick(idx.rayons).slice(0, 6),
+        actus: pick(idx.actus).slice(0, 6),
+        recettes: pick(idx.recettes).slice(0, 6),
+      };
+    }
+
+    function produitCard(p: IdxProduit) {
+      const rayonLabel = idx.rayons.find((r) => r.slug === p.rayon)?.title ?? p.rayon;
+      return `
+        <a href="${p.href}" class="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-0.5">
+          <div class="relative aspect-square overflow-hidden bg-creme">
+            ${
+              p.image
+                ? `<img src="${p.image}" alt="${escapeHtml(p.title)}" loading="lazy" decoding="async" class="w-full h-full object-cover group-hover:scale-[1.06] transition-transform duration-500" />`
+                : `<div class="absolute inset-0 bg-gradient-to-br from-creme to-[#EEEAE0] flex items-center justify-center p-3 text-center"><p class="font-soft font-bold text-[12px] text-neutral-500 uppercase tracking-wider line-clamp-3">${escapeHtml(p.title)}</p></div>`
+            }
+          </div>
+          <div class="p-3">
+            <h3 class="font-soft font-bold text-[14px] leading-tight text-balance line-clamp-2">${escapeHtml(p.title)}</h3>
+            <p class="mt-1 text-[11px] font-pro font-bold uppercase tracking-wider text-neutral-500 truncate">${escapeHtml(rayonLabel)}${p.origine ? " · " + escapeHtml(p.origine) : ""}</p>
+          </div>
+        </a>`;
+    }
+
+    function rayonCard(r: IdxRayon) {
+      return `
+        <a href="${r.href}" class="group relative overflow-hidden rounded-2xl aspect-[16/10] bg-noir-softer block">
+          <img src="${r.image}" alt="" loading="lazy" decoding="async" class="absolute inset-0 w-full h-full object-cover opacity-65 group-hover:opacity-80 group-hover:scale-[1.04] transition-all duration-500" />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+          <div class="absolute inset-x-4 bottom-4">
+            <p class="text-white font-soft font-bold text-[18px] leading-tight">${escapeHtml(r.title)}</p>
+            <p class="text-white/70 text-[12px] mt-1">${escapeHtml(r.tagline)}</p>
+          </div>
+        </a>`;
+    }
+
+    function textRow(href: string, title: string, meta: string) {
+      return `
+        <a href="${href}" class="flex items-center justify-between gap-4 bg-white rounded-2xl px-5 py-4 shadow-sm hover:shadow-card transition-all">
+          <div class="min-w-0">
+            <p class="font-soft font-bold text-[15px] leading-tight line-clamp-1">${escapeHtml(title)}</p>
+            <p class="text-[11px] font-pro font-bold uppercase tracking-wider text-neutral-500 mt-0.5">${escapeHtml(meta)}</p>
+          </div>
+          <span class="text-vert font-bold shrink-0 group-hover:translate-x-0.5 transition-transform">→</span>
+        </a>`;
+    }
+
+    function escapeHtml(s: string): string {
+      return s
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function render(res: ReturnType<typeof searchAll>, q: string) {
+      const hasAny =
+        res.produits.length ||
+        res.rayons.length ||
+        res.actus.length ||
+        res.recettes.length;
+
+      empty?.classList.toggle("hidden", !!q);
+      suggest?.classList.toggle("hidden", !!q);
+      none?.classList.toggle("hidden", !q || hasAny > 0);
+      results?.classList.toggle("hidden", !hasAny);
+
+      if (!hasAny) return;
+
+      const sections = results?.querySelectorAll<HTMLElement>(".q-section") ?? [];
+      sections.forEach((sec) => {
+        const name = sec.dataset.section as keyof typeof res;
+        const list = res[name];
+        sec.classList.toggle("hidden", list.length === 0);
+        if (list.length === 0) return;
+
+        const grid = sec.querySelector<HTMLElement>("[data-results-grid]");
+        const listEl = sec.querySelector<HTMLElement>("[data-results-list]");
+
+        if (grid) {
+          if (name === "produits") {
+            grid.innerHTML = res.produits.map(produitCard).join("");
+          } else if (name === "rayons") {
+            grid.innerHTML = res.rayons.map(rayonCard).join("");
+          }
+        }
+        if (listEl) {
+          if (name === "actus") {
+            listEl.innerHTML = res.actus
+              .map((a) => textRow(a.href, a.title, a.categorie))
+              .join("");
+          } else if (name === "recettes") {
+            listEl.innerHTML = res.recettes
+              .map((r) =>
+                textRow(r.href, r.title, r.rayon || "Recette"),
+              )
+              .join("");
+          }
+        }
+      });
+    }
+
+    function update(q: string) {
+      if (clearBtn) clearBtn.classList.toggle("hidden", !q);
+      render(searchAll(q), q);
+
+      /* URL state so the search is shareable & preserved on refresh. */
+      const url = new URL(window.location.href);
+      if (q) url.searchParams.set("q", q);
+      else url.searchParams.delete("q");
+      window.history.replaceState({}, "", url);
+    }
+
+    let debounce: ReturnType<typeof setTimeout>;
+    input?.addEventListener("input", () => {
+      clearTimeout(debounce);
+      debounce = setTimeout(() => update(input.value), 80);
+    });
+
+    clearBtn?.addEventListener("click", () => {
+      if (!input) return;
+      input.value = "";
+      input.focus();
+      update("");
+    });
+
+    chips.forEach((c) =>
+      c.addEventListener("click", () => {
+        if (!input) return;
+        input.value = c.dataset.q ?? "";
+        update(input.value);
+        input.focus();
+      }),
+    );
+
+    /* Bootstrap from URL ?q= */
+    const urlQ = new URL(window.location.href).searchParams.get("q");
+    if (urlQ && input) {
+      input.value = urlQ;
+      update(urlQ);
+    }
+
+    /* Cmd/Ctrl+K focus shortcut */
+    window.addEventListener("keydown", (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        input?.focus();
+        input?.select();
+      }
+    });
+  })();
+</script>

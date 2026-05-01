@@ -18,6 +18,8 @@ const ALLOWED_FIELDS = new Set([
   "prix_indicatif",
   "unite",
   "rayon",
+  "categorie",
+  "sous_categorie",
   "origine",
   "badge",
   "actif",

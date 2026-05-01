@@ -210,9 +210,16 @@ const bc = breadcrumbSchema([{ name: "Recettes", url: "/recettes" }]);
     const apply = (filter: string) => {
       let visible = 0;
       items.forEach((el) => {
-        const match = filter === "all" || el.dataset.rayonSlug === filter;
+        const slug = el.dataset.rayonSlug ?? "";
+        const match = filter === "all" || slug === filter;
         el.style.display = match ? "" : "none";
-        if (match) visible++;
+        /* Force reveal-visible state so unfiltered items always render opaque.
+           Without this, items that were never in the viewport before the
+           filter click stay at opacity:0 (from .reveal base class). */
+        if (match) {
+          el.classList.add("is-visible");
+          visible++;
+        }
       });
       if (empty) empty.classList.toggle("hidden", visible > 0);
 

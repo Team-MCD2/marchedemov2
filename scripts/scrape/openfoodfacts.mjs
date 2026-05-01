@@ -36,9 +36,21 @@ const USER_AGENT =
   "MarcheDeMo-V2-Scraper/1.0 (+contact@marchedemo.com) " +
   "Node.js/22 own-catalogue builder, https://marchedemo.com";
 
-const OFF_BASE = "https://world.openfoodfacts.org";
-/* API v2 endpoint — supports field selection which cuts payload 10x. */
-const OFF_SEARCH = `${OFF_BASE}/api/v2/search`;
+/* --------------------------------------------------------------------
+   ENDPOINTS — we try two backends and whichever responds wins.
+
+   1. `search.openfoodfacts.org` — the new ElasticSearch-powered search
+      service. Purpose-built for search, handles load much better than
+      the legacy MongoDB backend. Returns `hits` array.
+
+   2. `world.openfoodfacts.org/api/v2/search` — the legacy API. Still
+      works when search.* is being indexed. Returns `products` array.
+
+   Both accept the same `fields` list; query syntax differs (Lucene vs
+   named params) so we build per-endpoint URLs.
+   -------------------------------------------------------------------- */
+const OFF_SEARCH_NEW = "https://search.openfoodfacts.org/search";
+const OFF_SEARCH_LEGACY = "https://world.openfoodfacts.org/api/v2/search";
 
 /* Fields we actually need. Requesting only these cuts payload by ~90%. */
 const FIELDS = [
@@ -244,16 +256,78 @@ function cleanQueryForCache(q) {
   return slugify(q);
 }
 
-/* Infer ISO origin from OFF's countries_tags (["en:france","en:turkey"]). */
+/* Country tag → French display name. Covers the countries we see in OFF data. */
+const COUNTRY_FR = {
+  "en:france": "France",
+  "en:germany": "Allemagne",
+  "en:belgium": "Belgique",
+  "en:switzerland": "Suisse",
+  "en:luxembourg": "Luxembourg",
+  "en:netherlands": "Pays-Bas",
+  "en:united-kingdom": "Royaume-Uni",
+  "en:spain": "Espagne",
+  "en:italy": "Italie",
+  "en:portugal": "Portugal",
+  "en:austria": "Autriche",
+  "en:czech-republic": "République tchèque",
+  "en:croatia": "Croatie",
+  "en:poland": "Pologne",
+  "en:greece": "Grèce",
+  "en:turkey": "Turquie",
+  "en:morocco": "Maroc",
+  "en:tunisia": "Tunisie",
+  "en:algeria": "Algérie",
+  "en:egypt": "Égypte",
+  "en:lebanon": "Liban",
+  "en:india": "Inde",
+  "en:china": "Chine",
+  "en:japan": "Japon",
+  "en:vietnam": "Vietnam",
+  "en:thailand": "Thaïlande",
+  "en:indonesia": "Indonésie",
+  "en:reunion": "Réunion",
+  "en:guadeloupe": "Guadeloupe",
+  "en:martinique": "Martinique",
+  "en:mayotte": "Mayotte",
+  "en:senegal": "Sénégal",
+  "en:cote-d-ivoire": "Côte d'Ivoire",
+  "en:cameroon": "Cameroun",
+  "en:mali": "Mali",
+  "en:mexico": "Mexique",
+  "en:argentina": "Argentine",
+  "en:brazil": "Brésil",
+  "en:bolivia": "Bolivie",
+  "en:peru": "Pérou",
+  "en:australia": "Australie",
+  "en:united-states": "États-Unis",
+};
+
+/* Normalize raw origin text (free-form from OFF) to clean French display. */
+function normalizeFreeFormOrigin(raw) {
+  return String(raw)
+    .replace(/^Origine\s*:?\s*/i, "")
+    .replace(/[,;].*$/, "") /* keep only first country if list */
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 80);
+}
+
+/* Infer a clean French origin from OFF's countries_tags + `origins` field. */
 function inferOrigine(countriesTags = [], origins = "") {
-  /* Prefer `origins` field when available (e.g. "Origine Turquie"). */
-  if (origins && typeof origins === "string") {
-    return origins.replace(/^Origine\s*:?\s*/i, "").trim().slice(0, 80);
+  if (origins && typeof origins === "string" && origins.length > 1) {
+    return normalizeFreeFormOrigin(origins);
   }
-  /* Fallback to first non-France country in countries_tags. */
-  const nonFr = countriesTags.find((c) => c !== "en:france");
-  if (nonFr) return nonFr.replace("en:", "").replace(/-/g, " ");
+  /* Prefer a non-France country if the product is clearly imported. */
+  const nonFr = countriesTags.find((c) => c !== "en:france" && COUNTRY_FR[c]);
+  if (nonFr) return COUNTRY_FR[nonFr];
   if (countriesTags.includes("en:france")) return "France";
+  /* Last resort: first tag, stripped. */
+  if (countriesTags.length > 0) {
+    return countriesTags[0]
+      .replace("en:", "")
+      .replace(/-/g, " ")
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+  }
   return null;
 }
 
@@ -280,13 +354,48 @@ function pickImage(p) {
   );
 }
 
-/* Sanity filter : reject products without image or with a placeholder. */
-function isUsable(p) {
+/* Categories that mean "junk food / desserts / bars" — we exclude them when they
+   leak into rayons they don't belong to (e.g. Nakd bars in "dried-fruits"). */
+const EXCLUDE_CATEGORIES = [
+  "en:breakfast-cereals",
+  "en:cereal-bars",
+  "en:energy-bars",
+  "en:biscuits",
+  "en:cakes",
+  "en:sweet-snacks",
+  "en:cereals-bars",
+  "en:chocolate-bars",
+  "en:confectioneries",
+];
+
+/* Products whose name contains these chars without an _fr variant are
+   clearly German/Austrian — not our target catalogue. */
+const NON_FR_REGEX = /[äöüßÄÖÜ]/;
+
+/* Sanity filter : reject products without image, placeholder images,
+   non-French-only listings, or junk-food categories. */
+function isUsable(p, rayon) {
   const img = pickImage(p);
   if (!img) return false;
-  /* OFF sometimes returns a tiny placeholder — filter by URL pattern. */
   if (img.includes("/placeholder") || img.includes("image_not_available")) return false;
-  if (!p.product_name && !p.product_name_fr) return false;
+
+  const nameFr = (p.product_name_fr || "").trim();
+  const name = (p.product_name || "").trim();
+  if (!nameFr && !name) return false;
+
+  /* Prefer French-named products. If only foreign name and it has
+     German diacritics, skip — the catalogue is French-facing. */
+  if (!nameFr && NON_FR_REGEX.test(name)) return false;
+
+  /* Reject products whose categories include a junk-food tag, UNLESS
+     the target rayon is explicitly about that category. */
+  const cats = Array.isArray(p.categories_tags) ? p.categories_tags : [];
+  const isJunk = cats.some((c) => EXCLUDE_CATEGORIES.includes(c));
+  const rayonAllowsSweets =
+    rayon === "balkans-turques" /* baklava, halva = OK */ ||
+    rayon === "surgeles"; /* mochis = OK */
+  if (isJunk && !rayonAllowsSweets) return false;
+
   return true;
 }
 
@@ -298,56 +407,104 @@ function isUsable(p) {
 const MAX_RETRIES = 3;
 const BASE_BACKOFF_MS = 2000;
 
-async function fetchQuery(tag, pageSize) {
-  const cacheFile = path.join(CACHE_DIR, `${cleanQueryForCache(tag)}.json`);
-  if (await fileExists(cacheFile)) {
-    log("info", `cache hit : "${tag}"`);
-    return JSON.parse(await readFile(cacheFile, "utf8"));
-  }
+/* Build URL for the NEW ElasticSearch-backed endpoint.
+   Lucene query string: `categories_tags:"en:spices" AND countries_tags:"en:france"` */
+function buildSearchNewUrl(tag, pageSize) {
+  const url = new URL(OFF_SEARCH_NEW);
+  const q = `categories_tags:"${tag}" AND countries_tags:"en:france"`;
+  url.searchParams.set("q", q);
+  url.searchParams.set("fields", FIELDS);
+  url.searchParams.set("page_size", String(pageSize));
+  url.searchParams.set("sort_by", "-popularity_key");
+  url.searchParams.set("langs", "fr");
+  return url;
+}
 
-  const url = new URL(OFF_SEARCH);
-  /* categories_tags_en=en:spices → narrows to the actual category tree.
-     Much more reliable than search_terms which is near-random. */
+/* Build URL for the LEGACY MongoDB API. Uses named params. */
+function buildSearchLegacyUrl(tag, pageSize) {
+  const url = new URL(OFF_SEARCH_LEGACY);
   url.searchParams.set("categories_tags_en", tag);
   url.searchParams.set("fields", FIELDS);
   url.searchParams.set("sort_by", "popularity_key");
   url.searchParams.set("page_size", String(pageSize));
   url.searchParams.set("countries_tags_en", "france");
   url.searchParams.set("lc", "fr");
+  return url;
+}
+
+/* Normalize response from either endpoint to a uniform `{ products: [] }`. */
+function normalizeResponse(json) {
+  if (Array.isArray(json?.products)) return { products: json.products };
+  if (Array.isArray(json?.hits)) return { products: json.hits };
+  return { products: [] };
+}
+
+async function tryFetch(url, label) {
+  try {
+    const res = await fetch(url, {
+      headers: {
+        "User-Agent": USER_AGENT,
+        Accept: "application/json",
+      },
+    });
+    if (res.ok) {
+      const json = await res.json();
+      const norm = normalizeResponse(json);
+      if (norm.products.length > 0) return { ok: true, json: norm, label };
+      /* Zero results on legacy can mean the filter is wrong — fall through. */
+      return { ok: res.ok, json: norm, label, empty: true };
+    }
+    return { ok: false, status: res.status, label };
+  } catch (err) {
+    return { ok: false, status: "NETWORK", error: err.message, label };
+  }
+}
+
+async function fetchQuery(tag, pageSize) {
+  const cacheFile = path.join(CACHE_DIR, `${cleanQueryForCache(tag)}.json`);
+  if (await fileExists(cacheFile)) {
+    log("info", `cache hit : "${tag}"`);
+    return normalizeResponse(JSON.parse(await readFile(cacheFile, "utf8")));
+  }
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     const attemptStr = attempt > 0 ? ` (retry ${attempt}/${MAX_RETRIES})` : "";
     log("info", `fetching : "${tag}" (${pageSize} max)${attemptStr}`);
 
-    let res;
-    try {
-      res = await fetch(url, {
-        headers: {
-          "User-Agent": USER_AGENT,
-          Accept: "application/json",
-        },
-      });
-    } catch (err) {
-      log("warn", `network error on "${tag}" : ${err.message}`);
-      res = null;
+    /* Try NEW endpoint first — it's been stable when legacy is down. */
+    const newRes = await tryFetch(buildSearchNewUrl(tag, pageSize), "search.new");
+    if (newRes.ok && !newRes.empty) {
+      await writeFile(cacheFile, JSON.stringify(newRes.json, null, 2), "utf8");
+      await sleep(1500);
+      return newRes.json;
     }
 
-    if (res && res.ok) {
-      const json = await res.json();
-      await writeFile(cacheFile, JSON.stringify(json, null, 2), "utf8");
-      await sleep(2500); /* polite throttle between successful calls */
-      return json;
+    /* Fallback to LEGACY endpoint. */
+    const legacyRes = await tryFetch(buildSearchLegacyUrl(tag, pageSize), "search.legacy");
+    if (legacyRes.ok && !legacyRes.empty) {
+      await writeFile(cacheFile, JSON.stringify(legacyRes.json, null, 2), "utf8");
+      await sleep(2500);
+      return legacyRes.json;
     }
 
-    const status = res?.status ?? "NETWORK";
+    /* If both failed for non-empty reason, retry with backoff. */
     if (attempt === MAX_RETRIES) {
-      log("err", `HTTP ${status} on "${tag}" (gave up after ${MAX_RETRIES} retries)`);
+      const status = `${newRes.status ?? "?"}/${legacyRes.status ?? "?"}`;
+      log("err", `both endpoints failed for "${tag}" (${status}) — giving up`);
+      /* If one returned empty, still cache it to avoid re-querying. */
+      if (newRes.empty || legacyRes.empty) {
+        const empty = newRes.empty ? newRes.json : legacyRes.json;
+        await writeFile(cacheFile, JSON.stringify(empty, null, 2), "utf8");
+        return empty;
+      }
       return { products: [] };
     }
 
-    /* Backoff : 2s, 4s, 8s */
     const wait = BASE_BACKOFF_MS * Math.pow(2, attempt);
-    log("warn", `HTTP ${status} on "${tag}" — backoff ${wait}ms`);
+    log(
+      "warn",
+      `"${tag}" → new=${newRes.status ?? "empty"}, legacy=${legacyRes.status ?? "empty"} — backoff ${wait}ms`,
+    );
     await sleep(wait);
   }
 
@@ -375,7 +532,7 @@ async function main() {
       report.fetched += products.length;
 
       for (const p of products) {
-        if (!isUsable(p)) continue;
+        if (!isUsable(p, rayon)) continue;
 
         const name = (p.product_name_fr || p.product_name || "").trim();
         const slug = slugify(`${name}-${p.code || ""}`);

@@ -1,7 +1,7 @@
 ---
 titre: "Couscous royal — agneau, poulet et merguez"
 resume: "Le couscous du vendredi, dans sa version royale : 3 viandes halal, 7 légumes, semoule qui gonfle à la perfection. Pour 8 personnes, vrai plat de famille."
-image: "/images/rayons/saveur-mediterranee/image-de-giorgio-trovato.jpg"
+image: "/images/recettes/couscous-royal.jpg"
 imageAlt: "Plat de couscous royal avec agneau, merguez et légumes dans bouillon doré"
 tempsMin: 150
 tempsPrepMin: 30

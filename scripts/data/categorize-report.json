@@ -1,0 +1,22 @@
+{
+  "byRayon": {
+    "boucherie-halal": 1
+  },
+  "moves": [],
+  "changes": [
+    {
+      "slug": "pastrami-halal",
+      "nom": "Pastrami de dinde halal",
+      "before": {
+        "rayon": "boucherie-halal",
+        "categorie": "Volailles",
+        "sous_categorie": "Dinde"
+      },
+      "after": {
+        "rayon": "boucherie-halal",
+        "categorie": "Charcuterie halal",
+        "sous_categorie": "Pastrami"
+      }
+    }
+  ]
+}

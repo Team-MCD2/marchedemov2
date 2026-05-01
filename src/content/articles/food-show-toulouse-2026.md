@@ -2,7 +2,7 @@
 titre: "Rendez-vous au Food Show Toulouse 2026 — stand A42"
 categorie: "evenements"
 resume: "Le Marché de Mo' sera présent au salon professionnel Food Show du 15 au 17 avril au MEETT. Au programme : dégustations halal, épices du monde et recrutement sur place."
-image: "/images/rayons/saveur-mediterranee/image-de-giorgio-trovato.jpg"
+image: "/images/rayons/epices-du-monde.jpg"
 auteur: "L'équipe Marché de Mo'"
 date_publication: 2026-04-01
 actif: true

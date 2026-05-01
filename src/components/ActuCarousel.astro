@@ -57,9 +57,11 @@ const { actus } = Astro.props as Props;
         </div>
       ))}
 
-      {/* Duplicate pour seamless loop, SR-hidden */}
+      {/* Duplicate pour seamless loop — `inert` retire le sous-arbre du
+          tab order et des events pointer (le aria-hidden seul ne suffit
+          pas, le <a> à l'intérieur reste focusable au clavier). */}
       {actus.map((actu) => (
-        <div class="actu-slot shrink-0" aria-hidden="true">
+        <div class="actu-slot shrink-0" aria-hidden="true" inert>
           <ActuCard actu={actu} />
         </div>
       ))}

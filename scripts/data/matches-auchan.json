@@ -1,0 +1,27 @@
+[
+  {
+    "slug": "manioc-frais",
+    "nom": "Manioc frais",
+    "rayon": "fruits-legumes",
+    "origin": "local",
+    "current_image_url": null,
+    "best": {
+      "score": 0.477,
+      "gap": 0.477,
+      "name": "Manioc nettoyé congelé",
+      "image_url": "https://images.openfoodfacts.org/images/products/341/600/901/1010/front_fr.12.400.jpg",
+      "product_url": "https://world.openfoodfacts.org/product/3416009011010",
+      "category": "fruits-legumes",
+      "category_path": null
+    },
+    "candidates": [
+      {
+        "score": 0.477,
+        "name": "Manioc nettoyé congelé",
+        "image_url": "https://images.openfoodfacts.org/images/products/341/600/901/1010/front_fr.12.400.jpg",
+        "product_url": "https://world.openfoodfacts.org/product/3416009011010",
+        "category": "fruits-legumes"
+      }
+    ]
+  }
+]

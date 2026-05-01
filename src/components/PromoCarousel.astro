@@ -75,9 +75,11 @@ const { promos } = Astro.props as Props;
       </div>
     ))}
 
-    {/* Duplicated list — hidden from SR, required for seamless loop */}
+    {/* Duplicated list — hidden from SR + inert, required for seamless loop.
+        `inert` removes the subtree from tab order AND pointer events so
+        keyboard users don't land on invisible duplicate cards. */}
     {promos.map((p) => (
-      <div class="promo-card-slot shrink-0" aria-hidden="true">
+      <div class="promo-card-slot shrink-0" aria-hidden="true" inert>
         <PromoCard
           titre={p.data.titre}
           description={p.data.description}

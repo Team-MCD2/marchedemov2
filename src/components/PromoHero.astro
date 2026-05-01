@@ -418,24 +418,40 @@ const hasSlides = slides.length > 0;
     backdrop-filter: blur(8px);
     border-radius: 999px;
   }
+  /* The button itself is 24×24 (WCAG 2.5.8 touch-target minimum) and
+     transparent ; the visible 8×8 dot is drawn via ::before so that
+     the hit area is comfortable on touch screens without changing the
+     compact dot aesthetic. The "active" dot stretches to 28px wide. */
   .promo-hero-dot {
+    width: 24px;
+    height: 24px;
+    border: none;
+    padding: 0;
+    background: transparent;
+    cursor: pointer;
+    position: relative;
+  }
+  .promo-hero-dot::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
     width: 8px;
     height: 8px;
     border-radius: 999px;
     background: rgba(255,255,255,0.4);
-    border: none;
-    padding: 0;
-    cursor: pointer;
-    transition: background 0.3s, width 0.3s ease;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s ease, background 0.3s;
   }
-  .promo-hero-dot[aria-current="true"] {
-    background: white;
+  .promo-hero-dot[aria-current="true"]::before {
     width: 28px;
+    background: white;
   }
-  .promo-hero-dot:hover { background: rgba(255,255,255,0.7); }
+  .promo-hero-dot:hover::before { background: rgba(255,255,255,0.7); }
   .promo-hero-dot:focus-visible {
     outline: 2px solid white;
     outline-offset: 2px;
+    border-radius: 999px;
   }
 
   /* Reduced motion : no Ken Burns, no slide stagger, no auto-advance */

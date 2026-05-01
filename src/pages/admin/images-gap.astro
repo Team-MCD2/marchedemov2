@@ -1,0 +1,398 @@
+---
+/**
+ * /admin/images-gap
+ *
+ * Dashboard dédié aux produits qui n'ont pas encore de `image_url`.
+ * Objectif : donner un aperçu chiffré de la couverture catalogue et des
+ * points d'entrée rapides pour combler les trous (auto-match de masse,
+ * édition produit par produit, import CSV).
+ *
+ * Entièrement rendu côté serveur — pas d'island nécessaire, les actions
+ * sont des liens vers /admin/produits avec filtres pré-appliqués via URL.
+ */
+export const prerender = false;
+
+import Layout from "@layouts/Layout.astro";
+import AdminTopbar from "@components/admin/AdminTopbar.astro";
+import { SITE, RAYONS_LIST } from "@/lib/site";
+import { isAuthenticated } from "@/lib/auth";
+import { supabaseAdmin } from "@/lib/supabase";
+
+if (!(await isAuthenticated(Astro.cookies))) {
+  return Astro.redirect("/admin/login");
+}
+
+type Produit = {
+  id: string;
+  slug: string;
+  nom: string;
+  image_url: string | null;
+  rayon: string;
+  categorie: string | null;
+  sous_categorie: string | null;
+  origine: string | null;
+  actif: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+let allProduits: Produit[] = [];
+let errorMsg: string | null = null;
+
+if (!supabaseAdmin) {
+  errorMsg =
+    "SUPABASE_SERVICE_ROLE_KEY non configurée. Ajoutez-la dans .env.local (dev) ou dans Vercel Environment Variables (prod) puis redémarrez.";
+} else {
+  const { data, error } = await supabaseAdmin
+    .from("produits")
+    .select("id, slug, nom, image_url, rayon, categorie, sous_categorie, origine, actif, created_at, updated_at")
+    .order("rayon", { ascending: true })
+    .order("nom", { ascending: true });
+  if (error) errorMsg = `Supabase : ${error.message}`;
+  else allProduits = (data as Produit[]) ?? [];
+}
+
+/* ---------- Stats ---------- */
+const total = allProduits.length;
+const withImage = allProduits.filter((p) => !!p.image_url).length;
+const withoutImage = total - withImage;
+const coveragePct = total === 0 ? 0 : Math.round((withImage / total) * 100);
+
+/* Rayon → { nom, total, withImage, produits-sans-image[] } */
+const rayonMeta = new Map<string, { nom: string; slug: string }>();
+RAYONS_LIST.forEach((r) => rayonMeta.set(r.slug, { nom: r.nomCourt ?? r.nom, slug: r.slug }));
+
+type RayonBreakdown = {
+  slug: string;
+  nom: string;
+  total: number;
+  withImage: number;
+  withoutImage: number;
+  coveragePct: number;
+  missing: Produit[];
+};
+
+const rayonMap = new Map<string, RayonBreakdown>();
+for (const p of allProduits) {
+  const meta = rayonMeta.get(p.rayon) ?? { nom: p.rayon, slug: p.rayon };
+  if (!rayonMap.has(p.rayon)) {
+    rayonMap.set(p.rayon, {
+      slug: p.rayon,
+      nom: meta.nom,
+      total: 0,
+      withImage: 0,
+      withoutImage: 0,
+      coveragePct: 0,
+      missing: [],
+    });
+  }
+  const entry = rayonMap.get(p.rayon)!;
+  entry.total += 1;
+  if (p.image_url) entry.withImage += 1;
+  else {
+    entry.withoutImage += 1;
+    entry.missing.push(p);
+  }
+}
+for (const entry of rayonMap.values()) {
+  entry.coveragePct = entry.total === 0 ? 0 : Math.round((entry.withImage / entry.total) * 100);
+}
+
+/* Sort rayons : biggest gaps first so the admin's attention goes where
+   the work actually is, then alphabetical among equals.               */
+const rayonBreakdowns = Array.from(rayonMap.values()).sort((a, b) => {
+  if (b.withoutImage !== a.withoutImage) return b.withoutImage - a.withoutImage;
+  return a.nom.localeCompare(b.nom, "fr");
+});
+
+const missingProduits = allProduits
+  .filter((p) => !p.image_url)
+  .sort((a, b) => {
+    const ra = rayonMeta.get(a.rayon)?.nom ?? a.rayon;
+    const rb = rayonMeta.get(b.rayon)?.nom ?? b.rayon;
+    const cmp = ra.localeCompare(rb, "fr");
+    if (cmp !== 0) return cmp;
+    return a.nom.localeCompare(b.nom, "fr");
+  });
+
+function rayonLink(slug: string) {
+  const params = new URLSearchParams({ rayon: slug, statut: "sans-image" });
+  return `/admin/produits?${params.toString()}`;
+}
+---
+
+<Layout
+  title={`Images manquantes · ${SITE.name} — Admin`}
+  description="Dashboard de couverture des images produits."
+  noIndex
+  hideChrome
+>
+  <div class="min-h-screen bg-creme">
+    <AdminTopbar current="images-gap" />
+
+    <main class="container-mo py-8 md:py-12">
+      <!-- Hero -->
+      <section class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
+        <div>
+          <span class="eyebrow">Couverture images</span>
+          <h1 class="display-sm mt-3 leading-tight">
+            Images manquantes
+          </h1>
+          <p class="mt-2 text-[14.5px] text-neutral-500 max-w-xl">
+            Triez les produits sans photo, puis comblez-les en masse via l'import DnD auto-match
+            ou un par un depuis la fiche produit.
+          </p>
+        </div>
+        <div class="flex gap-2">
+          <a
+            href="/admin/produits?statut=sans-image"
+            class="px-4 py-2 rounded-full bg-noir text-white font-bold text-[13px] hover:bg-noir-soft transition"
+          >
+            Voir les {withoutImage} produit(s) sans image →
+          </a>
+        </div>
+      </section>
+
+      {errorMsg ? (
+        <div class="bg-rouge/5 border border-rouge/30 text-rouge rounded-3xl p-6 md:p-8">
+          <p class="font-bold text-[15px]">⚠ Supabase indisponible</p>
+          <p class="text-[14px] mt-2 whitespace-pre-line">{errorMsg}</p>
+        </div>
+      ) : total === 0 ? (
+        <div class="bg-white rounded-3xl shadow-card p-10 text-center text-neutral-400">
+          <p class="font-bold text-[15px] text-neutral-600">Catalogue vide</p>
+          <p class="mt-2 text-[13px]">
+            Aucun produit enregistré.
+            <a href="/admin/produits" class="text-vert font-bold hover:underline">Commencer →</a>
+          </p>
+        </div>
+      ) : (
+        <>
+          <!-- Big coverage cards -->
+          <section class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
+            <div class="bg-white rounded-3xl p-6 shadow-card">
+              <p class="text-[12px] uppercase tracking-wider text-neutral-500 font-bold">Couverture</p>
+              <div class="flex items-baseline gap-2 mt-3">
+                <span class="font-soft font-bold text-[42px] leading-none text-vert">{coveragePct}</span>
+                <span class="text-[20px] font-bold text-vert">%</span>
+              </div>
+              <div class="mt-3 h-1.5 bg-neutral-100 rounded-full overflow-hidden">
+                <div class="h-full bg-vert" style={`width:${coveragePct}%`}></div>
+              </div>
+            </div>
+            <div class="bg-white rounded-3xl p-6 shadow-card">
+              <p class="text-[12px] uppercase tracking-wider text-neutral-500 font-bold">Avec image</p>
+              <div class="flex items-baseline gap-2 mt-3">
+                <span class="font-soft font-bold text-[42px] leading-none text-noir">{withImage}</span>
+                <span class="text-[13px] text-neutral-400">/ {total}</span>
+              </div>
+              <p class="mt-3 text-[12px] text-neutral-500">produits illustrés</p>
+            </div>
+            <div class="bg-white rounded-3xl p-6 shadow-card">
+              <p class="text-[12px] uppercase tracking-wider text-neutral-500 font-bold">Sans image</p>
+              <div class="flex items-baseline gap-2 mt-3">
+                <span class={`font-soft font-bold text-[42px] leading-none ${withoutImage > 0 ? "text-rouge" : "text-neutral-300"}`}>
+                  {withoutImage}
+                </span>
+                <span class="text-[13px] text-neutral-400">à combler</span>
+              </div>
+              <p class="mt-3 text-[12px] text-neutral-500">manquent dans le catalogue vitrine</p>
+            </div>
+            <div class="bg-white rounded-3xl p-6 shadow-card">
+              <p class="text-[12px] uppercase tracking-wider text-neutral-500 font-bold">Rayons concernés</p>
+              <div class="flex items-baseline gap-2 mt-3">
+                <span class="font-soft font-bold text-[42px] leading-none text-noir">
+                  {rayonBreakdowns.filter((r) => r.withoutImage > 0).length}
+                </span>
+                <span class="text-[13px] text-neutral-400">/ {rayonBreakdowns.length}</span>
+              </div>
+              <p class="mt-3 text-[12px] text-neutral-500">ont au moins un manque</p>
+            </div>
+          </section>
+
+          <!-- Actions -->
+          <section class="mt-10 grid md:grid-cols-3 gap-4 md:gap-5">
+            <a
+              href="/admin/produits?statut=sans-image"
+              class="bg-white rounded-3xl p-6 shadow-card hover:shadow-card-hover transition-all hover:-translate-y-0.5 group"
+            >
+              <div class="w-10 h-10 rounded-full bg-noir text-white flex items-center justify-center mb-3">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </div>
+              <h3 class="font-soft font-bold text-[17px]">Auto-match de masse</h3>
+              <p class="mt-2 text-[13.5px] text-neutral-500 leading-relaxed">
+                Glissez-déposez N images, elles sont associées automatiquement aux produits par similarité
+                nom de fichier ↔ nom/slug.
+              </p>
+              <span class="mt-3 inline-flex items-center gap-1 text-[13px] font-bold text-vert group-hover:underline">
+                Ouvrir le catalogue →
+              </span>
+            </a>
+            <a
+              href="/admin/medias?folder=produits"
+              class="bg-white rounded-3xl p-6 shadow-card hover:shadow-card-hover transition-all hover:-translate-y-0.5 group"
+            >
+              <div class="w-10 h-10 rounded-full bg-vert text-white flex items-center justify-center mb-3">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <path d="M21 15l-5-5L5 21" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <h3 class="font-soft font-bold text-[17px]">Bibliothèque d'images</h3>
+              <p class="mt-2 text-[13.5px] text-neutral-500 leading-relaxed">
+                Parcourir et uploader des images dans <code class="bg-creme px-1 rounded text-[12px]">medias/produits/</code>.
+                Copier l'URL publique pour la coller dans une fiche produit.
+              </p>
+              <span class="mt-3 inline-flex items-center gap-1 text-[13px] font-bold text-vert group-hover:underline">
+                Ouvrir la bibliothèque →
+              </span>
+            </a>
+            <a
+              href="/admin/produits"
+              class="bg-white rounded-3xl p-6 shadow-card hover:shadow-card-hover transition-all hover:-translate-y-0.5 group"
+            >
+              <div class="w-10 h-10 rounded-full bg-rouge text-white flex items-center justify-center mb-3">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M16 13H8 M16 17H8 M10 9H8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <h3 class="font-soft font-bold text-[17px]">Import CSV / JSON</h3>
+              <p class="mt-2 text-[13.5px] text-neutral-500 leading-relaxed">
+                Utile pour mettre à jour une grande série d'URLs <code class="bg-creme px-1 rounded text-[12px]">image_url</code>
+                en une passe, en conservant slug, nom et rayon.
+              </p>
+              <span class="mt-3 inline-flex items-center gap-1 text-[13px] font-bold text-vert group-hover:underline">
+                Ouvrir l'import →
+              </span>
+            </a>
+          </section>
+
+          <!-- Rayon breakdown -->
+          <section class="mt-10">
+            <div class="flex items-end justify-between flex-wrap gap-2 mb-4">
+              <div>
+                <span class="eyebrow">Par rayon</span>
+                <h2 class="font-soft font-bold text-[22px] mt-2">Où sont les trous ?</h2>
+              </div>
+              <p class="text-[12px] text-neutral-500">
+                Les rayons avec le plus de manques s'affichent en premier.
+              </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {rayonBreakdowns.map((r) => (
+                <a
+                  href={r.withoutImage > 0 ? rayonLink(r.slug) : `/admin/produits?rayon=${r.slug}`}
+                  class={`bg-white rounded-2xl p-5 shadow-card transition-all hover:-translate-y-0.5 ${
+                    r.withoutImage > 0 ? "hover:shadow-card-hover" : "opacity-70"
+                  }`}
+                >
+                  <div class="flex items-center justify-between gap-3">
+                    <p class="font-bold text-[15px] text-noir truncate">{r.nom}</p>
+                    <span
+                      class:list={[
+                        "shrink-0 px-2.5 py-0.5 rounded-full text-[11px] font-bold",
+                        r.withoutImage === 0
+                          ? "bg-vert/15 text-vert-dark"
+                          : r.coveragePct >= 80
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-rouge/10 text-rouge",
+                      ]}
+                    >
+                      {r.withoutImage === 0 ? "Complet" : `${r.withoutImage} à combler`}
+                    </span>
+                  </div>
+                  <div class="mt-3 h-1.5 bg-neutral-100 rounded-full overflow-hidden">
+                    <div
+                      class:list={[
+                        "h-full",
+                        r.coveragePct === 100
+                          ? "bg-vert"
+                          : r.coveragePct >= 80
+                            ? "bg-yellow-400"
+                            : "bg-rouge",
+                      ]}
+                      style={`width:${r.coveragePct}%`}
+                    />
+                  </div>
+                  <div class="mt-2 flex items-center justify-between text-[12px] text-neutral-500">
+                    <span>{r.withImage}/{r.total} illustrés</span>
+                    <span class="font-bold text-neutral-700">{r.coveragePct}%</span>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </section>
+
+          <!-- Missing list -->
+          {missingProduits.length > 0 && (
+            <section class="mt-10 bg-white rounded-3xl shadow-card overflow-hidden">
+              <header class="bg-creme px-5 py-3 border-b border-black/5 flex items-center justify-between flex-wrap gap-2">
+                <h2 class="font-soft font-bold text-[16px]">
+                  Liste complète · {missingProduits.length} produit(s) sans image
+                </h2>
+                <a
+                  href="/admin/produits?statut=sans-image"
+                  class="text-[12px] font-bold text-vert hover:underline"
+                >
+                  Gérer dans l'admin produits →
+                </a>
+              </header>
+              <div class="max-h-[560px] overflow-y-auto">
+                <table class="w-full text-[13px]">
+                  <thead class="bg-white sticky top-0 border-b border-black/5">
+                    <tr class="text-left text-neutral-500">
+                      <th class="px-4 py-2 font-bold">Produit</th>
+                      <th class="px-4 py-2 font-bold">Rayon</th>
+                      <th class="px-4 py-2 font-bold">Catégorie</th>
+                      <th class="px-4 py-2 font-bold">Origine</th>
+                      <th class="px-4 py-2 font-bold w-28 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {missingProduits.map((p) => (
+                      <tr class="border-t border-black/5 hover:bg-creme/50 transition">
+                        <td class="px-4 py-2">
+                          <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-creme border border-dashed border-black/20 flex items-center justify-center text-neutral-300 shrink-0">
+                              —
+                            </div>
+                            <div class="min-w-0">
+                              <p class={`font-bold text-noir truncate ${p.actif ? "" : "text-neutral-400 line-through"}`}>
+                                {p.nom}
+                              </p>
+                              <p class="text-[11px] font-mono text-neutral-400 truncate">{p.slug}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="px-4 py-2 text-neutral-600">
+                          {rayonMeta.get(p.rayon)?.nom ?? p.rayon}
+                        </td>
+                        <td class="px-4 py-2 text-neutral-600">
+                          {p.categorie ?? "—"}
+                          {p.sous_categorie && <span class="text-neutral-400"> / {p.sous_categorie}</span>}
+                        </td>
+                        <td class="px-4 py-2 text-neutral-600">{p.origine ?? "—"}</td>
+                        <td class="px-4 py-2 text-right">
+                          <a
+                            href={`/admin/produits?q=${encodeURIComponent(p.slug)}`}
+                            class="inline-block px-3 py-1 rounded-full bg-noir text-white text-[11px] font-bold hover:bg-noir-soft transition"
+                          >
+                            Éditer
+                          </a>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )}
+        </>
+      )}
+    </main>
+  </div>
+</Layout>

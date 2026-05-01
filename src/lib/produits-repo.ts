@@ -18,6 +18,29 @@ import {
   PRODUITS_VEDETTES as STATIC_FALLBACK,
   type ProduitVedette,
 } from "@/lib/produits-vedettes";
+import CATALOGUE_JSON from "@/data/produits-catalogue.json";
+
+/* --------------------------------------------------------------------
+   Local catalogue fallback
+   -------------------------------------------------------------------- */
+
+interface CatalogueRow {
+  slug: string;
+  nom: string;
+  description: string;
+  image_url: string | null;
+  rayon: string;
+  categorie: string | null;
+  sous_categorie: string | null;
+  origine: string | null;
+  badge: string | null;
+  actif: boolean;
+  ordre: number;
+  unite?: string | null;
+}
+
+const LOCAL_CATALOGUE = (CATALOGUE_JSON as { produits: CatalogueRow[] }).produits
+  .filter((r) => r.actif !== false);
 
 interface DbRow {
   slug: string;
@@ -62,15 +85,37 @@ export async function getProduitsVedettes(limit = 8): Promise<ProduitVedette[]> 
       .limit(limit);
     if (error) {
       console.warn("[produits-repo] Supabase error :", error.message);
-      return STATIC_FALLBACK.slice(0, limit);
+      return vedettesFromLocal(limit);
     }
     const rows = (data ?? []) as DbRow[];
-    if (rows.length === 0) return STATIC_FALLBACK.slice(0, limit);
+    if (rows.length === 0) return vedettesFromLocal(limit);
     return rows.map(rowToProduitVedette);
   } catch (e: any) {
     console.warn("[produits-repo] Supabase unreachable :", e?.message || e);
-    return STATIC_FALLBACK.slice(0, limit);
+    return vedettesFromLocal(limit);
   }
+}
+
+/* Vedettes from local catalogue — pick lowest `ordre` per rayon up to
+   `limit`, preferring rows with an image. Falls back to STATIC_FALLBACK
+   if the local catalogue itself is missing (shouldn't happen). */
+function vedettesFromLocal(limit: number): ProduitVedette[] {
+  if (LOCAL_CATALOGUE.length === 0) return STATIC_FALLBACK.slice(0, limit);
+  const sorted = [...LOCAL_CATALOGUE].sort((a, b) => {
+    const ai = a.image_url ? 0 : 1;
+    const bi = b.image_url ? 0 : 1;
+    if (ai !== bi) return ai - bi;
+    if (a.ordre !== b.ordre) return a.ordre - b.ordre;
+    return a.nom.localeCompare(b.nom, "fr");
+  });
+  return sorted.slice(0, limit).map((r) => ({
+    id: r.slug,
+    nom: r.nom,
+    image: r.image_url ?? "",
+    rayon: r.rayon as ProduitVedette["rayon"],
+    badge: r.badge ?? undefined,
+    origine: r.origine ?? undefined,
+  }));
 }
 
 /* --------------------------------------------------------------------
@@ -128,15 +173,34 @@ export async function getAllProduits(): Promise<ProduitPublic[]> {
       .order("rayon", { ascending: true })
       .order("ordre", { ascending: true })
       .order("nom", { ascending: true });
-    if (error) {
-      console.warn("[produits-repo] getAllProduits error :", error.message);
-      return [];
+    if (error || !data || data.length === 0) {
+      if (error) console.warn("[produits-repo] getAllProduits error :", error.message);
+      return allFromLocal();
     }
-    return (data ?? []).map((r) => rowToProduitPublic(r as DbRowFull));
+    return data.map((r) => rowToProduitPublic(r as DbRowFull));
   } catch (e: any) {
     console.warn("[produits-repo] Supabase unreachable :", e?.message || e);
-    return [];
+    return allFromLocal();
   }
+}
+
+function allFromLocal(): ProduitPublic[] {
+  return LOCAL_CATALOGUE.map(localToPublic);
+}
+
+function localToPublic(r: CatalogueRow): ProduitPublic {
+  return {
+    slug: r.slug,
+    nom: r.nom,
+    description: r.description ?? "",
+    image: r.image_url,
+    rayon: r.rayon,
+    categorie: r.categorie,
+    sous_categorie: r.sous_categorie,
+    origine: r.origine,
+    badge: r.badge,
+    ordre: r.ordre,
+  };
 }
 
 /**
@@ -154,14 +218,14 @@ export async function getProduitsByRayon(rayon: string): Promise<ProduitPublic[]
       .eq("rayon", rayon)
       .order("ordre", { ascending: true })
       .order("nom", { ascending: true });
-    if (error) {
-      console.warn("[produits-repo] getProduitsByRayon error :", error.message);
-      return [];
+    if (error || !data || data.length === 0) {
+      if (error) console.warn("[produits-repo] getProduitsByRayon error :", error.message);
+      return LOCAL_CATALOGUE.filter((r) => r.rayon === rayon).map(localToPublic);
     }
-    return (data ?? []).map((r) => rowToProduitPublic(r as DbRowFull));
+    return data.map((r) => rowToProduitPublic(r as DbRowFull));
   } catch (e: any) {
     console.warn("[produits-repo] Supabase unreachable :", e?.message || e);
-    return [];
+    return LOCAL_CATALOGUE.filter((r) => r.rayon === rayon).map(localToPublic);
   }
 }
 
@@ -182,13 +246,32 @@ export async function getProduitBySlug(
       .eq("slug", slug)
       .limit(1)
       .maybeSingle();
-    if (error) {
-      console.warn("[produits-repo] getProduitBySlug error :", error.message);
-      return null;
+    if (error || !data) {
+      if (error) console.warn("[produits-repo] getProduitBySlug error :", error.message);
+      const local = LOCAL_CATALOGUE.find((r) => r.slug === slug);
+      return local ? localToPublic(local) : null;
     }
-    return data ? rowToProduitPublic(data as DbRowFull) : null;
+    return rowToProduitPublic(data as DbRowFull);
   } catch (e: any) {
     console.warn("[produits-repo] Supabase unreachable :", e?.message || e);
-    return null;
+    const local = LOCAL_CATALOGUE.find((r) => r.slug === slug);
+    return local ? localToPublic(local) : null;
+  }
+}
+
+/* Returns every distinct slug — useful for getStaticPaths in
+   /produits/[slug]. Prefers Supabase when seeded, otherwise uses local. */
+export async function getAllProduitSlugs(): Promise<string[]> {
+  try {
+    const { data, error } = await supabase
+      .from("produits")
+      .select("slug")
+      .eq("actif", true);
+    if (error || !data || data.length === 0) {
+      return LOCAL_CATALOGUE.map((r) => r.slug);
+    }
+    return data.map((r: { slug: string }) => r.slug);
+  } catch {
+    return LOCAL_CATALOGUE.map((r) => r.slug);
   }
 }

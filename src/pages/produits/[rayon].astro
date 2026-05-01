@@ -1,0 +1,431 @@
+---
+/**
+ * /produits/[rayon] — Drill-down catalogue for a single rayon.
+ *
+ * Pattern inspired by Grand Frais /univers/[slug] and Carrefour /rayons/[slug].
+ * Mo' doctrine :
+ *   - NO prices shown (risque pratique commerciale)
+ *   - Client-side filter by sous_categorie / categorie pills
+ *   - Hard link back to /rayons/[slug] for the immersive editorial page
+ *   - CTA "Disponible en magasin" on each card (no basket)
+ *
+ * SSG : getStaticPaths enumerates all rayons that have produits in the
+ * catalogue. If a rayon has no produits we skip it (better than an empty
+ * page). A "all rayons" view lives at /produits (index).
+ */
+import Layout from "@layouts/Layout.astro";
+import Breadcrumb from "@components/Breadcrumb.astro";
+import ProduitCard from "@components/ProduitCard.astro";
+import NewsletterInline from "@components/NewsletterInline.astro";
+import { RAYONS, RAYONS_LIST, SITE } from "@/lib/site";
+import type { RayonSlug } from "@/lib/site";
+import { getProduitsByRayon } from "@/lib/produits-repo";
+import { breadcrumbSchema } from "@/lib/schema";
+
+export async function getStaticPaths() {
+  const paths = [] as Array<{ params: { rayon: string }; props: any }>;
+  for (const rayon of RAYONS_LIST) {
+    const produits = await getProduitsByRayon(rayon.slug);
+    if (produits.length === 0) continue;
+    paths.push({ params: { rayon: rayon.slug }, props: { rayon, produits } });
+  }
+  return paths;
+}
+
+const { rayon, produits } = Astro.props as {
+  rayon: (typeof RAYONS)[RayonSlug];
+  produits: Awaited<ReturnType<typeof getProduitsByRayon>>;
+};
+
+/* Group by sous_categorie for pills, fallback to categorie, fallback to "Autres". */
+function bucketOf(p: (typeof produits)[number]) {
+  return p.sous_categorie || p.categorie || "Autres";
+}
+
+const buckets = new Map<string, number>();
+for (const p of produits) {
+  const b = bucketOf(p);
+  buckets.set(b, (buckets.get(b) ?? 0) + 1);
+}
+
+/* Sort buckets by count desc, "Autres" always last. */
+const bucketsList = Array.from(buckets.entries())
+  .sort((a, b) => {
+    if (a[0] === "Autres") return 1;
+    if (b[0] === "Autres") return -1;
+    return b[1] - a[1];
+  })
+  .slice(0, 12);
+
+const cards = produits.map((p) => ({
+  id: p.slug,
+  nom: p.nom,
+  image: p.image ?? "",
+  rayon: p.rayon as RayonSlug,
+  badge: p.badge ?? undefined,
+  origine: p.origine ?? undefined,
+  _bucket: bucketOf(p),
+}));
+
+const accent = rayon.accent ?? "#1C6B35";
+
+const bc = breadcrumbSchema([
+  { name: "Produits", url: "/produits" },
+  { name: rayon.nom, url: `/produits/${rayon.slug}` },
+]);
+
+/* Related rayons — 3 closest by order. */
+const related = RAYONS_LIST.filter((r) => r.slug !== rayon.slug).slice(0, 3);
+---
+
+<Layout
+  title={`${rayon.nom} — ${produits.length} produits · ${SITE.name}`}
+  description={`Catalogue complet du rayon ${rayon.nom} au Marché de Mo'. ${rayon.description}`}
+  schema={bc}
+>
+  <Breadcrumb
+    items={[
+      { name: "Produits", href: "/produits" },
+      { name: rayon.nom },
+    ]}
+  />
+
+  {/* ---------- HERO ---------- */}
+  <section
+    class="relative overflow-hidden bg-noir-softer text-white"
+    style={`--rayon-accent: ${accent}`}
+  >
+    {rayon.heroImage || rayon.image ? (
+      <img
+        src={rayon.heroImage ?? rayon.image}
+        alt={rayon.imageAlt}
+        loading="eager"
+        fetchpriority="high"
+        decoding="async"
+        class="absolute inset-0 w-full h-full object-cover opacity-55 reveal-mask"
+      />
+    ) : null}
+    <div
+      class="absolute inset-0"
+      style={`background: linear-gradient(135deg, ${accent}D0 0%, rgba(0,0,0,0.55) 70%);`}
+    >
+    </div>
+
+    <div class="container-mo relative py-20 md:py-28">
+      <span
+        class="eyebrow text-white/80"
+        style={`color: rgba(255,255,255,0.85); --eyebrow-dot: #fff`}
+      >
+        {rayon.eyebrow ?? "Rayon"}
+      </span>
+      <h1 class="display-xl mt-4 max-w-4xl text-balance" data-split-reveal>
+        {rayon.nom}
+        <span class="block text-[0.55em] mt-3 opacity-80 font-pro font-bold tracking-widest uppercase">
+          {produits.length} produits
+        </span>
+      </h1>
+      <p class="mt-6 max-w-2xl text-[17px] md:text-[19px] leading-relaxed opacity-90">
+        {rayon.longDescription ?? rayon.description}
+      </p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a href={`/rayons/${rayon.slug}`} class="btn btn-primary btn-sheen">
+          Découvrir l'univers du rayon →
+        </a>
+        <a href="/produits" class="btn btn-outline-light">
+          ← Tout le catalogue
+        </a>
+      </div>
+    </div>
+  </section>
+
+  {/* ---------- FILTRES ---------- */}
+  <div
+    class="sticky top-16 z-30 bg-blanc/95 backdrop-blur-sm border-y border-black/5 py-3 md:py-4"
+    style={`--rayon-accent: ${accent}`}
+  >
+    <div class="container-mo">
+      <div class="flex items-center gap-4 flex-wrap">
+        <div class="flex-1 min-w-[240px] max-w-xl relative">
+          <svg
+            class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 pointer-events-none"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" stroke-linecap="round" />
+          </svg>
+          <input
+            type="search"
+            id="rayon-search"
+            placeholder={`Rechercher dans ${rayon.nomCourt}…`}
+            class="w-full rounded-2xl border border-black/10 bg-white pl-12 pr-4 py-3 text-[15px] focus:outline-none focus:ring-2 focus:ring-vert/40 focus:border-vert transition-all"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </div>
+        <p
+          id="rayon-count"
+          class="text-[13px] text-neutral-500 font-pro shrink-0"
+          aria-live="polite"
+        >
+          <span id="rayon-count-value">{produits.length}</span> résultats
+        </p>
+      </div>
+
+      {bucketsList.length > 1 && (
+        <div
+          class="mt-3 flex gap-2 overflow-x-auto scrollbar-thin -mx-4 px-4 pb-1 snap-x snap-mandatory"
+          role="tablist"
+          aria-label="Filtrer par sous-catégorie"
+        >
+          <button
+            type="button"
+            class="rayon-pill rayon-pill--active shrink-0 snap-start"
+            data-bucket="all"
+            role="tab"
+            aria-selected="true"
+          >
+            Tous
+            <span class="rayon-pill-count">{produits.length}</span>
+          </button>
+          {bucketsList.map(([name, count]) => (
+            <button
+              type="button"
+              class="rayon-pill shrink-0 snap-start"
+              data-bucket={name}
+              role="tab"
+              aria-selected="false"
+            >
+              {name}
+              <span class="rayon-pill-count">{count}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+
+  {/* ---------- GRID ---------- */}
+  <section class="section bg-creme">
+    <div class="container-mo">
+      <div
+        id="rayon-grid"
+        class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4"
+      >
+        {cards.map((p) => (
+          <div
+            class="produit-item"
+            data-bucket={p._bucket}
+            data-search={`${p.nom} ${p.origine ?? ""} ${p.badge ?? ""}`.toLowerCase()}
+          >
+            <ProduitCard produit={p as any} />
+          </div>
+        ))}
+      </div>
+
+      <div
+        id="rayon-empty"
+        class="hidden mt-12 text-center py-16 bg-white rounded-3xl shadow-card"
+      >
+        <img
+          src="/logos/favicon-marchedemo.png"
+          alt=""
+          aria-hidden="true"
+          class="w-16 h-16 mx-auto opacity-25"
+        />
+        <p class="mt-4 font-soft font-bold text-[22px]">Aucun résultat.</p>
+        <p class="mt-2 text-[14px] text-neutral-500 max-w-sm mx-auto">
+          Essayez un autre terme ou revenez à la vue complète du rayon.
+        </p>
+        <button type="button" id="rayon-reset" class="mt-6 btn btn-secondary">
+          Tout afficher
+        </button>
+      </div>
+    </div>
+  </section>
+
+  {/* ---------- RAYONS VOISINS ---------- */}
+  <section class="section-sm bg-blanc">
+    <div class="container-mo">
+      <div class="flex items-end justify-between gap-4 mb-8">
+        <div>
+          <span class="eyebrow">Continuer votre tour</span>
+          <h2 class="display-md mt-3 text-balance">D'autres rayons à explorer.</h2>
+        </div>
+        <a href="/rayons" class="btn btn-secondary shrink-0">Tous les rayons →</a>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+        {related.map((r) => (
+          <a
+            href={`/produits/${r.slug}`}
+            class="group relative overflow-hidden rounded-3xl aspect-[16/10] bg-noir-softer"
+          >
+            <img
+              src={r.image}
+              alt={r.imageAlt}
+              loading="lazy"
+              decoding="async"
+              class="w-full h-full object-cover opacity-65 group-hover:opacity-85 group-hover:scale-[1.04] transition-all duration-500"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent"></div>
+            <div class="absolute inset-x-6 bottom-5">
+              <p class="text-white/75 text-[12px] font-pro font-bold uppercase tracking-wider">
+                {r.eyebrow ?? "Rayon"}
+              </p>
+              <p class="text-white font-soft font-bold text-[22px] leading-tight mt-1">
+                {r.nom}
+              </p>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <NewsletterInline />
+</Layout>
+
+<style>
+  .rayon-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.95rem;
+    border-radius: 999px;
+    background: #F6F2EB;
+    color: #3A3A3A;
+    font-family: var(--font-pro);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 180ms ease-out;
+  }
+  .rayon-pill:hover {
+    background: #EEEAE0;
+    border-color: rgba(0, 0, 0, 0.08);
+  }
+  .rayon-pill--active {
+    background: var(--rayon-accent, #1C6B35);
+    color: white;
+    border-color: var(--rayon-accent, #1C6B35);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  }
+  .rayon-pill-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.3rem;
+    padding: 0 0.35rem;
+    height: 1.3rem;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.08);
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .rayon-pill--active .rayon-pill-count {
+    background: rgba(255, 255, 255, 0.22);
+    color: white;
+  }
+  .produit-item.is-hidden {
+    display: none;
+  }
+  .btn-outline-light {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    border-radius: 999px;
+    border: 1.5px solid rgba(255, 255, 255, 0.4);
+    color: white;
+    font-family: var(--font-pro);
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.02em;
+    transition: all 200ms ease-out;
+  }
+  .btn-outline-light:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.7);
+  }
+</style>
+
+<script>
+  (() => {
+    const pills = Array.from(
+      document.querySelectorAll<HTMLButtonElement>(".rayon-pill"),
+    );
+    const items = Array.from(
+      document.querySelectorAll<HTMLElement>(".produit-item"),
+    );
+    const input = document.getElementById(
+      "rayon-search",
+    ) as HTMLInputElement | null;
+    const countEl = document.getElementById("rayon-count-value");
+    const empty = document.getElementById("rayon-empty");
+    const grid = document.getElementById("rayon-grid");
+    const resetBtn = document.getElementById("rayon-reset");
+
+    let bucket = "all";
+    let term = "";
+
+    function norm(s: string) {
+      return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    }
+
+    function apply() {
+      const q = norm(term.trim());
+      let visible = 0;
+      for (const item of items) {
+        const b = item.dataset.bucket ?? "";
+        const hay = norm(item.dataset.search ?? "");
+        const mb = bucket === "all" || b === bucket;
+        const ms = !q || hay.includes(q);
+        const show = mb && ms;
+        item.classList.toggle("is-hidden", !show);
+        if (show) visible += 1;
+      }
+      if (countEl) countEl.textContent = String(visible);
+      if (empty && grid) {
+        empty.classList.toggle("hidden", visible > 0);
+        grid.classList.toggle("hidden", visible === 0);
+      }
+    }
+
+    function setPill(b: string) {
+      bucket = b;
+      for (const p of pills) {
+        const m = p.dataset.bucket === b;
+        p.classList.toggle("rayon-pill--active", m);
+        p.setAttribute("aria-selected", String(m));
+      }
+      apply();
+    }
+
+    pills.forEach((p) =>
+      p.addEventListener("click", () => setPill(p.dataset.bucket ?? "all")),
+    );
+
+    if (input) {
+      let debounce: ReturnType<typeof setTimeout>;
+      input.addEventListener("input", (e) => {
+        clearTimeout(debounce);
+        debounce = setTimeout(() => {
+          term = (e.target as HTMLInputElement).value;
+          apply();
+        }, 120);
+      });
+    }
+
+    if (resetBtn) {
+      resetBtn.addEventListener("click", () => {
+        if (input) input.value = "";
+        term = "";
+        setPill("all");
+      });
+    }
+  })();
+</script>

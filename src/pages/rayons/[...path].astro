@@ -21,7 +21,7 @@ import PromoCard from "@components/PromoCard.astro";
 import RecetteCard from "@components/RecetteCard.astro";
 import FAQAccordion from "@components/FAQAccordion.astro";
 import NewsletterInline from "@components/NewsletterInline.astro";
-import TikTokEmbed from "@components/islands/TikTokEmbed.jsx";
+import LocalVideoPlayer from "@components/islands/LocalVideoPlayer.jsx";
 import { getCollection } from "astro:content";
 import { RAYONS, RAYONS_LIST, SITE, type RayonSlug } from "@/lib/site";
 import { faqsForRayon } from "@/lib/faqs";
@@ -38,7 +38,7 @@ import {
   getDrillDownPaths,
   slugifyCat,
 } from "@/lib/taxonomie";
-import tiktokEmbeds from "@/generated/tiktok-embeds.json";
+import { getCategorieImage, getSousCategorieImage } from "@/data/category-images";
 
 /* ------------------------------------------------------------
    Pre-rendered paths — every (rayon, cat, sub) combination.
@@ -154,40 +154,88 @@ if (needsProducts) {
   }
 }
 
-/* For level 1, we still count products per categorie (displayed on each card) */
+/* For level 1, count products + get 1 representative image per categorie.
+   Avoids the "every card shows the same rayon photo" bug — each category
+   card now shows a real product image from its own category. */
 let produitsPerCategorie: Record<string, number> = {};
+let imagesPerCategorie: Record<string, string> = {};
 if (level === 1 && categoriesNiveau1) {
+  const categorieLabelBySlug = new Map(categoriesNiveau1.map((c) => [slugifyCat(c.label), c.label]));
   try {
     const { data, error } = await supabase
       .from("produits")
-      .select("categorie")
+      .select("categorie, image_url, ordre")
       .eq("rayon", rayonSlug)
-      .eq("actif", true);
+      .eq("actif", true)
+      .order("ordre", { ascending: true });
     if (!error && data) {
       for (const r of data) {
-        const key = r.categorie ?? "Autres";
+        const key = r.categorie
+          ? (categorieLabelBySlug.get(slugifyCat(r.categorie)) ?? "Autres")
+          : "Autres";
         produitsPerCategorie[key] = (produitsPerCategorie[key] ?? 0) + 1;
+        /* First image wins (ordre asc). Keep only products that actually
+           have an image so we don't fall back to empty URLs. */
+        if (r.image_url && !imagesPerCategorie[key]) {
+          imagesPerCategorie[key] = r.image_url;
+        }
       }
     }
   } catch {}
+  /* Static handpicked images always win over DB-derived ones. */
+  for (const c of categoriesNiveau1) {
+    const pick = getCategorieImage(rayonSlug, c.label);
+    if (pick) imagesPerCategorie[c.label] = pick;
+  }
 }
 
-/* For level 2 with sub-categories, count products per sous_cat */
+/* For level 2 with sub-categories, count products + representative image per sous_cat */
 let produitsPerSousCat: Record<string, number> = {};
+let imagesPerSousCat: Record<string, string> = {};
 if (level === 2 && sousCategoriesNiveau2 && catLabel) {
+  const sousCatLabelBySlug = new Map(sousCategoriesNiveau2.map((s) => [slugifyCat(s.label), s.label]));
   try {
     const { data, error } = await supabase
       .from("produits")
-      .select("sous_categorie")
+      .select("sous_categorie, image_url, ordre")
       .eq("rayon", rayonSlug)
       .eq("categorie", catLabel)
-      .eq("actif", true);
+      .eq("actif", true)
+      .order("ordre", { ascending: true });
     if (!error && data) {
       for (const r of data) {
-        const key = r.sous_categorie ?? "Autres";
+        const key = r.sous_categorie
+          ? (sousCatLabelBySlug.get(slugifyCat(r.sous_categorie)) ?? "Autres")
+          : "Autres";
         produitsPerSousCat[key] = (produitsPerSousCat[key] ?? 0) + 1;
+        if (r.image_url && !imagesPerSousCat[key]) {
+          imagesPerSousCat[key] = r.image_url;
+        }
       }
     }
+  } catch {}
+  /* Static handpicked sous-categorie images always win. */
+  for (const s of sousCategoriesNiveau2) {
+    const pick = getSousCategorieImage(rayonSlug, catLabel, s.label);
+    if (pick) imagesPerSousCat[s.label] = pick;
+  }
+}
+
+/* When the leaf is empty, surface a few popular products from the same
+   rayon so the user has somewhere to go instead of a dead end. */
+let suggestionsRayon: CatalogueRow[] = [];
+if (needsProducts && produits.length === 0) {
+  try {
+    const { data } = await supabase
+      .from("produits")
+      .select("id, slug, nom, image_url, badge, origine, unite, description, categorie, sous_categorie")
+      .eq("rayon", rayonSlug)
+      .eq("actif", true)
+      .not("image_url", "is", null)
+      .order("ordre", { ascending: true })
+      .order("nom", { ascending: true })
+      .limit(6);
+    suggestionsRayon = data ?? [];
   } catch {}
 }
 
@@ -512,25 +560,39 @@ const pageDesc = (() => {
 
       {/* LEVEL 1 : category cards */}
       {level === 1 && categoriesNiveau1 && (
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6" data-reveal-stagger>
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8" data-reveal-stagger>
           {categoriesNiveau1.map((cat) => {
             const count = produitsPerCategorie[cat.label] ?? 0;
             return (
               <a
                 href={`/rayons/${rayonSlug}/${cat.slug}`}
-                class="reveal reveal-scale group relative block bg-white rounded-3xl overflow-hidden shadow-card card-float transition-all duration-300 ring-1 ring-black/5"
+                class="reveal reveal-scale group relative block bg-white rounded-3xl overflow-hidden shadow-lg card-float transition-all duration-300 ring-1 ring-black/5 hover:shadow-xl"
               >
-                <div class="aspect-[5/3] relative overflow-hidden bg-gradient-to-br from-creme via-creme-warm to-[#EEEAE0]">
-                  <img
-                    src={rayon.image}
-                    alt=""
-                    aria-hidden="true"
-                    class="absolute inset-0 w-full h-full object-cover opacity-30 group-hover:opacity-50 group-hover:scale-[1.08] transition-all duration-500"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                  <div class="absolute inset-0 flex items-center justify-center p-5 text-center">
-                    <h3 class="font-soft font-bold text-[22px] md:text-[28px] leading-tight text-noir group-hover:text-vert transition-colors drop-shadow-sm">
+                <div class="aspect-[4/3] relative overflow-hidden bg-gradient-to-br from-creme via-creme-warm to-[#EEEAE0]">
+                  {imagesPerCategorie[cat.label] ? (
+                    <>
+                      <img
+                        src={imagesPerCategorie[cat.label]}
+                        alt={cat.label}
+                        class="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.08] transition-transform duration-500 img-optimizable"
+                        loading="lazy"
+                        decoding="async"
+                        onerror="this.parentElement.classList.add('image-fallback')"
+                        onload="this.parentElement.classList.remove('image-fallback'); this.classList.add('loaded')"
+                      />
+                      <div class="absolute inset-0 bg-gradient-enhanced"></div>
+                    </>
+                  ) : (
+                    <div
+                      class="absolute inset-0"
+                      style={`background: linear-gradient(135deg, color-mix(in srgb, ${rayon.accent ?? '#1C6B35'} 22%, #FFF8EC) 0%, color-mix(in srgb, ${rayon.accent ?? '#1C6B35'} 6%, #FFF8EC) 100%);`}
+                      aria-hidden="true"
+                    >
+                      <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.5),transparent_65%)]"></div>
+                    </div>
+                  )}
+                  <div class="absolute inset-0 flex items-end p-5">
+                    <h3 class={`font-soft font-bold text-[22px] md:text-[28px] leading-tight transition-colors drop-shadow-lg ${imagesPerCategorie[cat.label] ? "text-white" : "text-noir group-hover:text-vert"}`}>
                       {cat.label}
                     </h3>
                   </div>
@@ -541,7 +603,7 @@ const pageDesc = (() => {
                   )}
                 </div>
                 <div class="p-5 flex items-center justify-between gap-3">
-                  <p class="text-[13px] text-neutral-500 font-pro">
+                  <p class="text-[13px] text-neutral-600 font-pro font-medium">
                     {cat.hasChildren ? "Plusieurs sélections" : "Voir les produits"}
                   </p>
                   <span class="text-vert font-bold text-[13px] inline-flex items-center gap-1.5 group-hover:gap-2.5 transition-all">
@@ -559,32 +621,59 @@ const pageDesc = (() => {
 
       {/* LEVEL 2 with sub-categories : sub-cat cards */}
       {level === 2 && sousCategoriesNiveau2 && (
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5" data-reveal-stagger>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-5" data-reveal-stagger>
           {sousCategoriesNiveau2.map((sub) => {
             const count = produitsPerSousCat[sub.label] ?? 0;
             return (
               <a
                 href={`/rayons/${rayonSlug}/${catSlug}/${sub.slug}`}
-                class="reveal reveal-scale group relative block bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300 ring-1 ring-black/5 aspect-[4/5]"
+                class="reveal reveal-scale group relative block bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ring-1 ring-black/5 aspect-[3/4]"
               >
-                <div class="absolute inset-0 bg-gradient-to-br from-creme to-creme-warm opacity-60 group-hover:opacity-90 transition-opacity"></div>
-                <div class="relative h-full p-4 md:p-5 flex flex-col justify-between">
-                  <div class="w-10 h-10 rounded-xl bg-vert/10 flex items-center justify-center group-hover:bg-vert/20 transition-colors">
-                    <svg class="w-5 h-5 text-vert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M3 6h18M3 12h18M3 18h18" stroke-linecap="round"/>
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 class="font-soft font-bold text-[16px] md:text-[18px] leading-tight text-noir">
-                      {sub.label}
-                    </h3>
-                    {count > 0 && (
-                      <p class="mt-1.5 text-[12px] text-neutral-500 font-pro">
-                        {count} produit{count > 1 ? "s" : ""}
-                      </p>
-                    )}
-                  </div>
-                </div>
+                {imagesPerSousCat[sub.label] ? (
+                  <>
+                    <img
+                      src={imagesPerSousCat[sub.label]}
+                      alt={sub.label}
+                      class="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.06] transition-transform duration-500 img-optimizable"
+                      loading="lazy"
+                      decoding="async"
+                      onerror="this.parentElement.classList.add('image-fallback')"
+                      onload="this.parentElement.classList.remove('image-fallback'); this.classList.add('loaded')"
+                    />
+                    <div class="absolute inset-0 bg-gradient-enhanced"></div>
+                    <div class="relative h-full p-4 md:p-5 flex flex-col justify-end">
+                      <h3 class="font-soft font-bold text-[16px] md:text-[18px] leading-tight text-white drop-shadow-lg">
+                        {sub.label}
+                      </h3>
+                      {count > 0 && (
+                        <p class="mt-1.5 text-[12px] text-white/80 font-pro">
+                          {count} produit{count > 1 ? "s" : ""}
+                        </p>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div class="absolute inset-0 bg-gradient-to-br from-creme to-creme-warm opacity-60 group-hover:opacity-90 transition-opacity"></div>
+                    <div class="relative h-full p-4 md:p-5 flex flex-col justify-between">
+                      <div class="w-10 h-10 rounded-xl bg-vert/10 flex items-center justify-center group-hover:bg-vert/20 transition-colors">
+                        <svg class="w-5 h-5 text-vert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M3 6h18M3 12h18M3 18h18" stroke-linecap="round"/>
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 class="font-soft font-bold text-[16px] md:text-[18px] leading-tight text-noir">
+                          {sub.label}
+                        </h3>
+                        {count > 0 && (
+                          <p class="mt-1.5 text-[12px] text-neutral-500 font-pro">
+                            {count} produit{count > 1 ? "s" : ""}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
               </a>
             );
           })}
@@ -594,7 +683,7 @@ const pageDesc = (() => {
       {/* LEVEL 2 leaf OR LEVEL 3 : products grid */}
       {(level === 3 || (level === 2 && !sousCategoriesNiveau2)) && produits.length > 0 && (
         <div
-          class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4"
+          class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-5"
           data-reveal-stagger
           data-reveal-step="50"
         >
@@ -609,7 +698,9 @@ const pageDesc = (() => {
                     decoding="async"
                     width="400"
                     height="400"
-                    class="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500"
+                    class="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500 img-optimizable"
+                    onerror="this.parentElement.classList.add('image-fallback')"
+                    onload="this.parentElement.classList.remove('image-fallback'); this.classList.add('loaded')"
                   />
                 ) : (
                   <div class="absolute inset-0 bg-gradient-to-br from-creme via-creme-warm to-[#EEEAE0] flex flex-col items-center justify-center p-4 text-center">
@@ -649,24 +740,71 @@ const pageDesc = (() => {
         </div>
       )}
 
-      {/* Empty state for level 2/3 with no produits */}
-      {(level === 2 || level === 3) && !sousCategoriesNiveau2 && produits.length === 0 && (
-        <div class="bg-white rounded-3xl p-10 md:p-14 text-center ring-1 ring-black/5 shadow-card reveal">
-          <img
-            src="/logos/favicon-marchedemo.png"
-            alt=""
-            aria-hidden="true"
-            class="w-12 h-12 mx-auto opacity-20 mb-5"
-          />
-          <p class="font-soft font-bold text-[18px] text-noir">
-            Catalogue en cours de constitution
-          </p>
-          <p class="mt-3 text-[14px] text-neutral-500 max-w-md mx-auto">
-            Nos produits {subLabel ?? catLabel} sont présents en magasin mais pas encore catalogués en ligne. Passez nous voir !
-          </p>
-          <a href={`/rayons/${rayonSlug}`} class="mt-6 inline-flex items-center gap-2 btn rayon-btn-ghost btn-sheen">
-            Retour au rayon
-          </a>
+      {/* Empty state for level 2/3 leaves with no produits.
+          `needsProducts` encapsulates "level 2 leaf OR level 3" — both cases
+          where we actually queried the DB for products.
+          When the parent rayon has products, we promote them as
+          "À découvrir dans le même rayon" so the page is never a dead end. */}
+      {needsProducts && produits.length === 0 && (
+        <div class="bg-white rounded-3xl ring-1 ring-black/5 shadow-card overflow-hidden reveal">
+          <div class={`grid ${suggestionsRayon.length > 0 ? "md:grid-cols-2" : "grid-cols-1"} gap-0`}>
+            {/* Left : message + CTAs */}
+            <div class="p-8 md:p-10 lg:p-12 flex flex-col justify-center">
+              <div class="inline-flex items-center gap-2 self-start px-3 py-1 rounded-full bg-vert/10 text-vert text-[12px] font-bold tracking-wide uppercase">
+                <span class="w-2 h-2 rounded-full bg-vert animate-pulse"></span>
+                Bientôt en ligne
+              </div>
+              <h2 class="mt-4 font-soft font-bold text-[24px] md:text-[28px] leading-tight text-noir">
+                Notre rayon <span class="text-vert">{subLabel ?? catLabel}</span> arrive bientôt sur le site.
+              </h2>
+              <p class="mt-3 text-[15px] text-neutral-600 leading-relaxed max-w-md">
+                Ces produits sont déjà <strong>présents en magasin</strong> à Portet-sur-Garonne et Toulouse Sud — Cépière. On finit de les cataloguer en ligne.
+              </p>
+              <div class="mt-6 flex flex-wrap gap-3">
+                <a href={`/rayons/${rayonSlug}`} class="btn rayon-btn-primary btn-sheen">
+                  Explorer le rayon {rayon.nomCourt}
+                </a>
+                <a href="/magasins" class="btn rayon-btn-ghost btn-sheen">
+                  Voir les magasins
+                </a>
+              </div>
+            </div>
+
+            {/* Right : 6 popular products from the same rayon */}
+            {suggestionsRayon.length > 0 && (
+              <div class="bg-gradient-to-br from-creme via-creme-warm to-[#EEEAE0] p-6 md:p-8">
+                <p class="font-soft font-bold text-[14px] text-noir mb-4">
+                  À découvrir dans le rayon {rayon.nomCourt} :
+                </p>
+                <div class="grid grid-cols-3 gap-3">
+                  {suggestionsRayon.map((p) => (
+                    <a
+                      href={`/produits/${p.slug}`}
+                      class="group block bg-white rounded-xl overflow-hidden ring-1 ring-black/5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300"
+                      title={p.nom}
+                    >
+                      <div class="aspect-square relative overflow-hidden">
+                        {p.image_url ? (
+                          <img
+                            src={p.image_url}
+                            alt={p.nom}
+                            loading="lazy"
+                            decoding="async"
+                            class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                        ) : (
+                          <div class="absolute inset-0 bg-gradient-to-br from-creme to-creme-warm"></div>
+                        )}
+                      </div>
+                      <p class="px-2 py-1.5 text-[11px] font-pro font-medium text-neutral-700 line-clamp-2 leading-tight min-h-[34px]">
+                        {p.nom}
+                      </p>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -681,15 +819,13 @@ const pageDesc = (() => {
 
         <div class="mt-10 grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl" data-reveal-stagger>
           {videos.map((v) => {
-            const cached = tiktokEmbeds[v.data.id];
             return (
               <div class="reveal">
-                <TikTokEmbed
+                <LocalVideoPlayer
                   client:visible
-                  url={v.data.url_tiktok}
+                  src={v.data.src_local}
                   title={v.data.titre}
-                  thumbnail={cached?.thumbnail ?? v.data.thumbnail}
-                  embedHtml={cached?.html}
+                  href={v.data.url_tiktok}
                 />
               </div>
             );
