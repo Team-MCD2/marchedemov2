@@ -3,8 +3,14 @@ import InlineImageUpload from "./InlineImageUpload.jsx";
 import BulkActionsBar from "./BulkActionsBar.jsx";
 import SortableHeader from "./SortableHeader.jsx";
 import FilterChip from "./FilterChip.jsx";
+import UndoSnackbar from "./UndoSnackbar.jsx";
+import EmptyState from "./EmptyState.jsx";
+import ExportMenu from "./ExportMenu.jsx";
+import MobileActionBar from "./MobileActionBar.jsx";
+import { adminFetch, clearDraft, loadDraft, saveDraft } from "./adminFetch.js";
 import { compareRows, useAdminListState } from "./useAdminListState.js";
 import { derivePrices } from "../../../lib/priceDerivation";
+import { humanizeError } from "../../../lib/admin-errors";
 
 /**
  * PromosManager — interactive admin table for the public.promos table.
@@ -53,6 +59,19 @@ function fmtPrice(n) {
   if (!Number.isFinite(num)) return "—";
   return num.toFixed(2).replace(".", ",") + " €";
 }
+
+/* Local slugifier powering the create-modal's auto-suggest from `titre`.
+ *   "Agneau Halal Épaule"  →  "agneau-halal-epaule" */
+function slugifyLocal(raw) {
+  if (!raw) return "";
+  return String(raw)
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+}
 function fmtDate(iso) {
   if (!iso) return "—";
   try {
@@ -74,6 +93,8 @@ export default function PromosManager({ initialPromos, rayonsOptions, magasinsOp
   const [selected, setSelected] = useState(() => new Set());
   const [reorderMode, setReorderMode] = useState(false);
   const [undoData, setUndoData] = useState(null); // { snapshot: Promo[], message, timer }
+  /* Single-row deferred-delete state. Same shape as ProduitsManager. */
+  const [pendingDelete, setPendingDelete] = useState(null);
   const [dragId, setDragId] = useState(null);
   const [dragOverId, setDragOverId] = useState(null);
   const searchInputRef = useRef(null);
@@ -92,9 +113,10 @@ export default function PromosManager({ initialPromos, rayonsOptions, magasinsOp
     "updated_at",
     "actif",
   ];
+  const RECENT_OPTS = ["", "24h", "7d"];
   const { state: listState, set: setFilter, reset: resetFilter, activeCount } = useAdminListState({
-    defaults: { q: "", rayon: "", magasin: "", statut: "all", sort: "ordre", dir: "asc" },
-    allowed: { statut: STATUT_OPTS, dir: ["asc", "desc"], sort: SORT_OPTS },
+    defaults: { q: "", rayon: "", magasin: "", statut: "all", recent: "", sort: "ordre", dir: "asc" },
+    allowed: { statut: STATUT_OPTS, recent: RECENT_OPTS, dir: ["asc", "desc"], sort: SORT_OPTS },
     storageKey: "admin.promos.list",
   });
   const filter = listState;
@@ -124,6 +146,12 @@ export default function PromosManager({ initialPromos, rayonsOptions, magasinsOp
       if (filter.magasin && p.magasin !== filter.magasin) return false;
       if (filter.statut === "active" && !p.actif) return false;
       if (filter.statut === "inactive" && p.actif) return false;
+      if (filter.recent) {
+        const ts = Date.parse(p.updated_at ?? p.created_at ?? "");
+        if (!Number.isFinite(ts)) return false;
+        const windowMs = filter.recent === "7d" ? 7 * 86_400_000 : 86_400_000;
+        if (Date.now() - ts > windowMs) return false;
+      }
       if (filter.q) {
         const q = filter.q.toLowerCase();
         const hay = `${p.titre} ${p.slug} ${p.description ?? ""}`.toLowerCase();
@@ -173,7 +201,7 @@ export default function PromosManager({ initialPromos, rayonsOptions, magasinsOp
     /* Optimistic update */
     setPromos((cur) => cur.map((p) => (p.id === row.id ? next : p)));
     try {
-      const res = await fetch(`/api/admin/promos/${row.id}`, {
+      const res = await adminFetch(`/api/admin/promos/${row.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ [field]: next[field] }),
@@ -184,25 +212,48 @@ export default function PromosManager({ initialPromos, rayonsOptions, magasinsOp
     } catch (err) {
       /* Rollback */
       setPromos((cur) => cur.map((p) => (p.id === row.id ? row : p)));
-      notify("err", `Erreur : ${err.message}`);
+      notify("err", `Erreur : ${humanizeError(err)}`);
     }
   }
 
-  /* ---------------- Delete ---------------- */
-  async function deletePromo(row) {
-    if (!confirm(`Supprimer définitivement la promo « ${row.titre} » ?`)) return;
-    const snapshot = promos;
+  /* ---------------- Delete (deferred + undoable) ----------------
+   * The row is hidden from the list immediately ; the actual API
+   * DELETE only fires after 8 s if the user hasn't clicked "Annuler".
+   * Same pattern as `ProduitsManager` — see the rationale comment
+   * there. */
+  function deletePromo(row) {
+    if (pendingDelete) {
+      clearTimeout(pendingDelete.timer);
+      void commitPendingDelete(pendingDelete.row);
+    }
     setPromos((cur) => cur.filter((p) => p.id !== row.id));
+    const timer = setTimeout(() => {
+      void commitPendingDelete(row);
+    }, 8000);
+    setPendingDelete({ row, timer, deadline: Date.now() + 8000 });
+  }
+
+  async function commitPendingDelete(row) {
+    setPendingDelete((cur) => (cur && cur.row.id === row.id ? null : cur));
     try {
-      const res = await fetch(`/api/admin/promos/${row.id}`, { method: "DELETE" });
+      const res = await adminFetch(`/api/admin/promos/${row.id}`, { method: "DELETE" });
       if (!res.ok && res.status !== 204) {
         throw new Error((await res.json().catch(() => ({}))).error || res.statusText);
       }
       notify("ok", `Promo « ${row.titre} » supprimée.`);
     } catch (err) {
-      setPromos(snapshot);
-      notify("err", `Erreur : ${err.message}`);
+      setPromos((cur) => (cur.some((p) => p.id === row.id) ? cur : [...cur, row]));
+      notify("err", `Erreur : ${humanizeError(err)}`);
     }
+  }
+
+  function undoPendingDelete() {
+    if (!pendingDelete) return;
+    clearTimeout(pendingDelete.timer);
+    const { row } = pendingDelete;
+    setPendingDelete(null);
+    setPromos((cur) => (cur.some((p) => p.id === row.id) ? cur : [...cur, row]));
+    notify("ok", `« ${row.titre} » restaurée.`);
   }
 
   /* ---------------- Save (create or update) ---------------- */
@@ -224,19 +275,26 @@ export default function PromosManager({ initialPromos, rayonsOptions, magasinsOp
       actif: form.actif !== false,
       ordre: Number(form.ordre) || 0,
     };
+    /* Stash the form so a 401 mid-submit (expired cookie) survives the
+     * redirect to /admin/login and re-loads on next mount of the modal. */
+    const draftKey = isNew ? "admin.draft.promo.new" : `admin.draft.promo.${form.id}`;
     try {
       let res;
       if (isNew) {
-        res = await fetch(`/api/admin/promos`, {
+        res = await adminFetch(`/api/admin/promos`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
+          draftKey,
+          draftValue: form,
         });
       } else {
-        res = await fetch(`/api/admin/promos/${form.id}`, {
+        res = await adminFetch(`/api/admin/promos/${form.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
+          draftKey,
+          draftValue: form,
         });
       }
       if (!res.ok) throw new Error((await res.json()).error || res.statusText);
@@ -246,17 +304,18 @@ export default function PromosManager({ initialPromos, rayonsOptions, magasinsOp
       } else {
         setPromos((cur) => cur.map((p) => (p.id === promo.id ? promo : p)));
       }
+      clearDraft(draftKey);
       setEditing(null);
       notify("ok", isNew ? "Promo créée." : "Promo mise à jour.");
     } catch (err) {
-      notify("err", `Erreur : ${err.message}`);
+      notify("err", `Erreur : ${humanizeError(err)}`);
     }
   }
 
   /* ---------------- Bulk import ---------------- */
   async function bulkImport(arr) {
     try {
-      const res = await fetch(`/api/admin/promos`, {
+      const res = await adminFetch(`/api/admin/promos`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ promos: arr }),
@@ -264,12 +323,12 @@ export default function PromosManager({ initialPromos, rayonsOptions, magasinsOp
       if (!res.ok) throw new Error((await res.json()).error || res.statusText);
       const { count } = await res.json();
       /* Refresh the table from the server truth. */
-      const refreshed = await fetch(`/api/admin/promos`).then((r) => r.json());
+      const refreshed = await adminFetch(`/api/admin/promos`).then((r) => r.json());
       setPromos(refreshed.promos ?? []);
       setImporting(false);
       notify("ok", `${count} promo(s) importée(s).`);
     } catch (err) {
-      notify("err", `Erreur import : ${err.message}`);
+      notify("err", `Erreur import : ${humanizeError(err)}`);
     }
   }
 
@@ -297,7 +356,7 @@ export default function PromosManager({ initialPromos, rayonsOptions, magasinsOp
     }
 
     try {
-      const res = await fetch(`/api/admin/promos/bulk`, {
+      const res = await adminFetch(`/api/admin/promos/bulk`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ids, action }),
@@ -323,7 +382,7 @@ export default function PromosManager({ initialPromos, rayonsOptions, magasinsOp
       }
     } catch (err) {
       setPromos(snapshot);
-      notify("err", `Erreur : ${err.message}`);
+      notify("err", `Erreur : ${humanizeError(err)}`);
     }
   }
 
@@ -334,17 +393,17 @@ export default function PromosManager({ initialPromos, rayonsOptions, magasinsOp
     if (undoData.timer) clearTimeout(undoData.timer);
     setUndoData(null);
     try {
-      const res = await fetch(`/api/admin/promos`, {
+      const res = await adminFetch(`/api/admin/promos`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ promos: rows }),
       });
       if (!res.ok) throw new Error((await res.json()).error || res.statusText);
-      const refreshed = await fetch(`/api/admin/promos`).then((r) => r.json());
+      const refreshed = await adminFetch(`/api/admin/promos`).then((r) => r.json());
       setPromos(refreshed.promos ?? []);
       notify("ok", `${rows.length} promo(s) restaurée(s).`);
     } catch (err) {
-      notify("err", `Restauration impossible : ${err.message}`);
+      notify("err", `Restauration impossible : ${humanizeError(err)}`);
     }
   }
 
@@ -353,14 +412,14 @@ export default function PromosManager({ initialPromos, rayonsOptions, magasinsOp
     /* rows is the NEW visible order. Re-index ordre from 0..N. */
     const payload = rows.map((p, i) => ({ id: p.id, ordre: i }));
     try {
-      const res = await fetch(`/api/admin/promos/reorder`, {
+      const res = await adminFetch(`/api/admin/promos/reorder`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ rows: payload }),
       });
       if (!res.ok) throw new Error((await res.json()).error || res.statusText);
     } catch (err) {
-      notify("err", `Erreur réorganisation : ${err.message}`);
+      notify("err", `Erreur réorganisation : ${humanizeError(err)}`);
     }
   }
 
@@ -497,9 +556,9 @@ export default function PromosManager({ initialPromos, rayonsOptions, magasinsOp
 
   /* =========================================================== */
   return (
-    <div>
+    <div className="pb-20 md:pb-0">
       {/* Sticky toolbar */}
-      <div className="sticky top-0 z-30 -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8 pt-2 pb-3 bg-creme/85 backdrop-blur-md">
+      <div id="promos-toolbar" className="sticky top-0 z-30 -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8 pt-2 pb-3 bg-creme/85 backdrop-blur-md">
         <div className="bg-white rounded-3xl shadow-card p-4 md:p-5 flex flex-col md:flex-row gap-3 md:items-center">
           <div className="flex-1 flex flex-col sm:flex-row gap-2">
             <div className="flex-1 min-w-0 relative">
@@ -561,6 +620,28 @@ export default function PromosManager({ initialPromos, rayonsOptions, magasinsOp
               <option value="active">Actives</option>
               <option value="inactive">Inactives</option>
             </select>
+            {/* "Récemment modifiées" — cycles "" → "24h" → "7d" → "" */}
+            <button
+              type="button"
+              onClick={() => {
+                const next =
+                  filter.recent === "" ? "24h" : filter.recent === "24h" ? "7d" : "";
+                setFilter({ recent: next });
+              }}
+              aria-pressed={filter.recent !== ""}
+              title="Filtrer par date de modification (24 h / 7 j)"
+              className={`px-3 py-2 rounded-full text-[13px] font-bold transition inline-flex items-center gap-1.5 ${
+                filter.recent
+                  ? "bg-vert text-white hover:bg-vert-dark"
+                  : "bg-white border border-black/10 hover:border-noir text-noir"
+              }`}
+            >
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 7v5l3 2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              {filter.recent === "24h" ? "24 h" : filter.recent === "7d" ? "7 j" : "Récents"}
+            </button>
           </div>
           <div className="flex gap-2 shrink-0 flex-wrap">
             {canReorder && (
@@ -588,6 +669,7 @@ export default function PromosManager({ initialPromos, rayonsOptions, magasinsOp
             >
               Importer JSON
             </button>
+            <ExportMenu rows={filtered} totalRows={promos.length} kind="promos" />
             <button
               type="button"
               onClick={() => setEditing({ ...EMPTY_PROMO })}
@@ -624,6 +706,12 @@ export default function PromosManager({ initialPromos, rayonsOptions, magasinsOp
               <FilterChip
                 label={`Statut : ${filter.statut === "active" ? "actives" : "inactives"}`}
                 onRemove={() => setFilter({ statut: "all" })}
+              />
+            )}
+            {filter.recent && (
+              <FilterChip
+                label={`Modifiées : ${filter.recent === "24h" ? "24 h" : "7 j"}`}
+                onRemove={() => setFilter({ recent: "" })}
               />
             )}
             {(sort.field !== "ordre" || sort.dir !== "asc") && (
@@ -688,8 +776,25 @@ export default function PromosManager({ initialPromos, rayonsOptions, magasinsOp
             <tbody>
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={reorderMode ? 11 : 10} className="px-4 py-16 text-center text-neutral-400">
-                    Aucune promo ne correspond aux filtres.
+                  <td colSpan={reorderMode ? 11 : 10} className="px-4 py-12">
+                    {(filter.q || filter.recent || filter.statut !== "all" || filter.rayon || filter.magasin) ? (
+                      <EmptyState
+                        icon="🔎"
+                        title="Aucune promo ne correspond aux filtres"
+                        description="Essayez d'élargir la recherche, ou réinitialisez les filtres pour voir toutes les promos."
+                        primaryLabel="Réinitialiser les filtres"
+                        primaryOnClick={resetFilter}
+                      />
+                    ) : (
+                      <EmptyState
+                        title="Aucune promo en base"
+                        description="Créez votre première promo pour qu'elle apparaisse sur le site, ou importez un lot via JSON."
+                        primaryLabel="+ Nouvelle promo"
+                        primaryOnClick={() => setEditing({ ...EMPTY_PROMO, date_debut: todayISO(), date_fin: inDaysISO(14) })}
+                        secondaryLabel="Importer JSON"
+                        secondaryOnClick={() => setImporting(true)}
+                      />
+                    )}
                   </td>
                 </tr>
               )}
@@ -864,10 +969,38 @@ export default function PromosManager({ initialPromos, rayonsOptions, magasinsOp
         ]}
       />
 
+      {/* Mobile-only thumb-reachable action bar. Hidden ≥ md. */}
+      <MobileActionBar
+        label="Promo"
+        toolbarId="promos-toolbar"
+        filterCount={
+          (filter.q ? 1 : 0) +
+          (filter.rayon ? 1 : 0) +
+          (filter.magasin ? 1 : 0) +
+          (filter.statut !== "all" ? 1 : 0) +
+          (filter.recent ? 1 : 0)
+        }
+        onNew={() =>
+          setEditing({ ...EMPTY_PROMO, date_debut: todayISO(), date_fin: inDaysISO(14) })
+        }
+      />
+
+      {/* Single-row deferred-delete snackbar. */}
+      {pendingDelete && (
+        <UndoSnackbar
+          row={pendingDelete.row}
+          deadline={pendingDelete.deadline}
+          label={`« ${pendingDelete.row.titre} » supprimée.`}
+          onUndo={undoPendingDelete}
+        />
+      )}
+
       {/* Undo toast for bulk delete */}
       {undoData && (
         <div
           role="status"
+          aria-live="polite"
+          aria-atomic="true"
           className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-noir text-white text-[13px] font-bold shadow-2xl flex items-center gap-3"
         >
           <span>{undoData.message}</span>
@@ -904,7 +1037,9 @@ export default function PromosManager({ initialPromos, rayonsOptions, magasinsOp
       {/* Toast */}
       {toast && (
         <div
-          role="status"
+          role={toast.type === "err" ? "alert" : "status"}
+          aria-live={toast.type === "err" ? "assertive" : "polite"}
+          aria-atomic="true"
           className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-full font-bold text-[13px] shadow-card ${
             toast.type === "ok"
               ? "bg-vert text-white"
@@ -922,19 +1057,53 @@ export default function PromosManager({ initialPromos, rayonsOptions, magasinsOp
 /* Edit / Create modal                                                */
 /* ================================================================ */
 function EditModal({ promo, rayonsOptions, magasinsOptions, onCancel, onSave }) {
-  const [form, setForm] = useState({ ...promo });
+  const isNew = !promo.id;
+  const draftKey = isNew ? "admin.draft.promo.new" : `admin.draft.promo.${promo.id}`;
+
+  /* Restore from sessionStorage if a draft exists (typed earlier and
+   * the tab was closed, or 401 redirected mid-submit). */
+  const [form, setForm] = useState(() => {
+    const draft = loadDraft(draftKey);
+    return draft && typeof draft === "object" ? { ...promo, ...draft } : { ...promo };
+  });
+  const [draftRestored, setDraftRestored] = useState(() => loadDraft(draftKey) != null);
   const [saving, setSaving] = useState(false);
   /* Track the last price field the user typed into so the three-way
    * derivation picks the "oldest" sibling to refresh. */
   const [lastEdited, setLastEdited] = useState(null);
   /* User-pinned fields: never re-derived. */
   const [locked, setLocked] = useState(() => new Set());
+  /* Auto-slug guard : once the user types into the slug field we stop
+   * overwriting it from `titre`. On existing rows we start in touched
+   * state so editing `titre` never mutates an already-saved slug. */
+  const [slugTouched, setSlugTouched] = useState(
+    !!(promo.id || promo.slug) || !!loadDraft(draftKey),
+  );
   const formRef = useRef(null);
 
-  const isNew = !promo.id;
+  /* Debounced auto-save of the draft to sessionStorage. */
+  useEffect(() => {
+    const h = setTimeout(() => saveDraft(draftKey, form), 400);
+    return () => clearTimeout(h);
+  }, [form, draftKey]);
+
+  function discardDraft() {
+    clearDraft(draftKey);
+    setForm({ ...promo });
+    setDraftRestored(false);
+    setLocked(new Set());
+    setLastEdited(null);
+    if (isNew) setSlugTouched(false);
+  }
 
   function set(field, value) {
-    setForm((f) => ({ ...f, [field]: value }));
+    setForm((f) => {
+      const next = { ...f, [field]: value };
+      if (field === "titre" && isNew && !slugTouched) {
+        next.slug = slugifyLocal(value);
+      }
+      return next;
+    });
   }
 
   /* Bidirectional three-way derivation across prix_original / prix_promo /
@@ -1016,6 +1185,23 @@ function EditModal({ promo, rayonsOptions, magasinsOptions, onCancel, onSave }) 
           </button>
         </div>
 
+        {draftRestored && (
+          <div
+            role="status"
+            aria-live="polite"
+            className="px-6 py-2.5 bg-orange-50 border-b border-orange-200 text-[12px] text-orange-900 flex items-center justify-between gap-3"
+          >
+            <span>↺ Brouillon restauré depuis votre dernière session.</span>
+            <button
+              type="button"
+              onClick={discardDraft}
+              className="font-bold text-orange-900 hover:underline shrink-0"
+            >
+              Repartir des valeurs initiales
+            </button>
+          </div>
+        )}
+
         <form ref={formRef} onSubmit={submit} className="p-6 space-y-5">
           <Field label="Titre" required>
             <input
@@ -1032,9 +1218,15 @@ function EditModal({ promo, rayonsOptions, magasinsOptions, onCancel, onSave }) 
             <input
               type="text"
               required
-              pattern="[a-z0-9-]+"
+              /* Escape the `-` inside the class : Chrome now compiles
+               * HTML `pattern` with the Unicode-Sets (`v`) flag which
+               * rejects unescaped `-` as "Invalid character class". */
+              pattern="[a-z0-9\-]+"
               value={form.slug}
-              onChange={(e) => set("slug", e.target.value)}
+              onChange={(e) => {
+                setSlugTouched(true);
+                set("slug", e.target.value);
+              }}
               className="input"
               placeholder="agneau-halal-epaule"
             />

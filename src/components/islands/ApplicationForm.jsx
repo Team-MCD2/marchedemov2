@@ -77,7 +77,7 @@ export default function ApplicationForm({ poste = "spontanee", posteNom = "Candi
         </div>
         <div>
           <label htmlFor="telephone" className="block text-[13px] font-bold mb-1.5">Téléphone *</label>
-          <input id="telephone" name="telephone" type="tel" required pattern="[0-9 +().-]{10,}" className="input" />
+          <input id="telephone" name="telephone" type="tel" required pattern="[0-9 +\(\)\-.]{10,}" className="input" />
         </div>
       </div>
 

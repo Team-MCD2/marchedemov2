@@ -67,23 +67,68 @@ function readFromStorage(storageKey, defaults, allowed) {
 }
 
 export function useAdminListState({ defaults, allowed, storageKey } = {}) {
-  const [state, setState] = useState(() => {
-    const fromUrl = readFromURL(defaults, allowed);
-    /* If any key differs from default, URL wins; else try storage. */
-    const urlHasValues = Object.keys(defaults).some((k) => fromUrl[k] !== defaults[k]);
-    if (urlHasValues) return fromUrl;
-    return readFromStorage(storageKey, defaults, allowed) ?? fromUrl;
-  });
+  /* ----------------------------------------------------------------
+   * Hydration-safe initial state.
+   *
+   * The previous implementation read `window.location.search` AND
+   * `window.localStorage` inside the `useState(() => ...)` initializer.
+   * That works on the server (both readers gate on `typeof window`),
+   * but on the client's FIRST render — which is the hydration pass —
+   * it reads URL params and storage values that the server didn't
+   * see, producing different initial state and a React hydration
+   * mismatch ("server HTML does not match client").
+   *
+   * The fix is a standard two-pass pattern :
+   *   1. Pass 1 (matches SSR) : initial state = defaults exactly.
+   *   2. Pass 2 (post-hydration `useEffect`) : if URL has params, apply
+   *      them ; else fall back to storage. From this point on, normal
+   *      controlled-component rendering takes over.
+   *
+   * The visible effect is a one-frame "flash" of default filters
+   * before URL/storage values pop in — acceptable for an admin page
+   * loaded with `client:load`, and the only correct behaviour given
+   * that URL/storage are inherently client-only state. */
+  const [state, setState] = useState(defaults);
+  const [hydrated, setHydrated] = useState(false);
 
   const defaultsRef = useRef(defaults);
   defaultsRef.current = defaults;
   const storageKeyRef = useRef(storageKey);
   storageKeyRef.current = storageKey;
+  const allowedRef = useRef(allowed);
+  allowedRef.current = allowed;
 
-  /* Debounced URL + storage write. */
+  /* Pass-2 sync : runs once after hydration on the client only. */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const fromUrl = readFromURL(defaultsRef.current, allowedRef.current);
+    const urlHasValues = Object.keys(defaultsRef.current).some(
+      (k) => fromUrl[k] !== defaultsRef.current[k],
+    );
+    if (urlHasValues) {
+      setState(fromUrl);
+    } else {
+      const fromStorage = readFromStorage(
+        storageKeyRef.current,
+        defaultsRef.current,
+        allowedRef.current,
+      );
+      if (fromStorage) setState(fromStorage);
+    }
+    setHydrated(true);
+    /* Empty dep array on purpose : we want this to fire exactly once
+     * after the first render, and never again. The refs above let us
+     * read the latest defaults / storage key without re-running. */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /* Debounced URL + storage write. Skipped until hydration is done so
+   * we never overwrite the user's existing URL/storage with our
+   * (still-default) initial state. */
   const writeTimer = useRef(null);
   useEffect(() => {
     if (typeof window === "undefined") return;
+    if (!hydrated) return;
     if (writeTimer.current) clearTimeout(writeTimer.current);
     writeTimer.current = setTimeout(() => {
       try {

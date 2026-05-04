@@ -13,6 +13,7 @@ import type { APIRoute } from "astro";
 import { isAuthenticated } from "@/lib/auth";
 import { supabaseAdmin, type RayonSlug, type MagasinSlug } from "@/lib/supabase";
 import { logActivity } from "@/lib/admin-activity";
+import { slugifyKey } from "@/lib/slug";
 
 export const prerender = false;
 
@@ -86,8 +87,15 @@ function normalizePromo(raw: any) {
     throw new Error(`reduction_pct doit être entre 0 et 99`);
   }
 
+  /* Same NFD-strip normalisation as produits — matches `slugifyLocal()`
+   * in `PromosManager.jsx` so client-side and server-side stay
+   * byte-for-byte aligned on round-trip. */
+  const slug = slugifyKey(raw.slug);
+  if (!slug) {
+    throw new Error("Slug invalide : doit contenir au moins un caractère alphanumérique");
+  }
   return {
-    slug: String(raw.slug).trim().toLowerCase().replace(/[^a-z0-9-]/g, "-"),
+    slug,
     titre: String(raw.titre).trim(),
     description: raw.description != null ? String(raw.description) : "",
     image_url: raw.image_url || raw.image || null,

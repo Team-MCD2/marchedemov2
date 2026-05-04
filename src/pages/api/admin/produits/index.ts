@@ -18,6 +18,7 @@ import type { APIRoute } from "astro";
 import { isAuthenticated } from "@/lib/auth";
 import { supabaseAdmin, type RayonSlug } from "@/lib/supabase";
 import { logActivity } from "@/lib/admin-activity";
+import { slugifyKey } from "@/lib/slug";
 
 export const prerender = false;
 
@@ -68,8 +69,16 @@ function normalizeProduit(raw: any) {
     }
     prix_indicatif = n;
   }
+  /* Accented slugs from external sources (CSV pastes, legacy imports)
+   * are stripped of diacritics here so the DB never holds a slug the
+   * admin's client-side regex `[a-z0-9\-]+` can't match. Matches the
+   * `slugifyLocal()` in `ProduitsManager.jsx`. */
+  const slug = slugifyKey(raw.slug);
+  if (!slug) {
+    throw new Error("Slug invalide : doit contenir au moins un caractère alphanumérique");
+  }
   return {
-    slug: String(raw.slug).trim().toLowerCase().replace(/[^a-z0-9-]/g, "-"),
+    slug,
     nom: String(raw.nom).trim(),
     description: raw.description != null ? String(raw.description) : "",
     image_url: raw.image_url || raw.image || null,

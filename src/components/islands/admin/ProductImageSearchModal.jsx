@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { adminFetch } from "./adminFetch.js";
 
 /**
  * ProductImageSearchModal
@@ -73,7 +74,7 @@ export default function ProductImageSearchModal({
       const url = new URL("/api/admin/produits/image-search", window.location.origin);
       url.searchParams.set("q", trimmed);
       url.searchParams.set("pageSize", "16");
-      const res = await fetch(url.toString(), { signal: ctrl.signal });
+      const res = await adminFetch(url.toString(), { signal: ctrl.signal });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         throw new Error(body?.error ?? `HTTP ${res.status}`);
@@ -98,7 +99,7 @@ export default function ProductImageSearchModal({
     setSaving(candidate.code || candidate.imageUrl);
     setErr(null);
     try {
-      const res = await fetch(`/api/admin/produits/${produit.id}`, {
+      const res = await adminFetch(`/api/admin/produits/${produit.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ image_url: candidate.imageUrl }),

@@ -14,6 +14,7 @@ export const prerender = false;
 
 import Layout from "@layouts/Layout.astro";
 import AdminTopbar from "@components/admin/AdminTopbar.astro";
+import EmptyState from "@components/admin/EmptyState.astro";
 import { SITE, RAYONS_LIST } from "@/lib/site";
 import { isAuthenticated } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
@@ -159,12 +160,26 @@ function rayonLink(slug: string) {
           <p class="text-[14px] mt-2 whitespace-pre-line">{errorMsg}</p>
         </div>
       ) : total === 0 ? (
-        <div class="bg-white rounded-3xl shadow-card p-10 text-center text-neutral-400">
-          <p class="font-bold text-[15px] text-neutral-600">Catalogue vide</p>
-          <p class="mt-2 text-[13px]">
-            Aucun produit enregistré.
-            <a href="/admin/produits" class="text-vert font-bold hover:underline">Commencer →</a>
-          </p>
+        <div class="bg-white rounded-3xl shadow-card overflow-hidden">
+          <EmptyState
+            title="Catalogue vide"
+            description="Aucun produit n'est encore enregistré dans Supabase. Commencez par créer ou importer le premier — la couverture d'images se mettra à jour automatiquement."
+            ctaLabel="Créer un produit"
+            ctaHref="/admin/produits#new"
+            secondaryLabel="Importer JSON / CSV"
+            secondaryHref="/admin/produits#import"
+          />
+        </div>
+      ) : withoutImage === 0 ? (
+        <div class="bg-white rounded-3xl shadow-card overflow-hidden">
+          <EmptyState
+            tone="vert"
+            icon="🎉"
+            title="Toutes les images sont en place"
+            description="Chaque produit actif du catalogue a une image. Bravo ! Cette page restera utile dès qu'un nouvel ajout sera fait."
+            ctaLabel="Voir le catalogue"
+            ctaHref="/admin/catalogue"
+          />
         </div>
       ) : (
         <>

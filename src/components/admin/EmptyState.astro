@@ -2,13 +2,19 @@
 /**
  * EmptyState — neutral empty placeholder for admin lists / panels.
  *
+ * When neither `icon` nor a custom illustration slot is provided we
+ * render a brand-aligned default basket SVG so call-sites get a
+ * polished empty state without thinking about it.
+ *
  * Props
- *   title       : Required.
- *   description?: Optional sub-text.
- *   icon?       : Optional emoji or short markup.
- *   ctaLabel?   : Optional CTA label.
- *   ctaHref?    : Optional CTA link target.
- *   tone?       : "neutral" | "vert" (success) | "rouge" (problem).
+ *   title           : Required.
+ *   description?    : Optional sub-text.
+ *   icon?           : Optional emoji or short markup (used INSTEAD of the default illustration).
+ *   ctaLabel?       : Optional primary CTA label.
+ *   ctaHref?        : Optional primary CTA link target.
+ *   secondaryLabel? : Optional secondary CTA label.
+ *   secondaryHref?  : Optional secondary CTA link target.
+ *   tone?           : "neutral" | "vert" (success) | "rouge" (problem).
  */
 interface Props {
   title: string;
@@ -16,6 +22,8 @@ interface Props {
   icon?: string;
   ctaLabel?: string;
   ctaHref?: string;
+  secondaryLabel?: string;
+  secondaryHref?: string;
   tone?: "neutral" | "vert" | "rouge";
 }
 const {
@@ -24,30 +32,87 @@ const {
   icon = "",
   ctaLabel,
   ctaHref,
+  secondaryLabel,
+  secondaryHref,
   tone = "neutral",
 } = Astro.props as Props;
 
 const toneClass = {
-  neutral: { fg: "text-neutral-600", sub: "text-neutral-400" },
+  neutral: { fg: "text-neutral-700", sub: "text-neutral-500" },
   vert:    { fg: "text-vert-dark",   sub: "text-neutral-500" },
   rouge:   { fg: "text-rouge",       sub: "text-neutral-500" },
 }[tone];
+
+const accent =
+  tone === "rouge" ? "#A8261B" : tone === "vert" ? "#1C6B35" : "#1C6B35";
 ---
 
 <div class="text-center py-10 px-4">
-  {icon && (
-    <p class="text-[28px] mb-2" aria-hidden="true">{icon}</p>
-  )}
-  <p class:list={["font-soft font-bold text-[15px]", toneClass.fg]}>{title}</p>
-  {description && (
-    <p class:list={["mt-1 text-[13px]", toneClass.sub]}>{description}</p>
-  )}
-  {ctaLabel && ctaHref && (
-    <a
-      href={ctaHref}
-      class="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-vert text-white text-[13px] font-bold hover:bg-vert-dark transition"
+  {icon ? (
+    <p class="text-[36px] mb-2" aria-hidden="true">{icon}</p>
+  ) : (
+    <svg
+      width="96"
+      height="96"
+      viewBox="0 0 96 96"
+      fill="none"
+      class="mx-auto mb-3 opacity-90"
+      aria-hidden="true"
     >
-      {ctaLabel}
-    </a>
+      <path
+        d="M14 38 L82 38 L74 76 Q73 82 67 82 L29 82 Q23 82 22 76 Z"
+        fill="white"
+        stroke={accent}
+        stroke-width="2.4"
+        stroke-linejoin="round"
+      />
+      <path
+        d="M28 38 Q28 18 48 18 Q68 18 68 38"
+        fill="none"
+        stroke={accent}
+        stroke-width="2.4"
+        stroke-linecap="round"
+      />
+      <path
+        d="M30 42 L27 78 M40 42 L39 78 M48 42 L48 78 M56 42 L57 78 M66 42 L69 78"
+        stroke={accent}
+        stroke-opacity="0.35"
+        stroke-width="1.5"
+        stroke-linecap="round"
+      />
+      <circle cx="40" cy="32" r="6.5" fill={accent} fill-opacity="0.85" />
+      <circle cx="56" cy="30" r="5" fill={accent} fill-opacity="0.55" />
+      <path
+        d="M40 25.5 Q40 22 43 22"
+        stroke="#A8261B"
+        stroke-width="1.6"
+        stroke-linecap="round"
+        fill="none"
+      />
+    </svg>
   )}
+  <p class:list={["font-soft font-bold text-[16px]", toneClass.fg]}>{title}</p>
+  {description && (
+    <p class:list={["mt-1.5 text-[13px] max-w-sm mx-auto", toneClass.sub]}>{description}</p>
+  )}
+  {(ctaLabel && ctaHref) || (secondaryLabel && secondaryHref) ? (
+    <div class="mt-5 flex flex-wrap items-center justify-center gap-2">
+      {ctaLabel && ctaHref && (
+        <a
+          href={ctaHref}
+          class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-vert text-white text-[13px] font-bold hover:bg-vert-dark transition"
+        >
+          {ctaLabel}
+        </a>
+      )}
+      {secondaryLabel && secondaryHref && (
+        <a
+          href={secondaryHref}
+          class="inline-flex items-center gap-2 px-4 py-2 rounded-full border-2 border-black/10 hover:border-noir text-[13px] font-bold transition"
+        >
+          {secondaryLabel}
+        </a>
+      )}
+    </div>
+  ) : null}
 </div>

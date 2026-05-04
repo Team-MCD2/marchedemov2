@@ -5,7 +5,7 @@
 > Cascade works autonomously through its items; check-in at phase
 > boundary or on unresolvable ambiguity.
 
-Last updated : 2026-05-04 (Phases A-D shipped; owner deploy gate at end of D)
+Last updated : 2026-05-04 (Phases A-D shipped; D.1 hotfixes landed; Phase E audit drafted)
 
 > Ordering. Admin phases A-D run FIRST because admin is daily-ops
 > critical and blocks the owner's ability to manage the catalog
@@ -80,6 +80,68 @@ Last updated : 2026-05-04 (Phases A-D shipped; owner deploy gate at end of D)
   2. Stat cards read `count(*) + count(*) where created_at >= now() - interval '7 days'` - two queries per card.
   3. Shared `<AdminShell>` island wrapping every admin page; Phases A-C refactor at the end of D to adopt it if not already.
 - **verified** : `npx astro check` clean (0 errors / 0 warnings, 141 files). New migration `supabase/migrations/002_admin_activity.sql` (idempotent; private RLS). Helper `src/lib/admin-activity.ts` is fire-and-forget, bounded payloads (~16 KB cap), self-disabling on missing-table errors. Wired `logActivity()` into every admin write: produits/promos POST + PATCH + DELETE + bulk + reorder + import, medias POST + DELETE. Refreshed `AdminTopbar` with environment badge (Local / Preview / Production via `process.env.VERCEL_ENV`), two-row layout, CSS-only user menu, optional `subtitle` prop. Rewrote `/admin` dashboard with `StatCard` (7-day delta), `QuickAction` strip (5 tiles, `#new` + `#import` deep-links wired in both managers), `ActivityFeed`, recent promos + produits panels. New shared shells: `StatCard.astro`, `EmptyState.astro`, `QuickAction.astro`, `ActivityFeed.astro`. **Manual step required after deploy: run `supabase/migrations/002_admin_activity.sql` in Supabase SQL Editor**, otherwise the activity feed shows the empty hint and the helper silently no-ops.
+
+## Phase D.1 - Post-D hotfixes (P0, 2026-05-04)
+
+- **status**   : DONE
+- **dod**      :
+  - HTML `pattern` attributes compile under Chrome's Unicode-Sets (`v`) flag - no more "Invalid character class" console errors that silently void the regex.
+  - Admin islands hydrate cleanly on pages that have URL filters or persisted localStorage - no more "Hydration failed because the initial UI does not match" cascade that switches the whole root to client rendering.
+  - Creating a new produit or promo auto-fills the slug from `nom` / `titre`. Stops overwriting as soon as the user edits the slug. Removes the biggest friction point in the create flow : the browser's native "Please fill in this field" blocker on the slug.
+  - Remaining cryptic `err.message` toasts translated through `humanizeError`.
+- **verified** : `npx astro check` clean (0 errors / 0 warnings, 143 files). Fixes :
+  - `ProduitsManager.jsx`, `PromosManager.jsx` : `pattern="[a-z0-9-]+"` -> `[a-z0-9\-]+` (v-mode needs the dash escaped).
+  - `ApplicationForm.jsx` : `[0-9 +().-]{10,}` -> `[0-9 +\(\)\-.]{10,}`.
+  - `AdminCatalogueTree.jsx` : moved `readExpanded()` out of the `useState` initializer into a post-hydration `useEffect` ; merge-not-replace to preserve activePath auto-expand ; write effect gated on `hydrated` so the first-render `{}` never clobbers storage.
+  - `useAdminListState.js` : already fixed previous turn (same two-pass pattern).
+  - `slugifyLocal()` added to both managers, wired to the `nom` / `titre` `onChange`, guarded by a `slugTouched` state that flips as soon as the user types into the slug field.
+  - `MediasManager.jsx`, `ProduitsManager.jsx` ImportModal : `err.message` -> `humanizeError(err)`.
+
+## Phase E - Admin post-launch polish (drafted 2026-05-04)
+
+> Result of a full audit pass after Phases A-D shipped. Categorised
+> MoSCoW. The MUST-HAVEs close bugs or usability cliffs that block
+> daily ops ; the SHOULD-HAVEs remove paper-cuts ; the COULD-HAVEs
+> are quality-of-life. Everything here is optional — promote items
+> into a real phase only when there's capacity.
+
+### E.MUST — ship before any broad owner handover
+
+- **E.M1** — **Undo delete (snackbar, 8 s window).** Destructive actions currently use `window.confirm` + irreversible DELETE. Replace both produits and promos single-row delete with an optimistic delete + toast: "« Riz basmati » supprimé — Annuler (8 s)". The row snapshot is already captured (for rollback on API error) so the infra exists. Bulk delete keeps its confirm dialog (heavier action).
+- **E.M2** — **Activity-log migration guard.** If the admin ever runs against a DB without `admin_activity` (local clone, staging spun up from backup before migration 002), the activity feed is silently empty and the helper silently no-ops. Surface a single banner on `/admin` : *"Activité : table absente — exécuter supabase/migrations/002_admin_activity.sql pour activer l'audit trail."* with a copy-to-clipboard button for the SQL.
+- **E.M3** — **Slug-uniqueness probe 401 handling.** `/api/admin/produits/slug-check` returns the standard 401 when the cookie expires mid-session. Today the UI swallows it and shows "libre" (because the catch just resets status to `null`). Result: the user fills out the whole form, clicks save, the POST 401s, the toast says "connexion requise" but they've lost the modal state. Fix: on any 401 inside the modal, force a redirect to `/admin/login?next=<currentPath>` and keep the form values in `sessionStorage` so a re-login round-trip restores them.
+- **E.M4** — **Slug validation parity client ↔ server.** The client slugifier strips accents + non-alnum. The server endpoint `normalizeProduit` does `replace(/[^a-z0-9-]/g, "-")` which DOES NOT strip accents. Result: pasting "crème-fraîche" through the API (bulk import, external scripts) writes `crème-fraîche` to the DB which then fails to match the regex in the admin filter and looks "untyped". Align the server on the same NFD-then-strip logic as `image-match.ts:slugifyName`.
+
+### E.SHOULD — obvious UX gaps
+
+- **E.S1** — **Keyboard help overlay (`?`).** Shortcut cheatsheet modal, auto-built from a central registry. Today `/`, `Esc`, `Ctrl/Cmd+S`, arrow-nav are undocumented outside tooltips.
+- **E.S2** — **Draft auto-save in the create/edit modal.** Hook a debounced `sessionStorage.setItem("admin.draft.produit", JSON.stringify(form))` ; restore on next open ; clear on save or explicit discard. Prevents silent data loss on accidental close / tab kill.
+- **E.S3** — **Image optimisation before upload.** Client-side resize+re-encode via the `Canvas.toBlob` path when the source exceeds ~1 MB or 2048 px on the long edge. Keeps admin uploads under the 8 MB cap without the owner having to pre-process in Photoshop. Bonus: automatic WebP conversion.
+- **E.S4** — **CSV / JSON export.** Complements the existing import. Single button in the list toolbar, emits exactly the shape the import expects. Lets owners mass-edit in Excel / Sheets and re-import.
+- **E.S5** — **Mobile sticky bottom bar.** On list pages `< 768px`, collapse the toolbar into a bottom bar with `+ Produit` | `Filtres` | `Trier`. Phase B DoD flagged this but only the desktop view shipped.
+- **E.S6** — **Empty-state illustrations & CTAs.** Rayons with zero products show a plain "Aucun produit." Replace with a card: SVG illustration + "+ Ajouter le premier produit <rayon>" + link to bulk import. Same on `/admin/images-gap` when the gap is closed.
+- **E.S7** — **Toast → aria-live region.** Today toasts are rendered in a plain `div`. Add `role="status" aria-live="polite"` so screen readers announce saves and errors. Zero visual change.
+- **E.S8** — **"Récemment modifiés" filter chip.** `updated_at DESC` within last 24 h. Powers the "what did I change yesterday" check. Near-zero cost given sort dropdown already has `updated_at`.
+
+### E.COULD — quality of life
+
+- **E.C1** — **Multiple images per product (gallery).** Schema migration : `produits.images text[] default '{}'` OR a `produit_images` join table if we want alt-text per image. Requires rebuilding `InlineImageUpload` into a multi-image sortable (the user's original phase brief mentioned "drag-and-drop reordering" which suggests this).
+- **E.C2** — **Bulk image apply "all green" preview.** MassImageMatchModal already does this but the confidence threshold and apply step could be one click away. Low-hanging UX win.
+- **E.C3** — **Articles / recettes / videos admin.** Today these are `.md`/`.json` in Git ; the dashboard says so. A DB-backed admin is a larger project. Option A : content-collection-over-DB (keep markdown, store the file path) ; Option B : full rewrite to DB rows ; Option C : wire a GitHub-app editor. Recommend A if demand materialises.
+- **E.C4** — **Dashboard 30-day sparkline.** Stat cards show a 7-day delta number ; add an inline sparkline built from the activity log so the owner sees "promos getting updated 3×/day this week".
+- **E.C5** — **Per-rayon analytics.** Public-site traffic per rayon, feeding back into a "top rayon" card on the dashboard. Requires wiring Vercel Analytics or a bespoke event table.
+
+### E.WON'T — explicitly out of scope pre-launch
+
+- **E.W1** — **Multi-user admin with roles.** Single-password auth is adequate for one shop-owner and one partner.
+- **E.W2** — **Real-time collab.** Overkill.
+- **E.W3** — **In-admin AI description generator.** Interesting but not a must-have for the first 3 months of operations.
+
+### How-to priorities
+
+- **Quickest wins (< 1 h each, high user value)** : E.M2 banner, E.S1 overlay, E.S7 aria-live, E.S8 filter chip.
+- **Medium (2-4 h each)** : E.M1 undo toast, E.S2 draft save, E.S3 image opt, E.S4 export, E.S6 empty states, E.C2 mass-match preview.
+- **Larger (day+)** : E.M3 auth redirect w/ sessionStorage restore, E.S5 mobile bottom bar (touches every list page), E.C1 product gallery (schema change + UI rewrite), E.C3 articles admin.
 
 ## Phase 1 - React hydration fix (P0, public-site)
 

@@ -307,8 +307,14 @@ const currentRayonPromosActives = rayonSlug
   : 0;
 ---
 
-<Layout title={pageTitle} description="Administration du catalogue Marché de Mo' — arborescence par rayon.">
-  <AdminTopbar current="catalogue" />
+<Layout
+  title={pageTitle}
+  description="Administration du catalogue Marché de Mo' — arborescence par rayon."
+  noIndex
+  hideChrome
+>
+  <div class="min-h-screen bg-creme">
+  <AdminTopbar current="catalogue" subtitle={rayon ? `Catalogue · ${rayon.nom}` : "Catalogue"} />
 
   <main class="container-mo py-4 md:py-6">
     <Breadcrumb items={breadcrumbItems} />
@@ -405,4 +411,5 @@ const currentRayonPromosActives = rayonSlug
       </div>
     )}
   </main>
+  </div>
 </Layout>

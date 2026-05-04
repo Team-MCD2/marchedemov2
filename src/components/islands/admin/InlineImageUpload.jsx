@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { adminFetch } from "./adminFetch.js";
+import { optimizeImage } from "./imageOptimize.js";
 
 /**
  * InlineImageUpload - shared inline uploader for CRUD modals.
@@ -68,27 +70,49 @@ export default function InlineImageUpload({
         setError(`Type non accepté : ${file.type || "inconnu"}`);
         return;
       }
-      if (file.size > MAX_BYTES) {
-        setError(`Fichier trop gros (${(file.size / 1024 / 1024).toFixed(1)} Mo > 8 Mo)`);
+      /* NOTE : we check the original file size here so we can fail
+       * fast on clearly broken uploads (e.g. 50 Mo raw camera file),
+       * even though the optimizer will usually bring it under 8 Mo
+       * before POST. The cap is intentionally lenient (16 Mo) to
+       * give the optimizer room to work. */
+      if (file.size > MAX_BYTES * 2) {
+        setError(`Fichier beaucoup trop gros (${(file.size / 1024 / 1024).toFixed(1)} Mo)`);
         return;
       }
       setUploading(true);
       try {
+        /* Client-side resize + re-encode to WebP when it helps. SVG,
+         * GIF, and already-small images pass through untouched. */
+        const opt = await optimizeImage(file);
+        const toSend = opt.file;
+        if (toSend.size > MAX_BYTES) {
+          throw new Error(
+            `Fichier trop gros après optimisation (${(toSend.size / 1024 / 1024).toFixed(1)} Mo > 8 Mo).`,
+          );
+        }
         const form = new FormData();
-        form.append("file", file);
+        form.append("file", toSend);
         form.append("folder", folder);
         if (renameTo) form.append("renameTo", renameTo);
         /* Default: upsert ON so a re-upload of the same slug+ext
          * replaces the file instead of 409-ing. This matches the
          * mental model of "I want to update this image". */
         form.append("upsert", "1");
-        const res = await fetch("/api/admin/medias", { method: "POST", body: form });
+        const res = await adminFetch("/api/admin/medias", { method: "POST", body: form });
         if (!res.ok) {
           const j = await res.json().catch(() => ({}));
           throw new Error(j.error || res.statusText);
         }
         const data = await res.json();
         onChange?.(data.file.publicUrl);
+        if (opt.optimized) {
+          /* Log to console once per upload so the owner can see the
+           * win in devtools without surfacing it in the UI. */
+          const saved = ((1 - opt.finalBytes / opt.originalBytes) * 100).toFixed(0);
+          console.info(
+            `[InlineImageUpload] Optimisé ${(opt.originalBytes / 1024).toFixed(0)} Ko → ${(opt.finalBytes / 1024).toFixed(0)} Ko (−${saved}%)`,
+          );
+        }
       } catch (err) {
         setError(err?.message || "Erreur d'upload");
       } finally {

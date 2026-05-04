@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { adminFetch } from "./adminFetch.js";
+import { optimizeImage } from "./imageOptimize.js";
 
 /**
  * MassImageMatchModal
@@ -132,11 +134,16 @@ export default function MassImageMatchModal({ onClose, onApplied, rayonsOptions 
         prev.map((x) => (x.id === f.id ? { ...x, status: "uploading" } : x)),
       );
       try {
+        /* Resize + re-encode to WebP when it helps. Matching happens
+         * on the filename (not the image contents) so the optimiser
+         * preserving the basename is critical — `optimizeImage`
+         * already does that. */
+        const opt = await optimizeImage(f.file);
         const fd = new FormData();
-        fd.append("file", f.file);
+        fd.append("file", opt.file);
         fd.append("folder", "produits");
         fd.append("upsert", "1"); /* allow overwriting if user re-drops */
-        const res = await fetch("/api/admin/medias", { method: "POST", body: fd });
+        const res = await adminFetch("/api/admin/medias", { method: "POST", body: fd });
         if (!res.ok) {
           const body = await res.json().catch(() => ({}));
           throw new Error(body.error || res.statusText);
@@ -177,7 +184,7 @@ export default function MassImageMatchModal({ onClose, onApplied, rayonsOptions 
 
     /* ---------- Call matcher ---------- */
     try {
-      const res = await fetch("/api/admin/produits/match-image", {
+      const res = await adminFetch("/api/admin/produits/match-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -251,13 +258,15 @@ export default function MassImageMatchModal({ onClose, onApplied, rayonsOptions 
   /* --------------------------------------------------------- */
   /* Step 4 : apply selected matches                           */
   /* --------------------------------------------------------- */
-  async function applySelected() {
-    const toApply = files.filter((f) => {
-      const c = choices[f.id];
-      return c && !c.skip && c.productId && f.publicUrl;
-    });
+
+  /**
+   * Apply a pre-built list of {file, productId} pairs. Shared by
+   * `applySelected` (review-then-apply path) and `applyAllConfident`
+   * (one-click skip-the-review path).
+   */
+  async function applyMatches(toApply) {
     if (toApply.length === 0) {
-      setErr("Aucun match sélectionné.");
+      setErr("Aucun match à appliquer.");
       return;
     }
     setErr(null);
@@ -266,12 +275,12 @@ export default function MassImageMatchModal({ onClose, onApplied, rayonsOptions 
 
     let applied = 0;
     let failed = 0;
-    for (const f of toApply) {
+    for (const item of toApply) {
       try {
-        const res = await fetch(`/api/admin/produits/${choices[f.id].productId}`, {
+        const res = await adminFetch(`/api/admin/produits/${item.productId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ image_url: f.publicUrl }),
+          body: JSON.stringify({ image_url: item.publicUrl }),
         });
         if (!res.ok) throw new Error();
         applied++;
@@ -282,10 +291,53 @@ export default function MassImageMatchModal({ onClose, onApplied, rayonsOptions 
       }
     }
     const skipped = files.length - toApply.length;
-    const summary = { applied, failed, skipped, uploaded: files.filter((f) => f.status === "uploaded").length };
+    const summary = {
+      applied,
+      failed,
+      skipped,
+      uploaded: files.filter((f) => f.status === "uploaded").length,
+    };
     setApplySummary(summary);
     setStep("done");
     if (applied > 0) onApplied?.(summary);
+  }
+
+  async function applySelected() {
+    const toApply = files
+      .filter((f) => {
+        const c = choices[f.id];
+        return c && !c.skip && c.productId && f.publicUrl;
+      })
+      .map((f) => ({ productId: choices[f.id].productId, publicUrl: f.publicUrl }));
+    if (toApply.length === 0) {
+      setErr("Aucun match sélectionné.");
+      return;
+    }
+    return applyMatches(toApply);
+  }
+
+  /**
+   * One-click "Appliquer toutes les confiantes" :
+   * apply every high-confidence match without going through the review
+   * step. Doesn't read from `choices` state — derives the list directly
+   * from `matches`, so it works regardless of what the user has clicked
+   * so far. The match endpoint already filters out products that have
+   * an image (when `overwrite=false`), so this is non-destructive by
+   * default.
+   */
+  async function applyAllConfident() {
+    const toApply = [];
+    for (const f of files) {
+      const r = matches[f.id];
+      if (!f.publicUrl) continue;
+      if (!r?.best || r.confidence !== "high") continue;
+      toApply.push({ productId: r.best.product.id, publicUrl: f.publicUrl });
+    }
+    if (toApply.length === 0) {
+      setErr("Aucun match confiant à appliquer.");
+      return;
+    }
+    return applyMatches(toApply);
   }
 
   /* --------------------------------------------------------- */
@@ -512,7 +564,20 @@ export default function MassImageMatchModal({ onClose, onApplied, rayonsOptions 
                     </>
                   )}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
+                  {stats && stats.high > 0 && (
+                    <button
+                      type="button"
+                      onClick={applyAllConfident}
+                      title="Appliquer immédiatement toutes les correspondances fiables sans passer par la revue"
+                      className="px-3 py-1 rounded-full bg-vert text-white font-bold text-[12px] hover:bg-vert-dark transition inline-flex items-center gap-1.5"
+                    >
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                        <path d="m5 13 4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      Appliquer les {stats.high} fiables
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={selectAllGreen}

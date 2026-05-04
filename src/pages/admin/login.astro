@@ -5,12 +5,27 @@ import Layout from "@layouts/Layout.astro";
 import { SITE } from "@/lib/site";
 import { isAuthenticated } from "@/lib/auth";
 
-/* If already logged in, send straight to dashboard. */
+/* `next` is propagated through the form so the POST /api/login
+ * handler can redirect back to where the user was. We sanitise
+ * server-side too (whitelist /admin/*) — keep this defensive. */
+function safeNext(raw: string | null): string {
+  if (!raw) return "/admin";
+  if (!raw.startsWith("/admin")) return "/admin";
+  if (raw.startsWith("//") || raw.includes("\\")) return "/admin";
+  return raw;
+}
+const next = safeNext(Astro.url.searchParams.get("next"));
+
+/* If already logged in, send straight to where they were going. */
 if (await isAuthenticated(Astro.cookies)) {
-  return Astro.redirect("/admin");
+  return Astro.redirect(next);
 }
 
 const error = Astro.url.searchParams.has("error");
+/* `expired=1` is set by `adminFetch` when it catches a 401 during a
+ * long-running session. Used purely to swap the headline and explain
+ * why the user is back on the login page. */
+const expired = Astro.url.searchParams.get("expired") === "1";
 ---
 
 <Layout
@@ -29,7 +44,7 @@ const error = Astro.url.searchParams.has("error");
         class="absolute inset-0 w-full h-full object-contain opacity-[0.07]"
       />
       <div class="relative z-10 text-white max-w-md">
-        <img src="/logos/logo-marchedemo-rond-contourblanc.png" alt={SITE.name} class="h-16 mb-10"/>
+        <img src="/logos/favicon-marchedemo-contourwh.png" alt={SITE.name} class="h-16 mb-10"/>
         <h1 class="font-soft font-bold text-[40px] leading-[0.95] text-balance">
           Espace<br/>
           <span class="text-vert-light">administration</span>.
@@ -47,10 +62,24 @@ const error = Astro.url.searchParams.has("error");
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           Retour au site
         </a>
-        <h2 class="display-md mt-6">Connexion</h2>
-        <p class="mt-3 text-[14.5px] text-neutral-500">Réservé à l'équipe administrative.</p>
+        <h2 class="display-md mt-6">{expired ? "Session expirée" : "Connexion"}</h2>
+        <p class="mt-3 text-[14.5px] text-neutral-500">
+          {expired
+            ? "Votre session admin a expiré. Reconnectez-vous \u2014 vos modifications en cours ont été sauvegardées localement et seront restaurées."
+            : "Réservé à l'équipe administrative."}
+        </p>
+
+        {expired && (
+          <div class="mt-4 bg-orange-50 border border-orange-200 text-orange-900 text-[12.5px] rounded-xl p-3 flex items-start gap-2">
+            <span aria-hidden="true">⚠</span>
+            <span>
+              Pas d'inquiétude : le formulaire que vous étiez en train de remplir est conservé en mémoire de session jusqu'à 1 h.
+            </span>
+          </div>
+        )}
 
         <form method="POST" action="/api/login" class="mt-8 space-y-4">
+          <input type="hidden" name="next" value={next} />
           <div>
             <label for="password" class="block text-[13px] font-bold mb-1.5">Mot de passe</label>
             <input

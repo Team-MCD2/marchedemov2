@@ -55,16 +55,43 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     clean.push({ id: r.id, ordre: n });
   }
 
-  /* Parallel per-row updates (Supabase-js doesn't expose a bulk UPDATE
-   * with distinct values per row; upsert needs all NOT-NULL columns).
-   * With max 500 rows this stays well inside Vercel function limits. */
-  const updates = await Promise.all(
-    clean.map((r) =>
-      supabaseAdmin!.from("promos").update({ ordre: r.ordre }).eq("id", r.id)
-    )
-  );
-  const errored = updates.find((u) => u.error);
-  if (errored?.error) return json({ error: errored.error.message }, 500);
+  /* Chunked sequential updates — see /api/admin/produits/reorder.ts
+   * for the full rationale. Even though promos rarely exceed a few
+   * dozen rows today, the same code path keeps both endpoints honest
+   * and protects against the catalogue page-style growth in the future. */
+  const BATCH_SIZE = 50;
+  try {
+    for (let i = 0; i < clean.length; i += BATCH_SIZE) {
+      const slice = clean.slice(i, i + BATCH_SIZE);
+      const results = await Promise.all(
+        slice.map((r) =>
+          supabaseAdmin!.from("promos").update({ ordre: r.ordre }).eq("id", r.id),
+        ),
+      );
+      const errored = results.find((u) => u.error);
+      if (errored?.error) {
+        return json(
+          {
+            error: `Réorganisation interrompue : ${errored.error.message}`,
+            updated: i,
+            remaining: clean.length - i,
+          },
+          500,
+        );
+      }
+    }
+  } catch (err: any) {
+    const raw = err?.message || String(err);
+    const networky = /fetch failed|ECONNRESET|ETIMEDOUT|UND_ERR/i.test(raw);
+    return json(
+      {
+        error: networky
+          ? "Connexion à Supabase interrompue pendant la réorganisation. Réessayez."
+          : `Réorganisation échouée : ${raw}`,
+      },
+      500,
+    );
+  }
 
   logActivity({
     entity: "promo",

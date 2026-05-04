@@ -77,11 +77,41 @@ function matchesRec(node, q) {
  * }} props
  */
 export default function AdminCatalogueTree({ tree = [], activePath = "", publicUrl = null }) {
-  const [expanded, setExpanded] = useState(() => readExpanded());
+  /* ----------------------------------------------------------------
+   * Hydration-safe initial state.
+   *
+   * `readExpanded()` reads localStorage on the client but returns `{}`
+   * on the server (where `window` is undefined). Reading it inside the
+   * `useState(() => …)` initializer therefore produces a different
+   * tree on the client's first render than the server emitted —
+   * which surfaces in React 18 as :
+   *   Warning: Prop `className` did not match.
+   *     Server: "w-3 h-3 transition-transform "
+   *     Client: "w-3 h-3 transition-transform rotate-90"
+   * (every chevron whose rayon is "open" in localStorage).
+   *
+   * Fix : start from `{}` so the first render matches SSR, then sync
+   * from storage in a post-hydration `useEffect`. The auto-expand
+   * activePath effect below merges into this state, so ancestors of
+   * the current page stay expanded even when storage is empty. */
+  const [expanded, setExpanded] = useState({});
+  const [hydrated, setHydrated] = useState(false);
   const [query, setQuery] = useState("");
   const [focusedId, setFocusedId] = useState(null);
   const searchRef = useRef(null);
   const containerRef = useRef(null);
+
+  /* Pull the persisted map from localStorage exactly once, after the
+   * first render. We MERGE rather than replace so any keys already
+   * set by the activePath auto-expand effect (which can fire either
+   * before or after this depending on commit ordering) survive. */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const stored = readExpanded();
+    setExpanded((cur) => ({ ...stored, ...cur }));
+    setHydrated(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /* Ancestors of the active path auto-open. Fire once per activePath. */
   useEffect(() => {
@@ -96,8 +126,13 @@ export default function AdminCatalogueTree({ tree = [], activePath = "", publicU
   }, [activePath]);
 
   useEffect(() => {
+    /* Skip the very first render's write : at that point `expanded`
+     * is still `{}` (pre-hydration) and persisting it would clobber
+     * the real stored map before the hydration `useEffect` above has
+     * had a chance to merge it back. */
+    if (!hydrated) return;
     writeExpanded(expanded);
-  }, [expanded]);
+  }, [expanded, hydrated]);
 
   function toggleExpanded(id) {
     setExpanded((cur) => ({ ...cur, [id]: !cur[id] }));

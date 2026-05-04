@@ -16,6 +16,7 @@
  *  - "Catalogue" included in the nav for Phase C.
  */
 import { SITE } from "@/lib/site";
+import KeyboardHelpOverlay from "@components/islands/admin/KeyboardHelpOverlay.jsx";
 
 interface Props {
   current?: "dashboard" | "catalogue" | "promos" | "produits" | "medias" | "images-gap";
@@ -129,6 +130,14 @@ const showSubtitle = !!subtitle;
             <a href="/admin/images-gap" class="block px-3 py-2 rounded-lg text-[13px] hover:bg-creme">
               Produits sans image
             </a>
+            <button
+              type="button"
+              data-kb-help-open
+              class="block w-full text-left px-3 py-2 rounded-lg text-[13px] hover:bg-creme"
+            >
+              Raccourcis clavier
+              <span class="float-right text-[11px] text-neutral-400 font-mono">?</span>
+            </button>
             <a href="/" class="block px-3 py-2 rounded-lg text-[13px] hover:bg-creme md:hidden">
               Voir le site public
             </a>
@@ -167,6 +176,29 @@ const showSubtitle = !!subtitle;
     </nav>
   </div>
 </header>
+
+<!-- Mounted once per admin page : "?" anywhere opens the cheatsheet.
+     `client:idle` so the heavy React subtree loads only after the
+     critical content has painted ; the keyboard listener attaches
+     immediately on idle. -->
+<KeyboardHelpOverlay client:idle />
+
+<script>
+  /* Bridge from the user-menu "Raccourcis clavier" item to the React
+   * overlay. We can't directly call into the island, so we synthesise
+   * a "?" keydown — which the overlay listens for — making the menu
+   * a thin alias for the keyboard shortcut. */
+  document.addEventListener("click", (e) => {
+    const target = e.target instanceof Element ? e.target.closest("[data-kb-help-open]") : null;
+    if (!target) return;
+    e.preventDefault();
+    /* Close the user-menu <details> first so the overlay isn't
+     * obscured by it. */
+    const details = target.closest("details");
+    if (details) details.removeAttribute("open");
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "?", bubbles: true }));
+  });
+</script>
 
 <style>
   .no-scrollbar::-webkit-scrollbar { display: none; }

@@ -4,7 +4,13 @@ import ProductImageSearchModal from "./ProductImageSearchModal.jsx";
 import InlineImageUpload from "./InlineImageUpload.jsx";
 import BulkActionsBar from "./BulkActionsBar.jsx";
 import FilterChip from "./FilterChip.jsx";
+import UndoSnackbar from "./UndoSnackbar.jsx";
+import EmptyState from "./EmptyState.jsx";
+import ExportMenu from "./ExportMenu.jsx";
+import MobileActionBar from "./MobileActionBar.jsx";
+import { adminFetch, clearDraft, loadDraft, saveDraft } from "./adminFetch.js";
 import { compareRows, useAdminListState } from "./useAdminListState.js";
+import { humanizeError } from "../../../lib/admin-errors";
 
 /**
  * ProduitsManager — admin table for public.produits (catalogue vitrine).
@@ -40,6 +46,23 @@ function fmtPrice(n) {
   return num.toFixed(2).replace(".", ",") + " €";
 }
 
+/* Local slugifier for the create-modal auto-suggest.
+ *   "Riz Basmati Parfumé"  →  "riz-basmati-parfume"
+ *   "Dattes d'Algérie (1 kg)"  →  "dattes-d-algerie-1-kg"
+ * Kept local so the island stays a pure relative-import graph.
+ * Mirrors the server-side normalisation in
+ * `@/lib/image-match.ts` and `api/admin/produits/index.ts`. */
+function slugifyLocal(raw) {
+  if (!raw) return "";
+  return String(raw)
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+}
+
 /**
  * @typedef {Object} ProduitsManagerScope
  * @property {string | null} [rayon]          Locked rayon slug (matches produits.rayon)
@@ -61,6 +84,13 @@ export default function ProduitsManager({ initialProduits, rayonsOptions, scope 
   const [selected, setSelected] = useState(() => new Set());
   const [reorderMode, setReorderMode] = useState(false);
   const [undoData, setUndoData] = useState(null);
+  /* Single-row deferred-delete state.
+   * Shape : { row, timer, deadline } where `timer` is the setTimeout id
+   * that will fire the actual DELETE call after 8 s if the user doesn't
+   * undo. Kept separate from the bulk `undoData` because the semantics
+   * differ : here the API call is DEFERRED ; for bulk it has already
+   * happened and undo re-upserts. */
+  const [pendingDelete, setPendingDelete] = useState(null);
   const [dragId, setDragId] = useState(null);
   const [dragOverId, setDragOverId] = useState(null);
   const searchInputRef = useRef(null);
@@ -69,9 +99,13 @@ export default function ProduitsManager({ initialProduits, rayonsOptions, scope 
    * initial view via ?statut=sans-image because the URL is read on mount. */
   const STATUT_OPTS = ["all", "active", "inactive", "sans-image", "avec-image"];
   const SORT_OPTS = ["ordre", "nom", "slug", "rayon", "categorie", "prix_indicatif", "actif", "updated_at"];
+  /* `recent` : "" = no filter, "24h" = updated in last 24 h, "7d" = 7 days.
+   * Plays well with `useAdminListState` because it serialises as a plain
+   * string in the URL ("?recent=24h") and round-trips identically. */
+  const RECENT_OPTS = ["", "24h", "7d"];
   const { state: listState, set: setFilter, reset: resetFilter, activeCount } = useAdminListState({
-    defaults: { q: "", rayon: "", statut: "all", sort: "ordre", dir: "asc" },
-    allowed: { statut: STATUT_OPTS, dir: ["asc", "desc"], sort: SORT_OPTS },
+    defaults: { q: "", rayon: "", statut: "all", recent: "", sort: "ordre", dir: "asc" },
+    allowed: { statut: STATUT_OPTS, recent: RECENT_OPTS, dir: ["asc", "desc"], sort: SORT_OPTS },
     storageKey: "admin.produits.list",
   });
   const filter = listState;
@@ -115,6 +149,15 @@ export default function ProduitsManager({ initialProduits, rayonsOptions, scope 
       if (filter.statut === "inactive" && p.actif) return false;
       if (filter.statut === "sans-image" && p.image_url) return false;
       if (filter.statut === "avec-image" && !p.image_url) return false;
+      if (filter.recent) {
+        /* `updated_at` is set by the SQL trigger ; falling back to
+         * `created_at` keeps the filter useful even on rows imported
+         * before the trigger existed. */
+        const ts = Date.parse(p.updated_at ?? p.created_at ?? "");
+        if (!Number.isFinite(ts)) return false;
+        const windowMs = filter.recent === "7d" ? 7 * 86_400_000 : 86_400_000;
+        if (Date.now() - ts > windowMs) return false;
+      }
       if (filter.q) {
         const q = filter.q.toLowerCase();
         const hay = `${p.nom} ${p.slug} ${p.description ?? ""} ${p.origine ?? ""}`.toLowerCase();
@@ -192,7 +235,7 @@ export default function ProduitsManager({ initialProduits, rayonsOptions, scope 
     const next = { ...row, actif: !row.actif };
     setProduits((cur) => cur.map((p) => (p.id === row.id ? next : p)));
     try {
-      const res = await fetch(`/api/admin/produits/${row.id}`, {
+      const res = await adminFetch(`/api/admin/produits/${row.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ actif: next.actif }),
@@ -202,24 +245,61 @@ export default function ProduitsManager({ initialProduits, rayonsOptions, scope 
       setProduits((cur) => cur.map((p) => (p.id === row.id ? produit : p)));
     } catch (err) {
       setProduits((cur) => cur.map((p) => (p.id === row.id ? row : p)));
-      notify("err", `Erreur : ${err.message}`);
+      notify("err", `Erreur : ${humanizeError(err)}`);
     }
   }
 
-  async function deleteProduit(row) {
-    if (!confirm(`Supprimer définitivement « ${row.nom} » ?`)) return;
-    const snapshot = produits;
+  /* Deferred single-row delete : the row is hidden from the list right
+   * away ; the actual API DELETE only fires after 8 s if the user
+   * hasn't clicked "Annuler". Two benefits over the previous
+   * confirm()-then-immediate-DELETE flow :
+   *   1. Restoring is free (just cancel the timer) — no API round-trip,
+   *      no risk of re-creating with a fresh id.
+   *   2. Removes the modal blocker. Multiple deletes can stack ; each
+   *      one queues its own timer. */
+  function deleteProduit(row) {
+    /* If a previous delete is still pending, commit it now so the new
+     * one can replace it cleanly. Avoids racing two timers on the same
+     * row state. */
+    if (pendingDelete) {
+      clearTimeout(pendingDelete.timer);
+      void commitPendingDelete(pendingDelete.row);
+    }
     setProduits((cur) => cur.filter((p) => p.id !== row.id));
+    const timer = setTimeout(() => {
+      void commitPendingDelete(row);
+    }, 8000);
+    setPendingDelete({ row, timer, deadline: Date.now() + 8000 });
+  }
+
+  async function commitPendingDelete(row) {
+    /* Clear the pending state up-front so the snackbar disappears
+     * regardless of whether the API call succeeds. We re-queue the row
+     * on failure (rollback) below. */
+    setPendingDelete((cur) => (cur && cur.row.id === row.id ? null : cur));
     try {
-      const res = await fetch(`/api/admin/produits/${row.id}`, { method: "DELETE" });
+      const res = await adminFetch(`/api/admin/produits/${row.id}`, { method: "DELETE" });
       if (!res.ok && res.status !== 204) {
         throw new Error((await res.json().catch(() => ({}))).error || res.statusText);
       }
       notify("ok", `« ${row.nom} » supprimé.`);
     } catch (err) {
-      setProduits(snapshot);
-      notify("err", `Erreur : ${err.message}`);
+      /* API delete failed — bring the row back exactly where it was.
+       * `produits` may have been mutated since deletion (other deletes,
+       * filters changing) so we just push it back, sort happens on
+       * next render via `compareRows`. */
+      setProduits((cur) => (cur.some((p) => p.id === row.id) ? cur : [...cur, row]));
+      notify("err", `Erreur : ${humanizeError(err)}`);
     }
+  }
+
+  function undoPendingDelete() {
+    if (!pendingDelete) return;
+    clearTimeout(pendingDelete.timer);
+    const { row } = pendingDelete;
+    setPendingDelete(null);
+    setProduits((cur) => (cur.some((p) => p.id === row.id) ? cur : [...cur, row]));
+    notify("ok", `« ${row.nom} » restauré.`);
   }
 
   async function saveProduit(form) {
@@ -239,19 +319,29 @@ export default function ProduitsManager({ initialProduits, rayonsOptions, scope 
       actif: form.actif !== false,
       ordre: Number(form.ordre) || 0,
     };
+    /* Pass `draftKey` + `draftValue` so a 401 mid-submit (expired
+     * cookie) stashes the form in sessionStorage before redirecting
+     * to /admin/login. The EditModal's own debounced auto-save also
+     * keeps the draft fresh while typing — this is just belt-and-
+     * braces for the exact moment of POST. */
+    const draftKey = isNew ? "admin.draft.produit.new" : `admin.draft.produit.${form.id}`;
     try {
       let res;
       if (isNew) {
-        res = await fetch(`/api/admin/produits`, {
+        res = await adminFetch(`/api/admin/produits`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
+          draftKey,
+          draftValue: form,
         });
       } else {
-        res = await fetch(`/api/admin/produits/${form.id}`, {
+        res = await adminFetch(`/api/admin/produits/${form.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
+          draftKey,
+          draftValue: form,
         });
       }
       if (!res.ok) throw new Error((await res.json()).error || res.statusText);
@@ -261,39 +351,42 @@ export default function ProduitsManager({ initialProduits, rayonsOptions, scope 
       } else {
         setProduits((cur) => cur.map((p) => (p.id === produit.id ? produit : p)));
       }
+      /* Saved cleanly — discard any draft we'd been keeping for this
+       * row so re-opening the modal doesn't restore stale values. */
+      clearDraft(draftKey);
       setEditing(null);
       notify("ok", isNew ? "Produit créé." : "Produit mis à jour.");
     } catch (err) {
-      notify("err", `Erreur : ${err.message}`);
+      notify("err", `Erreur : ${humanizeError(err)}`);
     }
   }
 
   async function bulkImport(arr) {
     try {
-      const res = await fetch(`/api/admin/produits`, {
+      const res = await adminFetch(`/api/admin/produits`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ produits: arr }),
       });
       if (!res.ok) throw new Error((await res.json()).error || res.statusText);
       const { count } = await res.json();
-      const refreshed = await fetch(`/api/admin/produits`).then((r) => r.json());
+      const refreshed = await adminFetch(`/api/admin/produits`).then((r) => r.json());
       setProduits(refreshed.produits ?? []);
       setImporting(false);
       notify("ok", `${count} produit(s) importé(s).`);
     } catch (err) {
-      notify("err", `Erreur import : ${err.message}`);
+      notify("err", `Erreur import : ${humanizeError(err)}`);
     }
   }
 
   async function refreshProduits() {
     try {
-      const res = await fetch(`/api/admin/produits`);
+      const res = await adminFetch(`/api/admin/produits`);
       if (!res.ok) throw new Error(res.statusText);
       const data = await res.json();
       setProduits(data.produits ?? []);
     } catch (err) {
-      notify("err", `Erreur rafraîchissement : ${err.message}`);
+      notify("err", `Erreur rafraîchissement : ${humanizeError(err)}`);
     }
   }
 
@@ -323,7 +416,7 @@ export default function ProduitsManager({ initialProduits, rayonsOptions, scope 
     }
 
     try {
-      const res = await fetch(`/api/admin/produits/bulk`, {
+      const res = await adminFetch(`/api/admin/produits/bulk`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ids, action }),
@@ -347,7 +440,7 @@ export default function ProduitsManager({ initialProduits, rayonsOptions, scope 
       }
     } catch (err) {
       setProduits(snapshot);
-      notify("err", `Erreur : ${err.message}`);
+      notify("err", `Erreur : ${humanizeError(err)}`);
     }
   }
 
@@ -358,7 +451,7 @@ export default function ProduitsManager({ initialProduits, rayonsOptions, scope 
     const snapshot = produits;
     setProduits((cur) => cur.map((p) => (selected.has(p.id) ? { ...p, ...patch } : p)));
     try {
-      const res = await fetch(`/api/admin/produits/bulk`, {
+      const res = await adminFetch(`/api/admin/produits/bulk`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ids, action: "patch", patch }),
@@ -369,7 +462,7 @@ export default function ProduitsManager({ initialProduits, rayonsOptions, scope 
       notify("ok", `${affected} produit(s) mis à jour.`);
     } catch (err) {
       setProduits(snapshot);
-      notify("err", `Erreur : ${err.message}`);
+      notify("err", `Erreur : ${humanizeError(err)}`);
     }
   }
 
@@ -379,7 +472,7 @@ export default function ProduitsManager({ initialProduits, rayonsOptions, scope 
     if (undoData.timer) clearTimeout(undoData.timer);
     setUndoData(null);
     try {
-      const res = await fetch(`/api/admin/produits`, {
+      const res = await adminFetch(`/api/admin/produits`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ produits: rows }),
@@ -388,7 +481,7 @@ export default function ProduitsManager({ initialProduits, rayonsOptions, scope 
       await refreshProduits();
       notify("ok", `${rows.length} produit(s) restauré(s).`);
     } catch (err) {
-      notify("err", `Restauration impossible : ${err.message}`);
+      notify("err", `Restauration impossible : ${humanizeError(err)}`);
     }
   }
 
@@ -396,14 +489,14 @@ export default function ProduitsManager({ initialProduits, rayonsOptions, scope 
   async function persistReorder(rows) {
     const payload = rows.map((p, i) => ({ id: p.id, ordre: i }));
     try {
-      const res = await fetch(`/api/admin/produits/reorder`, {
+      const res = await adminFetch(`/api/admin/produits/reorder`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ rows: payload }),
       });
       if (!res.ok) throw new Error((await res.json()).error || res.statusText);
     } catch (err) {
-      notify("err", `Erreur réorganisation : ${err.message}`);
+      notify("err", `Erreur réorganisation : ${humanizeError(err)}`);
     }
   }
 
@@ -559,9 +652,9 @@ export default function ProduitsManager({ initialProduits, rayonsOptions, scope 
   }, [produits]);
 
   return (
-    <div>
+    <div className="pb-20 md:pb-0">
       {/* Sticky toolbar */}
-      <div className="sticky top-0 z-30 -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8 pt-2 pb-3 bg-creme/85 backdrop-blur-md">
+      <div id="produits-toolbar" className="sticky top-0 z-30 -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8 pt-2 pb-3 bg-creme/85 backdrop-blur-md">
         <div className="bg-white rounded-3xl shadow-card p-4 md:p-5 flex flex-col md:flex-row gap-3 md:items-center">
           <div className="flex-1 flex flex-col sm:flex-row gap-2">
             <div className="flex-1 min-w-0 relative">
@@ -630,6 +723,31 @@ export default function ProduitsManager({ initialProduits, rayonsOptions, scope 
               <option value="prix_indicatif:desc">Tri : prix décroissant</option>
               <option value="updated_at:desc">Tri : récents</option>
             </select>
+            {/* "Récemment modifiés" — answers "what did I touch
+             * yesterday ?" without leaving the list view. Clicking
+             * cycles "" → "24h" → "7d" → "" so a single button covers
+             * both windows and clears itself. */}
+            <button
+              type="button"
+              onClick={() => {
+                const next =
+                  filter.recent === "" ? "24h" : filter.recent === "24h" ? "7d" : "";
+                setFilter({ recent: next });
+              }}
+              aria-pressed={filter.recent !== ""}
+              title="Filtrer par date de modification (24 h / 7 j)"
+              className={`px-3 py-2 rounded-full text-[13px] font-bold transition inline-flex items-center gap-1.5 ${
+                filter.recent
+                  ? "bg-vert text-white hover:bg-vert-dark"
+                  : "bg-white border border-black/10 hover:border-noir text-noir"
+              }`}
+            >
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 7v5l3 2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              {filter.recent === "24h" ? "24 h" : filter.recent === "7d" ? "7 j" : "Récents"}
+            </button>
           </div>
           <div className="flex gap-2 shrink-0 flex-wrap">
             {canReorder && (
@@ -669,6 +787,7 @@ export default function ProduitsManager({ initialProduits, rayonsOptions, scope 
             >
               Importer CSV/JSON
             </button>
+            <ExportMenu rows={filtered} totalRows={produits.length} />
             <button
               type="button"
               onClick={openNewProduit}
@@ -708,6 +827,12 @@ export default function ProduitsManager({ initialProduits, rayonsOptions, scope 
                 onRemove={() => setFilter({ statut: "all" })}
               />
             )}
+            {filter.recent && (
+              <FilterChip
+                label={`Modifiés : ${filter.recent === "24h" ? "24 h" : "7 j"}`}
+                onRemove={() => setFilter({ recent: "" })}
+              />
+            )}
             {(sort.field !== "ordre" || sort.dir !== "asc") && (
               <FilterChip
                 tone="sort"
@@ -743,40 +868,40 @@ export default function ProduitsManager({ initialProduits, rayonsOptions, scope 
 
       {/* Grouped by rayon */}
       {grouped.length === 0 ? (
-        <div className="mt-4 bg-white rounded-3xl shadow-card p-10 text-center">
+        <div className="mt-4 bg-white rounded-3xl shadow-card overflow-hidden">
           {scope?.view === "orphelins" ? (
-            <>
-              <p className="font-bold text-[15px] text-vert-dark">Aucun produit orphelin 🎉</p>
-              <p className="mt-2 text-[13px] text-neutral-500">
-                Tous les produits de ce scope sont correctement rattachés à la taxonomie.
-              </p>
-            </>
+            <EmptyState
+              tone="vert"
+              icon="🎉"
+              title="Aucun produit orphelin"
+              description="Tous les produits de ce scope sont correctement rattachés à la taxonomie. Beau travail !"
+            />
           ) : scope?.displayLabel ? (
-            <>
-              <p className="font-bold text-[15px] text-neutral-600">
-                Aucun produit dans <span className="text-noir">{scope.displayLabel}</span>
-              </p>
-              <p className="mt-2 text-[13px] text-neutral-500">
-                Cette catégorie est vide — ajoutez le premier produit.
-              </p>
-              <button
-                type="button"
-                onClick={openNewProduit}
-                className="mt-5 px-5 py-2.5 rounded-full bg-vert text-white text-[13px] font-bold hover:bg-vert-dark transition inline-flex items-center gap-2"
-              >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M12 5v14M5 12h14" strokeLinecap="round" />
-                </svg>
-                Ajouter le premier produit
-              </button>
-            </>
+            <EmptyState
+              title={`Aucun produit dans ${scope.displayLabel}`}
+              description="Cette catégorie est vide. Ajoutez le premier produit pour la peupler — il sera automatiquement rattaché au scope actuel."
+              primaryLabel="+ Ajouter le premier produit"
+              primaryOnClick={openNewProduit}
+              secondaryLabel="Importer en masse"
+              secondaryOnClick={() => setImporting(true)}
+            />
+          ) : (filter.q || filter.recent || (filter.statut !== "all") || filter.rayon) ? (
+            <EmptyState
+              icon="🔎"
+              title="Aucun produit ne correspond aux filtres"
+              description="Essayez d'élargir la recherche, ou réinitialisez les filtres pour voir tout le catalogue."
+              primaryLabel="Réinitialiser les filtres"
+              primaryOnClick={resetFilter}
+            />
           ) : (
-            <>
-              <p className="font-bold text-[15px] text-neutral-600">Aucun produit</p>
-              <p className="mt-2 text-[13px] text-neutral-400">
-                Créez un produit ou importez un JSON pour commencer à remplir le catalogue.
-              </p>
-            </>
+            <EmptyState
+              title="Aucun produit"
+              description="Créez votre premier produit ou importez un fichier JSON / CSV pour commencer à remplir le catalogue."
+              primaryLabel="+ Nouveau produit"
+              primaryOnClick={openNewProduit}
+              secondaryLabel="Importer JSON / CSV"
+              secondaryOnClick={() => setImporting(true)}
+            />
           )}
         </div>
       ) : (
@@ -992,6 +1117,8 @@ export default function ProduitsManager({ initialProduits, rayonsOptions, scope 
       {undoData && (
         <div
           role="status"
+          aria-live="polite"
+          aria-atomic="true"
           className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-noir text-white text-[13px] font-bold shadow-2xl flex items-center gap-3"
         >
           <span>{undoData.message}</span>
@@ -1003,6 +1130,29 @@ export default function ProduitsManager({ initialProduits, rayonsOptions, scope 
             Annuler
           </button>
         </div>
+      )}
+
+      {/* Mobile-only thumb-reachable action bar. Hidden ≥ md. */}
+      <MobileActionBar
+        label="Produit"
+        toolbarId="produits-toolbar"
+        filterCount={
+          (filter.q ? 1 : 0) +
+          (filter.rayon ? 1 : 0) +
+          (filter.statut !== "all" ? 1 : 0) +
+          (filter.recent ? 1 : 0)
+        }
+        onNew={() => setEditing({ ...EMPTY_PRODUIT })}
+      />
+
+      {/* Single-row deferred-delete snackbar with countdown ring. */}
+      {pendingDelete && (
+        <UndoSnackbar
+          row={pendingDelete.row}
+          deadline={pendingDelete.deadline}
+          label={`« ${pendingDelete.row.nom} » supprimé.`}
+          onUndo={undoPendingDelete}
+        />
       )}
 
       {editing && (
@@ -1046,7 +1196,13 @@ export default function ProduitsManager({ initialProduits, rayonsOptions, scope 
 
       {toast && (
         <div
-          role="status"
+          /* `role="alert"` for errors (assertive) ; `status` for OK
+           * (polite) so SRs interrupt only when something actually
+           * went wrong. `aria-atomic` makes the whole message read,
+           * not just the diff. */
+          role={toast.type === "err" ? "alert" : "status"}
+          aria-live={toast.type === "err" ? "assertive" : "polite"}
+          aria-atomic="true"
           className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-full font-bold text-[13px] shadow-card ${
             toast.type === "ok" ? "bg-vert text-white" : "bg-rouge text-white"
           }`}
@@ -1062,16 +1218,53 @@ export default function ProduitsManager({ initialProduits, rayonsOptions, scope 
 /* Edit / Create modal                                                */
 /* ================================================================ */
 function EditModal({ produit, rayonsOptions, onCancel, onSave }) {
-  const [form, setForm] = useState({ ...produit });
+  const isNew = !produit.id;
+  const draftKey = isNew ? "admin.draft.produit.new" : `admin.draft.produit.${produit.id}`;
+
+  /* On first mount we look in sessionStorage for a recent draft (saved
+   * either by `adminFetch` after a 401, or by the debounced auto-save
+   * below) and use it instead of the prop. We DON'T fall back to a
+   * draft for an existing row whose underlying data has changed since
+   * the snapshot — that's a future refinement ; for now we accept up
+   * to 1 h of staleness, the same window adminFetch uses. */
+  const [form, setForm] = useState(() => {
+    const draft = loadDraft(draftKey);
+    return draft && typeof draft === "object" ? { ...produit, ...draft } : { ...produit };
+  });
+  const [draftRestored, setDraftRestored] = useState(() => loadDraft(draftKey) != null);
   const [saving, setSaving] = useState(false);
   /* Slug uniqueness probe. null = unchecked, true/false = result. */
   const [slugStatus, setSlugStatus] = useState(null);
   const [slugChecking, setSlugChecking] = useState(false);
+  /* Track whether the user has edited the slug by hand. Auto-suggest
+   * from `nom` stops as soon as they do, so we never overwrite a
+   * deliberate slug. */
+  const [slugTouched, setSlugTouched] = useState(
+    !!(produit.id || produit.slug) || !!loadDraft(draftKey),
+  );
   const formRef = useRef(null);
-  const isNew = !produit.id;
+
+  /* Debounced auto-save of the draft to sessionStorage so closing the
+   * tab / browser crash / 401-during-typing all recover gracefully on
+   * next mount. 400 ms is enough to coalesce typing without hammering
+   * sessionStorage. */
+  useEffect(() => {
+    const h = setTimeout(() => saveDraft(draftKey, form), 400);
+    return () => clearTimeout(h);
+  }, [form, draftKey]);
 
   function set(field, value) {
-    setForm((f) => ({ ...f, [field]: value }));
+    setForm((f) => {
+      const next = { ...f, [field]: value };
+      /* Auto-fill slug from `nom` on new rows until the user has
+       * deliberately touched the slug field. This removes the single
+       * biggest friction point of the "Nouveau produit" flow — the
+       * browser's "Please fill in this field" native popup on submit. */
+      if (field === "nom" && isNew && !slugTouched) {
+        next.slug = slugifyLocal(value);
+      }
+      return next;
+    });
   }
 
   /* Debounced slug-uniqueness check via /api/admin/produits/slug-check.
@@ -1093,7 +1286,7 @@ function EditModal({ produit, rayonsOptions, onCancel, onSave }) {
       try {
         const qs = new URLSearchParams({ slug: s });
         if (!isNew && produit.id) qs.set("exceptId", String(produit.id));
-        const res = await fetch(`/api/admin/produits/slug-check?${qs.toString()}`);
+        const res = await adminFetch(`/api/admin/produits/slug-check?${qs.toString()}`);
         if (!res.ok) throw new Error(res.statusText);
         const data = await res.json();
         if (!cancelled) setSlugStatus(!!data.available);
@@ -1141,6 +1334,15 @@ function EditModal({ produit, rayonsOptions, onCancel, onSave }) {
     setSaving(false);
   }
 
+  function discardDraft() {
+    clearDraft(draftKey);
+    setForm({ ...produit });
+    setDraftRestored(false);
+    /* For new rows we also reset the slug-touched flag so auto-suggest
+     * resumes from a blank `nom`. */
+    if (isNew) setSlugTouched(false);
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/40 backdrop-blur-sm p-0 md:p-6">
       <div className="w-full max-w-2xl bg-white rounded-t-3xl md:rounded-3xl shadow-2xl max-h-[95vh] overflow-y-auto">
@@ -1159,6 +1361,23 @@ function EditModal({ produit, rayonsOptions, onCancel, onSave }) {
             </svg>
           </button>
         </div>
+
+        {draftRestored && (
+          <div
+            role="status"
+            aria-live="polite"
+            className="px-6 py-2.5 bg-orange-50 border-b border-orange-200 text-[12px] text-orange-900 flex items-center justify-between gap-3"
+          >
+            <span>↺ Brouillon restauré depuis votre dernière session.</span>
+            <button
+              type="button"
+              onClick={discardDraft}
+              className="font-bold text-orange-900 hover:underline shrink-0"
+            >
+              Repartir des valeurs initiales
+            </button>
+          </div>
+        )}
 
         <form ref={formRef} onSubmit={submit} className="p-6 space-y-5">
           <Field label="Nom du produit" required>
@@ -1181,9 +1400,18 @@ function EditModal({ produit, rayonsOptions, onCancel, onSave }) {
               <input
                 type="text"
                 required
-                pattern="[a-z0-9-]+"
+                /* The dash and hyphen must be escaped inside a
+                 * character class when the regex is compiled in
+                 * Unicode-Sets (`v`) mode — which Chrome now does
+                 * for HTML `pattern` attributes. An unescaped `-`
+                 * there throws "Invalid character class" and voids
+                 * the whole pattern. */
+                pattern="[a-z0-9\-]+"
                 value={form.slug}
-                onChange={(e) => set("slug", e.target.value)}
+                onChange={(e) => {
+                  setSlugTouched(true);
+                  set("slug", e.target.value);
+                }}
                 className={`input pr-20 ${slugError ? "!border-rouge" : slugStatus === true ? "!border-vert" : ""}`}
                 placeholder="riz-basmati-parfume"
                 aria-invalid={!!slugError}
@@ -1517,7 +1745,7 @@ function ImportModal({ currentProduits, onCancel, onImport }) {
       const txt = await file.text();
       onPaste(txt);
     } catch (readErr) {
-      setErr(`Lecture du fichier échouée : ${readErr.message}`);
+      setErr(`Lecture du fichier échouée : ${humanizeError(readErr)}`);
     } finally {
       if (fileInputRef.current) fileInputRef.current.value = "";
     }

@@ -1,10 +1,32 @@
 ---
+/**
+ * /admin/medias — images & médias (DB-driven by default).
+ *
+ * Two view modes, toggled via `?mode=`:
+ *
+ *   • `catalogue` (default) — lists every promo image + every produit
+ *     image sourced from the `promos` and `produits` tables, grouped
+ *     by Rayon. This is what the owner actually asks for when they
+ *     open the page : "quels produits n'ont pas encore d'image ?"
+ *
+ *   • `storage`  — the old bucket-listing UI (Promos / Produits /
+ *     Rayons / Recettes / …). Useful for raw file management and
+ *     for uploading images that are NOT yet referenced by a row.
+ *
+ * The catalogue mode is the primary UX ; the storage mode is kept
+ * reachable because there are still legitimate workflows that start
+ * from a fresh file (uploading 20 images into `produits/` then
+ * matching them via "Images (auto-match)" in ProduitsManager).
+ */
 export const prerender = false;
 
 import Layout from "@layouts/Layout.astro";
 import AdminTopbar from "@components/admin/AdminTopbar.astro";
+import Breadcrumb from "@components/Breadcrumb.astro";
+import StatCard from "@components/admin/StatCard.astro";
 import MediasManager from "@components/islands/admin/MediasManager.jsx";
-import { SITE } from "@/lib/site";
+import CatalogueImagesView from "@components/islands/admin/CatalogueImagesView.jsx";
+import { SITE, RAYONS_LIST } from "@/lib/site";
 import { isAuthenticated } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
 
@@ -12,37 +34,17 @@ if (!(await isAuthenticated(Astro.cookies))) {
   return Astro.redirect("/admin/login");
 }
 
-/* SSR-fetch the default folder so the first paint already shows content. */
-const DEFAULT_FOLDER = "promos";
-let initialFiles: any[] = [];
-let errorMsg: string | null = null;
+const mode = Astro.url.searchParams.get("mode") === "storage" ? "storage" : "catalogue";
 
-if (!supabaseAdmin) {
-  errorMsg = "SUPABASE_SERVICE_ROLE_KEY non configurée.";
-} else {
-  const { data, error } = await supabaseAdmin.storage
-    .from("medias")
-    .list(DEFAULT_FOLDER, { limit: 500, sortBy: { column: "updated_at", order: "desc" } });
-  if (error) {
-    errorMsg = `Supabase Storage : ${error.message}`;
-  } else {
-    initialFiles = (data ?? [])
-      .filter((f) => f.id)
-      .map((f) => {
-        const path = `${DEFAULT_FOLDER}/${f.name}`;
-        const { data: pub } = supabaseAdmin!.storage.from("medias").getPublicUrl(path);
-        return {
-          name: f.name,
-          path,
-          size: f.metadata?.size ?? null,
-          mime: f.metadata?.mimetype ?? null,
-          updated_at: f.updated_at,
-          created_at: f.created_at,
-          publicUrl: pub.publicUrl,
-        };
-      });
-  }
-}
+let errorMsg: string | null = null;
+let produits: any[] = [];
+let promos: any[] = [];
+
+/* Storage-mode-only state : we SSR the default folder so the storage
+ * view has content on the first paint. In catalogue mode we skip the
+ * listing to save a round-trip the user won't see. */
+const DEFAULT_FOLDER = "promos";
+let initialStorageFiles: any[] = [];
 
 const FOLDERS = [
   { id: "promos",    label: "Promos" },
@@ -53,42 +55,198 @@ const FOLDERS = [
   { id: "magasins",  label: "Magasins" },
   { id: "postes",    label: "Recrutement" },
 ];
+
+if (!supabaseAdmin) {
+  errorMsg = "SUPABASE_SERVICE_ROLE_KEY non configurée.";
+} else {
+  /* DB fetches — always run, regardless of mode, because the stat
+   * cards at the top pull from both modes' data so the user sees the
+   * same coverage numbers no matter which tab they're on. */
+  const [prodRes, promoRes] = await Promise.all([
+    supabaseAdmin
+      .from("produits")
+      .select("id, slug, nom, rayon, categorie, sous_categorie, image_url, actif, ordre")
+      .order("rayon", { ascending: true })
+      .order("ordre", { ascending: true })
+      .order("nom", { ascending: true }),
+    supabaseAdmin
+      .from("promos")
+      .select("id, slug, titre, rayon, image_url, actif, date_fin, ordre")
+      .order("rayon", { ascending: true })
+      .order("ordre", { ascending: true })
+      .order("date_fin", { ascending: true }),
+  ]);
+
+  if (prodRes.error || promoRes.error) {
+    errorMsg = [
+      prodRes.error ? `produits : ${prodRes.error.message}` : null,
+      promoRes.error ? `promos : ${promoRes.error.message}` : null,
+    ]
+      .filter(Boolean)
+      .join(" · ");
+  } else {
+    produits = prodRes.data ?? [];
+    promos = promoRes.data ?? [];
+  }
+
+  if (mode === "storage" && !errorMsg) {
+    const { data, error } = await supabaseAdmin.storage
+      .from("medias")
+      .list(DEFAULT_FOLDER, { limit: 500, sortBy: { column: "updated_at", order: "desc" } });
+    if (error) {
+      errorMsg = `Supabase Storage : ${error.message}`;
+    } else {
+      initialStorageFiles = (data ?? [])
+        .filter((f) => f.id)
+        .map((f) => {
+          const path = `${DEFAULT_FOLDER}/${f.name}`;
+          const { data: pub } = supabaseAdmin!.storage.from("medias").getPublicUrl(path);
+          return {
+            name: f.name,
+            path,
+            size: f.metadata?.size ?? null,
+            mime: f.metadata?.mimetype ?? null,
+            updated_at: f.updated_at,
+            created_at: f.created_at,
+            publicUrl: pub.publicUrl,
+          };
+        });
+    }
+  }
+}
+
+/* Stats computed from the DB rows — the single source of truth.
+ *  • produits total / with / without image
+ *  • promos  total / active / with image */
+const totalProduits = produits.length;
+const produitsWithImage = produits.filter((p) => !!p.image_url).length;
+const produitsWithoutImage = totalProduits - produitsWithImage;
+
+const totalPromos = promos.length;
+const promosActives = promos.filter((p) => p.actif).length;
+const promosWithImage = promos.filter((p) => !!p.image_url).length;
+
+const breadcrumbItems = [
+  { name: "Admin", href: "/admin" },
+  { name: "Images" },
+];
 ---
 
 <Layout
   title={`Gestion des images · ${SITE.name} — Admin`}
-  description="Gestion des images du bucket Supabase Storage."
+  description="Toutes les images du catalogue, sourcées depuis la base, groupées par rayon."
   noIndex
   hideChrome
 >
   <div class="min-h-screen bg-creme">
-    <AdminTopbar current="medias" />
+    <AdminTopbar current="medias" subtitle="Images & médias" />
 
-    <main class="container-mo py-8 md:py-12">
-      <section class="mb-8">
+    <main class="container-mo py-4 md:py-6">
+      <Breadcrumb items={breadcrumbItems} />
+
+      <section class="mb-6">
         <span class="eyebrow">Images</span>
         <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mt-3">
-          <h1 class="display-sm leading-tight">
-            Images & médias
-          </h1>
-          <p class="text-[13px] text-neutral-500 max-w-md md:text-right">
-            Bucket public <code class="bg-white px-1.5 py-0.5 rounded text-[12px]">medias</code> sur Supabase Storage. URL CDN stable copiable en un clic.
+          <div>
+            <h1 class="display-sm leading-tight">Images & médias</h1>
+            <p class="mt-2 text-[14px] text-neutral-500 max-w-2xl">
+              Chaque image référencée par une promo ou un produit en base, groupée par rayon.
+              Un clic ouvre le rayon concerné dans le catalogue pour y gérer le produit.
+            </p>
+          </div>
+          <p class="text-[12px] text-neutral-400 md:text-right">
+            Bucket public <code class="bg-white px-1.5 py-0.5 rounded text-[11px]">medias</code> sur Supabase Storage.<br />
+            Données <strong class="text-noir">{totalProduits}</strong> produits + <strong class="text-noir">{totalPromos}</strong> promos, rafraîchies à chaque chargement.
           </p>
         </div>
       </section>
 
       {errorMsg ? (
         <div class="bg-rouge/5 border border-rouge/30 text-rouge rounded-3xl p-6 md:p-8">
-          <p class="font-bold text-[15px]">⚠ Supabase Storage indisponible</p>
+          <p class="font-bold text-[15px]">⚠ Supabase indisponible</p>
           <p class="text-[14px] mt-2 whitespace-pre-line">{errorMsg}</p>
         </div>
       ) : (
-        <MediasManager
-          client:load
-          initialFolder={DEFAULT_FOLDER}
-          initialFiles={initialFiles}
-          folders={FOLDERS}
-        />
+        <>
+          {/* Stats : coverage à l'instant t, toutes sources DB. */}
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
+            <StatCard
+              label="Produits avec image"
+              value={produitsWithImage}
+              total={totalProduits}
+              tone="vert"
+              icon="🖼"
+              hint={totalProduits > 0 ? `${Math.round((produitsWithImage / totalProduits) * 100)} % de couverture` : undefined}
+            />
+            <StatCard
+              label="Produits sans image"
+              value={produitsWithoutImage}
+              tone={produitsWithoutImage > 0 ? "orange" : "neutral"}
+              icon="⚠"
+              href={produitsWithoutImage > 0 ? "/admin/images-gap" : undefined}
+              hint={produitsWithoutImage === 0 ? "couverture complète" : "à compléter"}
+            />
+            <StatCard
+              label="Promos actives avec image"
+              value={promosWithImage}
+              total={promosActives}
+              tone="rouge"
+              icon="🏷"
+            />
+            <StatCard
+              label="Rayons"
+              value={RAYONS_LIST.length}
+              tone="noir"
+              icon="🗂"
+              hint="arborescence publique"
+            />
+          </div>
+
+          {/* Mode tabs */}
+          <div class="flex items-center gap-1 mb-5 bg-white rounded-full p-1 shadow-sm w-fit">
+            <a
+              href="/admin/medias"
+              class:list={[
+                "px-4 py-1.5 rounded-full text-[13px] font-bold transition",
+                mode === "catalogue"
+                  ? "bg-noir text-white"
+                  : "text-noir hover:bg-creme",
+              ]}
+              aria-current={mode === "catalogue" ? "page" : undefined}
+            >
+              Par catalogue
+            </a>
+            <a
+              href="/admin/medias?mode=storage"
+              class:list={[
+                "px-4 py-1.5 rounded-full text-[13px] font-bold transition",
+                mode === "storage"
+                  ? "bg-noir text-white"
+                  : "text-noir hover:bg-creme",
+              ]}
+              aria-current={mode === "storage" ? "page" : undefined}
+              title="Gestion brute des fichiers du bucket (upload, suppression)"
+            >
+              Fichiers storage
+            </a>
+          </div>
+
+          {mode === "catalogue" ? (
+            <CatalogueImagesView
+              client:load
+              initialPromos={promos}
+              initialProduits={produits}
+              rayons={RAYONS_LIST}
+            />
+          ) : (
+            <MediasManager
+              client:load
+              initialFolder={DEFAULT_FOLDER}
+              initialFiles={initialStorageFiles}
+              folders={FOLDERS}
+            />
+          )}
+        </>
       )}
     </main>
   </div>

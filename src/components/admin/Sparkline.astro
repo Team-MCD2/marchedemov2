@@ -1,0 +1,94 @@
+---
+/**
+ * Sparkline.astro — server-rendered inline SVG bar+line spark chart.
+ *
+ * Tiny ; renders directly from a numeric array. No JS, no charting
+ * library, no client-side hydration. Designed for the admin dashboard
+ * where each card embeds 14 daily counts from `admin_activity`.
+ *
+ * Visual
+ * ------
+ *   - One bar per data point, height proportional to value / max.
+ *   - Trailing dot on the last point + faint baseline so flat lines
+ *     don't render as an empty box.
+ *   - Tooltip via native `<title>` (per-bar) and `aria-label` (chart).
+ *
+ * Props
+ *   values     : number[]  required — oldest → newest
+ *   labels?    : string[]  optional — same length, used for `<title>`
+ *                          tooltips ("12 mars : 4 actions").
+ *   width?     : number    default 120
+ *   height?    : number    default 32
+ *   color?     : string    default "currentColor" — set the parent
+ *                          card's text colour.
+ *   ariaLabel? : string    default "Évolution sur 14 jours"
+ */
+interface Props {
+  values: number[];
+  labels?: string[];
+  width?: number;
+  height?: number;
+  color?: string;
+  ariaLabel?: string;
+}
+
+const {
+  values,
+  labels = [],
+  width = 120,
+  height = 32,
+  color = "currentColor",
+  ariaLabel = "Évolution",
+} = Astro.props as Props;
+
+const N = Math.max(values.length, 1);
+const max = Math.max(1, ...values);
+const barW = width / N;
+const gap = Math.max(1, barW * 0.2);
+const innerBarW = Math.max(1, barW - gap);
+
+/** Map a value to a bar height (px). Empty days still get a 1-px
+ * stub so the eye can scan the timeline. */
+function barH(v: number): number {
+  if (max === 0) return 0;
+  return Math.max(1, Math.round(((v / max) * (height - 4)) || 0));
+}
+
+const total = values.reduce((a, b) => a + b, 0);
+const last = values[values.length - 1] ?? 0;
+const lastX = (N - 1) * barW + innerBarW / 2;
+const lastY = height - barH(last) - 1;
+---
+
+<svg
+  class="sparkline"
+  width={width}
+  height={height}
+  viewBox={`0 0 ${width} ${height}`}
+  role="img"
+  aria-label={`${ariaLabel} : ${total} actions au total, ${last} aujourd'hui`}
+  style={`color:${color}`}
+>
+  <line x1="0" y1={height - 0.5} x2={width} y2={height - 0.5} stroke="currentColor" stroke-opacity="0.15" />
+  {values.map((v, i) => {
+    const x = i * barW + gap / 2;
+    const h = barH(v);
+    const y = height - h - 1;
+    return (
+      <rect
+        x={x}
+        y={y}
+        width={innerBarW}
+        height={h}
+        rx={Math.min(2, innerBarW / 2)}
+        fill="currentColor"
+        fill-opacity={v === 0 ? 0.18 : 0.7}
+      >
+        <title>{labels[i] ? `${labels[i]} : ${v}` : String(v)}</title>
+      </rect>
+    );
+  })}
+  {last > 0 && (
+    <circle cx={lastX} cy={lastY} r={2.5} fill="currentColor" />
+  )}
+</svg>

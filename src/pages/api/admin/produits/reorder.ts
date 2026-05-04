@@ -51,13 +51,57 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     clean.push({ id: r.id, ordre: n });
   }
 
-  const updates = await Promise.all(
-    clean.map((r) =>
-      supabaseAdmin!.from("produits").update({ ordre: r.ordre }).eq("id", r.id)
-    )
-  );
-  const errored = updates.find((u) => u.error);
-  if (errored?.error) return json({ error: errored.error.message }, 500);
+  /* ----------------------------------------------------------------
+   * Chunked sequential updates.
+   *
+   * Why : firing 358 parallel `supabase.update()` calls (one per row)
+   * exhausts Undici's HTTPS socket pool on dev machines and surfaces
+   * to the client as "TypeError: fetch failed" with a 500. Even on
+   * Vercel serverless, the upstream Supabase REST endpoint applies
+   * its own concurrency caps. A 50-row batch is comfortably below
+   * both ceilings, costs ~7 round-trips for the worst current case
+   * (358 produits), and stays well inside the function timeout.
+   *
+   * Inside each batch we still run in parallel — Promise.all over 50
+   * concurrent fetches is fine. Between batches we await sequentially
+   * so we never have more than `BATCH_SIZE` open sockets at once.
+   * ---------------------------------------------------------------- */
+  const BATCH_SIZE = 50;
+  try {
+    for (let i = 0; i < clean.length; i += BATCH_SIZE) {
+      const slice = clean.slice(i, i + BATCH_SIZE);
+      const results = await Promise.all(
+        slice.map((r) =>
+          supabaseAdmin!.from("produits").update({ ordre: r.ordre }).eq("id", r.id),
+        ),
+      );
+      const errored = results.find((u) => u.error);
+      if (errored?.error) {
+        return json(
+          {
+            error: `Réorganisation interrompue : ${errored.error.message}`,
+            updated: i,
+            remaining: clean.length - i,
+          },
+          500,
+        );
+      }
+    }
+  } catch (err: any) {
+    /* Network-level failure (TypeError: fetch failed, ECONNRESET, etc.).
+     * Surface a French message instead of the cryptic Node default so
+     * the toast in the manager isn't garbage. */
+    const raw = err?.message || String(err);
+    const networky = /fetch failed|ECONNRESET|ETIMEDOUT|UND_ERR/i.test(raw);
+    return json(
+      {
+        error: networky
+          ? "Connexion à Supabase interrompue pendant la réorganisation. Réessayez."
+          : `Réorganisation échouée : ${raw}`,
+      },
+      500,
+    );
+  }
 
   logActivity({
     entity: "produit",

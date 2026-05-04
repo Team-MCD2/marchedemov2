@@ -14,10 +14,29 @@ import { login } from "@/lib/auth";
  */
 export const prerender = false;
 
+/* Whitelist for `next` redirects : same-origin, must start with /admin
+ * to avoid the obvious open-redirect / phishing surface. Anything else
+ * silently falls through to /admin. */
+function safeNext(raw: string | null | undefined): string {
+  if (!raw) return "/admin";
+  if (!raw.startsWith("/admin")) return "/admin";
+  /* Reject protocol-relative URLs ("//evil.example/admin") and hosts
+   * embedded via backslash quirks. */
+  if (raw.startsWith("//") || raw.includes("\\")) return "/admin";
+  return raw;
+}
+
 export const POST: APIRoute = async ({ request, redirect, cookies }) => {
   const form = await request.formData();
   const password = String(form.get("password") ?? "");
+  const next = safeNext(String(form.get("next") ?? ""));
   const ok = await login(password, cookies);
-  if (!ok) return redirect("/admin/login?error=1", 303);
-  return redirect("/admin", 303);
+  if (!ok) {
+    /* Preserve `next` across the failed-login round-trip so the user
+     * still lands where they were heading after the second attempt. */
+    const qs = new URLSearchParams({ error: "1" });
+    if (next !== "/admin") qs.set("next", next);
+    return redirect(`/admin/login?${qs.toString()}`, 303);
+  }
+  return redirect(next, 303);
 };

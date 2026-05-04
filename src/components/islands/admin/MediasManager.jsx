@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { adminFetch } from "./adminFetch.js";
+import { humanizeError } from "../../../lib/admin-errors";
 
 /**
  * MediasManager — gallery + upload UI for Supabase Storage 'medias'.
@@ -59,12 +61,12 @@ export default function MediasManager({ initialFolder, initialFiles, folders }) 
   const loadFolder = useCallback(async (f) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/medias?folder=${encodeURIComponent(f)}`);
+      const res = await adminFetch(`/api/admin/medias?folder=${encodeURIComponent(f)}`);
       if (!res.ok) throw new Error((await res.json()).error || res.statusText);
       const data = await res.json();
       setFiles(data.files ?? []);
     } catch (err) {
-      notify("err", `Erreur : ${err.message}`);
+      notify("err", `Erreur : ${humanizeError(err)}`);
     } finally {
       setLoading(false);
     }
@@ -99,7 +101,7 @@ export default function MediasManager({ initialFolder, initialFiles, folders }) 
           const form = new FormData();
           form.append("file", f);
           form.append("folder", folder);
-          const res = await fetch("/api/admin/medias", { method: "POST", body: form });
+          const res = await adminFetch("/api/admin/medias", { method: "POST", body: form });
           if (!res.ok) throw new Error((await res.json()).error || res.statusText);
           const data = await res.json();
           setUploads((cur) => cur.map((u) => (u.id === id ? { ...u, state: "done" } : u)));
@@ -107,7 +109,7 @@ export default function MediasManager({ initialFolder, initialFiles, folders }) 
           setFiles((cur) => [data.file, ...cur.filter((x) => x.path !== data.file.path)]);
         } catch (err) {
           setUploads((cur) =>
-            cur.map((u) => (u.id === id ? { ...u, state: "error", error: err.message } : u))
+            cur.map((u) => (u.id === id ? { ...u, state: "error", error: humanizeError(err) } : u))
           );
         }
       }
@@ -160,7 +162,7 @@ export default function MediasManager({ initialFolder, initialFiles, folders }) 
     setFiles((cur) => cur.filter((f) => f.path !== path));
     setMenuFor(null);
     try {
-      const res = await fetch(`/api/admin/medias?path=${encodeURIComponent(path)}`, {
+      const res = await adminFetch(`/api/admin/medias?path=${encodeURIComponent(path)}`, {
         method: "DELETE",
       });
       if (!res.ok && res.status !== 204) {
@@ -169,7 +171,7 @@ export default function MediasManager({ initialFolder, initialFiles, folders }) 
       notify("ok", `« ${path.split("/").pop()} » supprimé.`);
     } catch (err) {
       setFiles(snapshot);
-      notify("err", `Erreur : ${err.message}`);
+      notify("err", `Erreur : ${humanizeError(err)}`);
     }
   }
 
@@ -388,7 +390,9 @@ export default function MediasManager({ initialFolder, initialFiles, folders }) 
       {/* Toast */}
       {toast && (
         <div
-          role="status"
+          role={toast.type === "err" ? "alert" : "status"}
+          aria-live={toast.type === "err" ? "assertive" : "polite"}
+          aria-atomic="true"
           className={[
             "fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-full font-bold text-[13px] shadow-card",
             toast.type === "ok" ? "bg-vert text-white" : "bg-rouge text-white",
