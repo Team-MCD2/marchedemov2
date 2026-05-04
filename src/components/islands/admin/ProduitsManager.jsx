@@ -1,6 +1,10 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import MassImageMatchModal from "./MassImageMatchModal.jsx";
 import ProductImageSearchModal from "./ProductImageSearchModal.jsx";
+import InlineImageUpload from "./InlineImageUpload.jsx";
+import BulkActionsBar from "./BulkActionsBar.jsx";
+import FilterChip from "./FilterChip.jsx";
+import { compareRows, useAdminListState } from "./useAdminListState.js";
 
 /**
  * ProduitsManager — admin table for public.produits (catalogue vitrine).
@@ -36,31 +40,46 @@ function fmtPrice(n) {
   return num.toFixed(2).replace(".", ",") + " €";
 }
 
-/** Read initial filter values from URL params so /admin/images-gap can
- *  jump straight into ProduitsManager with `?statut=sans-image` applied. */
-function initialFilterFromURL() {
-  const base = { q: "", rayon: "", statut: "all" };
-  if (typeof window === "undefined") return base;
-  const params = new URLSearchParams(window.location.search);
-  const q = params.get("q");
-  const rayon = params.get("rayon");
-  const statut = params.get("statut");
-  const ALLOWED_STATUT = new Set(["all", "active", "inactive", "sans-image", "avec-image"]);
-  return {
-    q: q ?? base.q,
-    rayon: rayon ?? base.rayon,
-    statut: statut && ALLOWED_STATUT.has(statut) ? statut : base.statut,
-  };
-}
+/**
+ * @typedef {Object} ProduitsManagerScope
+ * @property {string | null} [rayon]          Locked rayon slug (matches produits.rayon)
+ * @property {string | null} [categorie]      Locked categorie LABEL (matches produits.categorie)
+ * @property {string | null} [sous_categorie] Locked sous_categorie LABEL
+ * @property {string | null} [displayLabel]   Human name used in empty-state CTA
+ * @property {"orphelins" | null} [view]     Special filter view (e.g. orphans-only)
+ * @property {string[]} [knownCategorieLabels]      For orphans detection at rayon scope
+ * @property {string[]} [knownSousCategorieLabels]  For orphans detection at categorie scope
+ */
 
-export default function ProduitsManager({ initialProduits, rayonsOptions }) {
+export default function ProduitsManager({ initialProduits, rayonsOptions, scope = null }) {
   const [produits, setProduits] = useState(initialProduits ?? []);
   const [editing, setEditing] = useState(null);
   const [importing, setImporting] = useState(false);
   const [massMatching, setMassMatching] = useState(false);
   const [imageSearching, setImageSearching] = useState(/** @type {null | object} */ (null));
-  const [filter, setFilter] = useState(initialFilterFromURL);
   const [toast, setToast] = useState(null);
+  const [selected, setSelected] = useState(() => new Set());
+  const [reorderMode, setReorderMode] = useState(false);
+  const [undoData, setUndoData] = useState(null);
+  const [dragId, setDragId] = useState(null);
+  const [dragOverId, setDragOverId] = useState(null);
+  const searchInputRef = useRef(null);
+
+  /* URL-persisted filters + sort. /admin/images-gap can still drive the
+   * initial view via ?statut=sans-image because the URL is read on mount. */
+  const STATUT_OPTS = ["all", "active", "inactive", "sans-image", "avec-image"];
+  const SORT_OPTS = ["ordre", "nom", "slug", "rayon", "categorie", "prix_indicatif", "actif", "updated_at"];
+  const { state: listState, set: setFilter, reset: resetFilter, activeCount } = useAdminListState({
+    defaults: { q: "", rayon: "", statut: "all", sort: "ordre", dir: "asc" },
+    allowed: { statut: STATUT_OPTS, dir: ["asc", "desc"], sort: SORT_OPTS },
+    storageKey: "admin.produits.list",
+  });
+  const filter = listState;
+  const sort = useMemo(() => ({ field: listState.sort, dir: listState.dir }), [listState.sort, listState.dir]);
+  function setSort(field, dir) {
+    setFilter({ sort: field, dir });
+  }
+  const canReorder = sort.field === "ordre" && sort.dir === "asc";
 
   const rayonNom = useMemo(() => {
     const m = new Map();
@@ -70,7 +89,28 @@ export default function ProduitsManager({ initialProduits, rayonsOptions }) {
 
   const filtered = useMemo(() => {
     return produits.filter((p) => {
-      if (filter.rayon && p.rayon !== filter.rayon) return false;
+      /* Scope filters (forced by parent page; not user-editable). */
+      if (scope?.rayon && p.rayon !== scope.rayon) return false;
+      if (scope?.categorie && p.categorie !== scope.categorie) return false;
+      if (scope?.sous_categorie && p.sous_categorie !== scope.sous_categorie) return false;
+      /* Special view: orphans at the current scope level. */
+      if (scope?.view === "orphelins") {
+        if (scope?.sous_categorie) {
+          /* Shouldn't normally happen (sub-scope is already a leaf), guard anyway. */
+        } else if (scope?.categorie) {
+          /* Sub-orphans within a categorie : sub_categorie not in the known list. */
+          const known = scope.knownSousCategorieLabels ?? [];
+          if (!p.sous_categorie) return true;
+          if (known.includes(p.sous_categorie)) return false;
+        } else if (scope?.rayon) {
+          /* Cat-orphans within a rayon : categorie not in the known list. */
+          const known = scope.knownCategorieLabels ?? [];
+          if (!p.categorie) return true;
+          if (known.includes(p.categorie)) return false;
+        }
+      }
+      /* User-controllable filters (ignored for scoped fields). */
+      if (!scope?.rayon && filter.rayon && p.rayon !== filter.rayon) return false;
       if (filter.statut === "active" && !p.actif) return false;
       if (filter.statut === "inactive" && p.actif) return false;
       if (filter.statut === "sans-image" && p.image_url) return false;
@@ -82,19 +122,66 @@ export default function ProduitsManager({ initialProduits, rayonsOptions }) {
       }
       return true;
     });
-  }, [produits, filter]);
+  }, [produits, filter, scope]);
 
-  /* Group by rayon for the card layout */
+  /* New-product prefill helper. In scope mode, the new row is pre-filled
+   * with the locked rayon / categorie / sous_categorie so the operator
+   * doesn't have to pick them again. */
+  function openNewProduit() {
+    setEditing({
+      ...EMPTY_PRODUIT,
+      rayon: scope?.rayon ?? "",
+      categorie: scope?.categorie ?? "",
+      sous_categorie: scope?.sous_categorie ?? "",
+    });
+  }
+
+  /* Sorted + grouped by rayon for the card layout.
+   * When sort.field === 'ordre', items preserve the server's ordre sequence
+   * because produits is fetched sorted by ordre. For any other sort field,
+   * we explicitly sort within each rayon group so the UI reflects the choice. */
   const grouped = useMemo(() => {
+    const sorted = [...filtered];
+    if (sort.field && sort.field !== "ordre") {
+      sorted.sort((a, b) => compareRows(a, b, sort.field, sort.dir));
+    } else if (sort.dir === "desc") {
+      sorted.reverse();
+    }
     const map = new Map();
-    filtered.forEach((p) => {
+    sorted.forEach((p) => {
       if (!map.has(p.rayon)) map.set(p.rayon, []);
       map.get(p.rayon).push(p);
     });
     return Array.from(map.entries()).sort((a, b) =>
       rayonNom(a[0]).localeCompare(rayonNom(b[0]), "fr")
     );
-  }, [filtered, rayonNom]);
+  }, [filtered, rayonNom, sort]);
+
+  /* Selection helpers. In ProduitsManager the layout is grouped by rayon,
+   * so there is no global "select all" checkbox; instead each rayon header
+   * has its own select-all-in-rayon via `toggleSelectRayon`. */
+  function toggleSelected(id) {
+    setSelected((cur) => {
+      const nxt = new Set(cur);
+      if (nxt.has(id)) nxt.delete(id);
+      else nxt.add(id);
+      return nxt;
+    });
+  }
+  function toggleSelectRayon(rayonSlug) {
+    const ids = filtered.filter((p) => p.rayon === rayonSlug).map((p) => p.id);
+    if (ids.length === 0) return;
+    const allInRayonSelected = ids.every((id) => selected.has(id));
+    setSelected((cur) => {
+      const nxt = new Set(cur);
+      if (allInRayonSelected) ids.forEach((id) => nxt.delete(id));
+      else ids.forEach((id) => nxt.add(id));
+      return nxt;
+    });
+  }
+  function clearSelection() {
+    setSelected(new Set());
+  }
 
   function notify(type, msg) {
     setToast({ type, msg });
@@ -218,98 +305,570 @@ export default function ProduitsManager({ initialProduits, rayonsOptions }) {
     notify("ok", parts.join(" · "));
   }
 
+  /* ---------------- Bulk actions ---------------- */
+  async function bulkAction(action) {
+    const ids = Array.from(selected);
+    if (ids.length === 0) return;
+    const snapshot = produits;
+
+    if (action === "delete") {
+      if (!confirm(`Supprimer ${ids.length} produit(s) ? Vous aurez 8 s pour annuler.`)) return;
+      setProduits((cur) => cur.filter((p) => !selected.has(p.id)));
+      clearSelection();
+    } else if (action === "activate" || action === "deactivate") {
+      const val = action === "activate";
+      setProduits((cur) =>
+        cur.map((p) => (selected.has(p.id) ? { ...p, actif: val } : p))
+      );
+    }
+
+    try {
+      const res = await fetch(`/api/admin/produits/bulk`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids, action }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error || res.statusText);
+      const { affected } = await res.json();
+
+      if (action === "delete") {
+        const msg = `${affected} produit(s) supprimé(s).`;
+        if (undoData?.timer) clearTimeout(undoData.timer);
+        const timer = setTimeout(() => setUndoData(null), 8000);
+        setUndoData({
+          snapshot: snapshot.filter((p) => ids.includes(p.id)),
+          message: msg,
+          timer,
+        });
+        notify("ok", msg);
+      } else {
+        clearSelection();
+        notify("ok", `${affected} produit(s) mis à jour.`);
+      }
+    } catch (err) {
+      setProduits(snapshot);
+      notify("err", `Erreur : ${err.message}`);
+    }
+  }
+
+  /* ---------------- Bulk patch (e.g. change rayon for N rows) ---------------- */
+  async function bulkPatch(patch) {
+    const ids = Array.from(selected);
+    if (ids.length === 0) return;
+    const snapshot = produits;
+    setProduits((cur) => cur.map((p) => (selected.has(p.id) ? { ...p, ...patch } : p)));
+    try {
+      const res = await fetch(`/api/admin/produits/bulk`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids, action: "patch", patch }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error || res.statusText);
+      const { affected } = await res.json();
+      clearSelection();
+      notify("ok", `${affected} produit(s) mis à jour.`);
+    } catch (err) {
+      setProduits(snapshot);
+      notify("err", `Erreur : ${err.message}`);
+    }
+  }
+
+  async function undoBulkDelete() {
+    if (!undoData) return;
+    const rows = undoData.snapshot;
+    if (undoData.timer) clearTimeout(undoData.timer);
+    setUndoData(null);
+    try {
+      const res = await fetch(`/api/admin/produits`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ produits: rows }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error || res.statusText);
+      await refreshProduits();
+      notify("ok", `${rows.length} produit(s) restauré(s).`);
+    } catch (err) {
+      notify("err", `Restauration impossible : ${err.message}`);
+    }
+  }
+
+  /* ---------------- Reorder within a rayon ---------------- */
+  async function persistReorder(rows) {
+    const payload = rows.map((p, i) => ({ id: p.id, ordre: i }));
+    try {
+      const res = await fetch(`/api/admin/produits/reorder`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rows: payload }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error || res.statusText);
+    } catch (err) {
+      notify("err", `Erreur réorganisation : ${err.message}`);
+    }
+  }
+
+  function moveRowInRayon(id, delta) {
+    const row = produits.find((p) => p.id === id);
+    if (!row) return;
+    const rayonItems = grouped.find(([r]) => r === row.rayon)?.[1] ?? [];
+    const idx = rayonItems.findIndex((p) => p.id === id);
+    const target = idx + delta;
+    if (idx < 0 || target < 0 || target >= rayonItems.length) return;
+    const nextRayon = [...rayonItems];
+    const [moved] = nextRayon.splice(idx, 1);
+    nextRayon.splice(target, 0, moved);
+    applyRayonReorder(row.rayon, nextRayon);
+  }
+
+  function applyRayonReorder(rayonSlug, nextRayonItems) {
+    /* Assign local indices 0..N within the rayon, then merge back
+     * into the global produits list. `ordre` is re-indexed globally so
+     * sort-by-ordre still produces stable output. */
+    const newRayonOrderIds = nextRayonItems.map((p) => p.id);
+    const others = produits.filter((p) => p.rayon !== rayonSlug);
+    const reindexed = [];
+    /* Walk original produits order, but when we hit any row of this rayon,
+     * substitute the next id from the new order. */
+    let cursor = 0;
+    for (const p of produits) {
+      if (p.rayon !== rayonSlug) {
+        reindexed.push(p);
+      } else {
+        const nextId = newRayonOrderIds[cursor++];
+        const nextRow = produits.find((q) => q.id === nextId);
+        if (nextRow) reindexed.push(nextRow);
+      }
+    }
+    /* Re-assign ordre globally for a clean sequence. */
+    const withOrdre = reindexed.map((p, i) => ({ ...p, ordre: i }));
+    setProduits(withOrdre);
+    persistReorder(withOrdre);
+    /* others is intentionally unused but kept for readability of the algo. */
+    void others;
+  }
+
+  function onDragStart(id) {
+    setDragId(id);
+  }
+  function onDragOverRow(e, id) {
+    if (!dragId || dragId === id) return;
+    const a = produits.find((p) => p.id === dragId);
+    const b = produits.find((p) => p.id === id);
+    if (!a || !b || a.rayon !== b.rayon) return; /* only within-rayon */
+    e.preventDefault();
+    setDragOverId(id);
+  }
+  function onDropRow(id) {
+    if (!dragId || dragId === id) {
+      setDragId(null);
+      setDragOverId(null);
+      return;
+    }
+    const a = produits.find((p) => p.id === dragId);
+    const b = produits.find((p) => p.id === id);
+    if (!a || !b || a.rayon !== b.rayon) {
+      setDragId(null);
+      setDragOverId(null);
+      return;
+    }
+    const rayonItems = grouped.find(([r]) => r === a.rayon)?.[1] ?? [];
+    const from = rayonItems.findIndex((p) => p.id === dragId);
+    const to = rayonItems.findIndex((p) => p.id === id);
+    if (from < 0 || to < 0) {
+      setDragId(null);
+      setDragOverId(null);
+      return;
+    }
+    const next = [...rayonItems];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    setDragId(null);
+    setDragOverId(null);
+    applyRayonReorder(a.rayon, next);
+  }
+
+  /* ---------------- Deep-link hashes (#new, #import) -------------- */
+  /* Run once on mount. Lets the dashboard "Actions rapides" tiles
+   * land directly on an open modal. We strip the hash afterwards so
+   * a refresh doesn't re-open it. The #new path uses openNewProduit
+   * so any active scope (rayon/categorie/sous_categorie) pre-fills. */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const h = window.location.hash;
+    if (h === "#new") {
+      openNewProduit();
+    } else if (h === "#import") {
+      setImporting(true);
+    } else {
+      return;
+    }
+    try {
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    } catch {
+      /* harmless */
+    }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, []);
+
+  /* ---------------- List-level keyboard shortcuts ---------------- */
+  useEffect(() => {
+    function onKey(e) {
+      if (editing || importing || massMatching || imageSearching) return;
+      const target = e.target;
+      const tag = target?.tagName?.toLowerCase();
+      const editable =
+        tag === "input" || tag === "textarea" || tag === "select" || target?.isContentEditable;
+      if (editable) {
+        if (e.key === "Escape" && selected.size > 0) {
+          e.preventDefault();
+          clearSelection();
+        }
+        return;
+      }
+      if (e.key === "/" && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        searchInputRef.current?.select();
+      } else if ((e.key === "n" || e.key === "N") && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        openNewProduit();
+      } else if (e.key === "Escape") {
+        if (selected.size > 0) {
+          e.preventDefault();
+          clearSelection();
+        } else if (reorderMode) {
+          setReorderMode(false);
+        }
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [editing, importing, massMatching, imageSearching, selected.size, reorderMode]);
+
+  /* Prune selection when rows disappear (e.g. after filter change or delete). */
+  useEffect(() => {
+    setSelected((cur) => {
+      let changed = false;
+      const nxt = new Set();
+      for (const id of cur) {
+        if (produits.some((p) => p.id === id)) nxt.add(id);
+        else changed = true;
+      }
+      return changed ? nxt : cur;
+    });
+  }, [produits]);
+
   return (
     <div>
-      {/* Toolbar */}
-      <div className="bg-white rounded-3xl shadow-card p-4 md:p-5 flex flex-col md:flex-row gap-3 md:items-center">
-        <div className="flex-1 flex flex-col sm:flex-row gap-2">
-          <input
-            type="search"
-            placeholder="Rechercher nom, slug, origine…"
-            value={filter.q}
-            onChange={(e) => setFilter({ ...filter, q: e.target.value })}
-            className="flex-1 min-w-0 px-4 py-2 rounded-full border border-black/10 text-[14px] focus:border-vert focus:outline-none bg-creme"
-          />
-          <select
-            value={filter.rayon}
-            onChange={(e) => setFilter({ ...filter, rayon: e.target.value })}
-            className="px-3 py-2 rounded-full border border-black/10 text-[13px] bg-white"
-          >
-            <option value="">Tous rayons</option>
-            {rayonsOptions.map((r) => (
-              <option key={r.slug} value={r.slug}>
-                {r.nom}
-              </option>
-            ))}
-          </select>
-          <select
-            value={filter.statut}
-            onChange={(e) => setFilter({ ...filter, statut: e.target.value })}
-            className="px-3 py-2 rounded-full border border-black/10 text-[13px] bg-white"
-          >
-            <option value="all">Tous statuts</option>
-            <option value="active">Actifs</option>
-            <option value="inactive">Inactifs</option>
-            <option value="sans-image">Sans image</option>
-            <option value="avec-image">Avec image</option>
-          </select>
+      {/* Sticky toolbar */}
+      <div className="sticky top-0 z-30 -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8 pt-2 pb-3 bg-creme/85 backdrop-blur-md">
+        <div className="bg-white rounded-3xl shadow-card p-4 md:p-5 flex flex-col md:flex-row gap-3 md:items-center">
+          <div className="flex-1 flex flex-col sm:flex-row gap-2">
+            <div className="flex-1 min-w-0 relative">
+              <input
+                ref={searchInputRef}
+                type="search"
+                placeholder="Rechercher nom, slug, origine…  (raccourci : /)"
+                value={filter.q}
+                onChange={(e) => setFilter({ q: e.target.value })}
+                className="w-full px-4 py-2 pr-9 rounded-full border border-black/10 text-[14px] focus:border-vert focus:outline-none bg-creme"
+                aria-label="Recherche"
+              />
+              {filter.q && (
+                <button
+                  type="button"
+                  onClick={() => setFilter({ q: "" })}
+                  aria-label="Effacer la recherche"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full text-neutral-400 hover:bg-neutral-100 flex items-center justify-center"
+                >
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                    <path d="M18 6 6 18M6 6l12 12" strokeLinecap="round" />
+                  </svg>
+                </button>
+              )}
+            </div>
+            {!scope?.rayon && (
+              <select
+                value={filter.rayon}
+                onChange={(e) => setFilter({ rayon: e.target.value })}
+                className="px-3 py-2 rounded-full border border-black/10 text-[13px] bg-white"
+                aria-label="Filtrer par rayon"
+              >
+                <option value="">Tous rayons</option>
+                {rayonsOptions.map((r) => (
+                  <option key={r.slug} value={r.slug}>
+                    {r.nom}
+                  </option>
+                ))}
+              </select>
+            )}
+            <select
+              value={filter.statut}
+              onChange={(e) => setFilter({ statut: e.target.value })}
+              className="px-3 py-2 rounded-full border border-black/10 text-[13px] bg-white"
+              aria-label="Filtrer par statut"
+            >
+              <option value="all">Tous statuts</option>
+              <option value="active">Actifs</option>
+              <option value="inactive">Inactifs</option>
+              <option value="sans-image">Sans image</option>
+              <option value="avec-image">Avec image</option>
+            </select>
+            <select
+              value={`${sort.field}:${sort.dir}`}
+              onChange={(e) => {
+                const [f, d] = e.target.value.split(":");
+                setSort(f, d);
+              }}
+              className="px-3 py-2 rounded-full border border-black/10 text-[13px] bg-white"
+              aria-label="Trier"
+            >
+              <option value="ordre:asc">Tri : ordre manuel</option>
+              <option value="nom:asc">Tri : nom A→Z</option>
+              <option value="nom:desc">Tri : nom Z→A</option>
+              <option value="prix_indicatif:asc">Tri : prix croissant</option>
+              <option value="prix_indicatif:desc">Tri : prix décroissant</option>
+              <option value="updated_at:desc">Tri : récents</option>
+            </select>
+          </div>
+          <div className="flex gap-2 shrink-0 flex-wrap">
+            {canReorder && (
+              <button
+                type="button"
+                onClick={() => setReorderMode((m) => !m)}
+                aria-pressed={reorderMode}
+                title={reorderMode ? "Sortir du mode réorganisation (Esc)" : "Activer le glisser-déposer dans chaque rayon"}
+                className={`px-4 py-2 rounded-full text-[13px] font-bold transition inline-flex items-center gap-1.5 ${
+                  reorderMode
+                    ? "bg-rouge text-white hover:bg-rouge/90"
+                    : "bg-white border-2 border-black/10 hover:border-noir"
+                }`}
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M8 6h.01M8 12h.01M8 18h.01M16 6h.01M16 12h.01M16 18h.01" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                {reorderMode ? "Terminer" : "Réorganiser"}
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setMassMatching(true)}
+              className="px-4 py-2 rounded-full bg-white border-2 border-noir text-[13px] font-bold hover:bg-noir hover:text-white transition inline-flex items-center gap-1.5"
+              title="Glisser-déposer plusieurs images et les associer automatiquement aux produits"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              Images (auto-match)
+            </button>
+            <button
+              type="button"
+              onClick={() => setImporting(true)}
+              className="px-4 py-2 rounded-full bg-white border-2 border-black/10 text-[13px] font-bold hover:border-vert hover:text-vert transition"
+              title="Importer un CSV ou JSON (fichier ou copier/coller)"
+            >
+              Importer CSV/JSON
+            </button>
+            <button
+              type="button"
+              onClick={openNewProduit}
+              title="Créer un produit (n)"
+              className="px-4 py-2 rounded-full bg-vert text-white text-[13px] font-bold hover:bg-vert-dark transition"
+            >
+              + Nouveau produit
+            </button>
+          </div>
         </div>
-        <div className="flex gap-2 shrink-0 flex-wrap">
-          <button
-            type="button"
-            onClick={() => setMassMatching(true)}
-            className="px-4 py-2 rounded-full bg-white border-2 border-noir text-[13px] font-bold hover:bg-noir hover:text-white transition inline-flex items-center gap-1.5"
-            title="Glisser-déposer plusieurs images et les associer automatiquement aux produits"
-          >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            Images (auto-match)
-          </button>
-          <button
-            type="button"
-            onClick={() => setImporting(true)}
-            className="px-4 py-2 rounded-full bg-white border-2 border-black/10 text-[13px] font-bold hover:border-vert hover:text-vert transition"
-            title="Importer un CSV ou JSON (fichier ou copier/coller)"
-          >
-            Importer CSV/JSON
-          </button>
-          <button
-            type="button"
-            onClick={() => setEditing({ ...EMPTY_PRODUIT })}
-            className="px-4 py-2 rounded-full bg-vert text-white text-[13px] font-bold hover:bg-vert-dark transition"
-          >
-            + Nouveau produit
-          </button>
-        </div>
+
+        {/* Active filter chips */}
+        {activeCount > 0 && (
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">
+              Filtres actifs :
+            </span>
+            {filter.q && (
+              <FilterChip label={`« ${filter.q} »`} onRemove={() => setFilter({ q: "" })} />
+            )}
+            {!scope?.rayon && filter.rayon && (
+              <FilterChip
+                label={`Rayon : ${rayonNom(filter.rayon)}`}
+                onRemove={() => setFilter({ rayon: "" })}
+              />
+            )}
+            {filter.statut !== "all" && (
+              <FilterChip
+                label={`Statut : ${
+                  {
+                    active: "actifs",
+                    inactive: "inactifs",
+                    "sans-image": "sans image",
+                    "avec-image": "avec image",
+                  }[filter.statut] ?? filter.statut
+                }`}
+                onRemove={() => setFilter({ statut: "all" })}
+              />
+            )}
+            {(sort.field !== "ordre" || sort.dir !== "asc") && (
+              <FilterChip
+                tone="sort"
+                label={`Tri : ${sort.field} ${sort.dir === "asc" ? "↑" : "↓"}`}
+                onRemove={() => setSort("ordre", "asc")}
+              />
+            )}
+            <button
+              type="button"
+              onClick={resetFilter}
+              className="text-[11px] font-bold text-neutral-500 hover:text-rouge transition underline underline-offset-2"
+            >
+              Tout réinitialiser
+            </button>
+          </div>
+        )}
       </div>
 
-      <p className="mt-4 text-[13px] text-neutral-500">
-        <strong className="text-noir">{filtered.length}</strong> produit(s) affiché(s)
-        {produits.length !== filtered.length && (
-          <span> sur <strong className="text-noir">{produits.length}</strong> au total</span>
+      {/* Count + reorder-mode hint */}
+      <div className="mt-3 flex items-center justify-between flex-wrap gap-2">
+        <p className="text-[13px] text-neutral-500">
+          <strong className="text-noir">{filtered.length}</strong> produit(s) affiché(s)
+          {produits.length !== filtered.length && (
+            <span> sur <strong className="text-noir">{produits.length}</strong> au total</span>
+          )}
+        </p>
+        {reorderMode && (
+          <span className="inline-block px-3 py-1 rounded-full bg-rouge/10 text-rouge font-bold text-[11px] uppercase tracking-wider">
+            → Mode réorganisation : glissez dans le même rayon ou utilisez ↑↓
+          </span>
         )}
-      </p>
+      </div>
 
       {/* Grouped by rayon */}
       {grouped.length === 0 ? (
-        <div className="mt-4 bg-white rounded-3xl shadow-card p-10 text-center text-neutral-400">
-          <p className="font-bold text-[15px] text-neutral-600">Aucun produit</p>
-          <p className="mt-2 text-[13px]">
-            Créez un produit ou importez un JSON pour commencer à remplir le catalogue.
-          </p>
+        <div className="mt-4 bg-white rounded-3xl shadow-card p-10 text-center">
+          {scope?.view === "orphelins" ? (
+            <>
+              <p className="font-bold text-[15px] text-vert-dark">Aucun produit orphelin 🎉</p>
+              <p className="mt-2 text-[13px] text-neutral-500">
+                Tous les produits de ce scope sont correctement rattachés à la taxonomie.
+              </p>
+            </>
+          ) : scope?.displayLabel ? (
+            <>
+              <p className="font-bold text-[15px] text-neutral-600">
+                Aucun produit dans <span className="text-noir">{scope.displayLabel}</span>
+              </p>
+              <p className="mt-2 text-[13px] text-neutral-500">
+                Cette catégorie est vide — ajoutez le premier produit.
+              </p>
+              <button
+                type="button"
+                onClick={openNewProduit}
+                className="mt-5 px-5 py-2.5 rounded-full bg-vert text-white text-[13px] font-bold hover:bg-vert-dark transition inline-flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 5v14M5 12h14" strokeLinecap="round" />
+                </svg>
+                Ajouter le premier produit
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="font-bold text-[15px] text-neutral-600">Aucun produit</p>
+              <p className="mt-2 text-[13px] text-neutral-400">
+                Créez un produit ou importez un JSON pour commencer à remplir le catalogue.
+              </p>
+            </>
+          )}
         </div>
       ) : (
         <div className="mt-4 space-y-6">
-          {grouped.map(([rayonSlug, items]) => (
+          {grouped.map(([rayonSlug, items]) => {
+            const rayonIds = items.map((p) => p.id);
+            const allRayonSelected = rayonIds.length > 0 && rayonIds.every((id) => selected.has(id));
+            const someRayonSelected = rayonIds.some((id) => selected.has(id));
+            return (
             <section key={rayonSlug} className="bg-white rounded-3xl shadow-card overflow-hidden">
-              <header className="bg-creme px-5 py-3 border-b border-black/5 flex items-center justify-between">
-                <h2 className="font-soft font-bold text-[16px]">{rayonNom(rayonSlug)}</h2>
+              <header className="bg-creme px-5 py-3 border-b border-black/5 flex items-center justify-between gap-3">
+                <label className="flex items-center gap-3 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={allRayonSelected}
+                    ref={(el) => {
+                      if (el) el.indeterminate = someRayonSelected && !allRayonSelected;
+                    }}
+                    onChange={() => toggleSelectRayon(rayonSlug)}
+                    aria-label={`Tout sélectionner dans ${rayonNom(rayonSlug)}`}
+                    className="w-4 h-4 accent-vert"
+                  />
+                  <h2 className="font-soft font-bold text-[16px]">{rayonNom(rayonSlug)}</h2>
+                </label>
                 <span className="text-[12px] text-neutral-500">{items.length} produit(s)</span>
               </header>
               <ul className="divide-y divide-black/5">
-                {items.map((p) => (
-                  <li key={p.id} className="flex items-center gap-4 px-4 md:px-5 py-3 hover:bg-creme/50 transition">
+                {items.map((p, i) => {
+                  const isSel = selected.has(p.id);
+                  const isDragOver = reorderMode && dragOverId === p.id;
+                  return (
+                  <li
+                    key={p.id}
+                    onDragOver={reorderMode ? (e) => onDragOverRow(e, p.id) : undefined}
+                    onDrop={reorderMode ? () => onDropRow(p.id) : undefined}
+                    className={[
+                      "flex items-center gap-3 px-4 md:px-5 py-3 transition",
+                      isSel ? "bg-vert/5" : "hover:bg-creme/50",
+                      isDragOver ? "outline outline-2 outline-vert -outline-offset-2" : "",
+                    ].join(" ")}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isSel}
+                      onChange={() => toggleSelected(p.id)}
+                      aria-label={`Sélectionner ${p.nom}`}
+                      className="w-4 h-4 accent-vert cursor-pointer shrink-0"
+                    />
+                    {reorderMode && (
+                      <div className="flex items-center gap-0.5 shrink-0">
+                        <span
+                          draggable
+                          onDragStart={() => onDragStart(p.id)}
+                          onDragEnd={() => {
+                            setDragId(null);
+                            setDragOverId(null);
+                          }}
+                          className="cursor-grab active:cursor-grabbing text-neutral-400 hover:text-noir select-none"
+                          title="Glisser pour déplacer (dans ce rayon)"
+                          aria-hidden="true"
+                        >
+                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                            <circle cx="9" cy="6" r="1.5" />
+                            <circle cx="15" cy="6" r="1.5" />
+                            <circle cx="9" cy="12" r="1.5" />
+                            <circle cx="15" cy="12" r="1.5" />
+                            <circle cx="9" cy="18" r="1.5" />
+                            <circle cx="15" cy="18" r="1.5" />
+                          </svg>
+                        </span>
+                        <div className="flex flex-col">
+                          <button
+                            type="button"
+                            onClick={() => moveRowInRayon(p.id, -1)}
+                            disabled={i === 0}
+                            aria-label="Monter d'un rang"
+                            className="w-4 h-4 text-neutral-400 hover:text-noir disabled:opacity-30 transition flex items-center justify-center"
+                          >
+                            <svg className="w-3 h-3" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0 10 6H0z" /></svg>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => moveRowInRayon(p.id, +1)}
+                            disabled={i === items.length - 1}
+                            aria-label="Descendre d'un rang"
+                            className="w-4 h-4 text-neutral-400 hover:text-noir disabled:opacity-30 transition flex items-center justify-center"
+                          >
+                            <svg className="w-3 h-3" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6 0 0h10z" /></svg>
+                          </button>
+                        </div>
+                      </div>
+                    )}
                     {p.image_url ? (
                       <img
                         src={p.image_url}
@@ -388,10 +947,61 @@ export default function ProduitsManager({ initialProduits, rayonsOptions }) {
                       </button>
                     </div>
                   </li>
-                ))}
+                  );
+                })}
               </ul>
             </section>
-          ))}
+            );
+          })}
+        </div>
+      )}
+
+      {/* Bulk actions bar (shown when rows selected) */}
+      <BulkActionsBar
+        count={selected.size}
+        onClear={clearSelection}
+        actions={[
+          { label: "Activer", onClick: () => bulkAction("activate") },
+          { label: "Désactiver", onClick: () => bulkAction("deactivate") },
+          {
+            label: "Changer de rayon…",
+            onClick: () => {
+              const current = Array.from(new Set(
+                produits.filter((p) => selected.has(p.id)).map((p) => p.rayon)
+              ));
+              const list = rayonsOptions.map((r) => `${r.slug} (${r.nom})`).join("\n");
+              const hint = current.length === 1 ? `\n\nActuel : ${current[0]}` : "";
+              const choice = prompt(
+                `Entrez le slug du rayon cible :\n\n${list}${hint}`,
+                current[0] ?? ""
+              );
+              if (!choice) return;
+              const ok = rayonsOptions.some((r) => r.slug === choice);
+              if (!ok) {
+                notify("err", `Rayon inconnu : ${choice}`);
+                return;
+              }
+              bulkPatch({ rayon: choice });
+            },
+          },
+          { label: "Supprimer", tone: "danger", onClick: () => bulkAction("delete") },
+        ]}
+      />
+
+      {/* Undo toast for bulk delete */}
+      {undoData && (
+        <div
+          role="status"
+          className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-noir text-white text-[13px] font-bold shadow-2xl flex items-center gap-3"
+        >
+          <span>{undoData.message}</span>
+          <button
+            type="button"
+            onClick={undoBulkDelete}
+            className="px-3 py-1 rounded-full bg-vert hover:bg-vert-dark transition"
+          >
+            Annuler
+          </button>
         </div>
       )}
 
@@ -454,14 +1064,78 @@ export default function ProduitsManager({ initialProduits, rayonsOptions }) {
 function EditModal({ produit, rayonsOptions, onCancel, onSave }) {
   const [form, setForm] = useState({ ...produit });
   const [saving, setSaving] = useState(false);
+  /* Slug uniqueness probe. null = unchecked, true/false = result. */
+  const [slugStatus, setSlugStatus] = useState(null);
+  const [slugChecking, setSlugChecking] = useState(false);
+  const formRef = useRef(null);
   const isNew = !produit.id;
 
   function set(field, value) {
     setForm((f) => ({ ...f, [field]: value }));
   }
 
+  /* Debounced slug-uniqueness check via /api/admin/produits/slug-check.
+   * Only runs when the slug changed from the original. */
+  useEffect(() => {
+    const s = (form.slug || "").trim();
+    /* Slug unchanged from the row we're editing -> trivially ok. */
+    if (!isNew && s === (produit.slug || "")) {
+      setSlugStatus(null);
+      return;
+    }
+    if (!s || !/^[a-z0-9-]+$/.test(s)) {
+      setSlugStatus(null);
+      return;
+    }
+    let cancelled = false;
+    setSlugChecking(true);
+    const h = setTimeout(async () => {
+      try {
+        const qs = new URLSearchParams({ slug: s });
+        if (!isNew && produit.id) qs.set("exceptId", String(produit.id));
+        const res = await fetch(`/api/admin/produits/slug-check?${qs.toString()}`);
+        if (!res.ok) throw new Error(res.statusText);
+        const data = await res.json();
+        if (!cancelled) setSlugStatus(!!data.available);
+      } catch {
+        if (!cancelled) setSlugStatus(null);
+      } finally {
+        if (!cancelled) setSlugChecking(false);
+      }
+    }, 350);
+    return () => {
+      cancelled = true;
+      clearTimeout(h);
+    };
+  }, [form.slug, isNew, produit.id, produit.slug]);
+
+  const slugFormatInvalid =
+    form.slug && !/^[a-z0-9-]+$/.test(form.slug) ? "Lettres min., chiffres, tirets uniquement." : null;
+  const slugError =
+    slugFormatInvalid || (slugStatus === false ? "Ce slug est déjà pris." : null);
+
+  const canSave = !saving && !slugError;
+
+  /* ----- Keyboard shortcuts : Esc = cancel, Ctrl/Cmd+S = save ----- */
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onCancel();
+        return;
+      }
+      if ((e.metaKey || e.ctrlKey) && (e.key === "s" || e.key === "S")) {
+        e.preventDefault();
+        if (canSave) formRef.current?.requestSubmit();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onCancel, canSave]);
+
   async function submit(e) {
     e.preventDefault();
+    if (!canSave) return;
     setSaving(true);
     await onSave(form);
     setSaving(false);
@@ -486,7 +1160,7 @@ function EditModal({ produit, rayonsOptions, onCancel, onSave }) {
           </button>
         </div>
 
-        <form onSubmit={submit} className="p-6 space-y-5">
+        <form ref={formRef} onSubmit={submit} className="p-6 space-y-5">
           <Field label="Nom du produit" required>
             <input
               type="text"
@@ -498,16 +1172,38 @@ function EditModal({ produit, rayonsOptions, onCancel, onSave }) {
             />
           </Field>
 
-          <Field label="Slug" required hint="Identifiant unique, sans espaces/majuscules.">
-            <input
-              type="text"
-              required
-              pattern="[a-z0-9-]+"
-              value={form.slug}
-              onChange={(e) => set("slug", e.target.value)}
-              className="input"
-              placeholder="riz-basmati-parfume"
-            />
+          <Field
+            label="Slug"
+            required
+            hint="Identifiant unique, sans espaces/majuscules."
+          >
+            <div className="relative">
+              <input
+                type="text"
+                required
+                pattern="[a-z0-9-]+"
+                value={form.slug}
+                onChange={(e) => set("slug", e.target.value)}
+                className={`input pr-20 ${slugError ? "!border-rouge" : slugStatus === true ? "!border-vert" : ""}`}
+                placeholder="riz-basmati-parfume"
+                aria-invalid={!!slugError}
+                aria-describedby={slugError ? "produit-slug-error" : undefined}
+              />
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-bold uppercase tracking-wider pointer-events-none">
+                {slugChecking ? (
+                  <span className="text-neutral-400">…</span>
+                ) : slugStatus === true ? (
+                  <span className="text-vert">✓ libre</span>
+                ) : slugStatus === false ? (
+                  <span className="text-rouge">✗ pris</span>
+                ) : null}
+              </div>
+            </div>
+            {slugError && (
+              <p id="produit-slug-error" className="mt-1 text-[12px] font-bold text-rouge">
+                {slugError}
+              </p>
+            )}
           </Field>
 
           <Field label="Description">
@@ -519,23 +1215,14 @@ function EditModal({ produit, rayonsOptions, onCancel, onSave }) {
             />
           </Field>
 
-          <Field label="URL image" hint="/images/produits/… ou URL Supabase Storage.">
-            <input
-              type="text"
-              value={form.image_url ?? ""}
-              onChange={(e) => set("image_url", e.target.value)}
-              className="input"
-              placeholder="/images/produits/riz-basmati.jpg"
-            />
-            {form.image_url && (
-              <img
-                src={form.image_url}
-                alt=""
-                className="mt-2 w-24 h-24 object-cover rounded-lg ring-1 ring-black/5"
-                onError={(e) => (e.currentTarget.style.display = "none")}
-              />
-            )}
-          </Field>
+          <InlineImageUpload
+            folder="produits"
+            value={form.image_url}
+            onChange={(url) => set("image_url", url)}
+            renameTo={form.slug || form.nom}
+            label="Image du produit"
+            hint="Déposer une image l'envoie dans Supabase Storage. JPEG, PNG, WebP, AVIF. 8 Mo max."
+          />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Field label="Rayon" required>
@@ -648,8 +1335,9 @@ function EditModal({ produit, rayonsOptions, onCancel, onSave }) {
             </button>
             <button
               type="submit"
-              disabled={saving}
+              disabled={!canSave}
               className="flex-1 px-5 py-2 rounded-full bg-vert text-white font-bold text-[13px] hover:bg-vert-dark transition disabled:opacity-50"
+              title="Ctrl/Cmd + S pour enregistrer"
             >
               {saving ? "Enregistrement…" : isNew ? "Créer le produit" : "Enregistrer"}
             </button>

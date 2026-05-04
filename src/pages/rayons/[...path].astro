@@ -192,6 +192,10 @@ if (level === 1 && categoriesNiveau1) {
 /* For level 2 with sub-categories, count products + representative image per sous_cat */
 let produitsPerSousCat: Record<string, number> = {};
 let imagesPerSousCat: Record<string, string> = {};
+/* Filtered list — empty sub-cats with no curated image are hidden so the
+   user doesn't land on dead-end cards (e.g. "0 produits"). Sub-cats that
+   have a handpicked static image are kept (signals "à venir" cleanly). */
+let visibleSousCategories: typeof sousCategoriesNiveau2 = sousCategoriesNiveau2;
 if (level === 2 && sousCategoriesNiveau2 && catLabel) {
   const sousCatLabelBySlug = new Map(sousCategoriesNiveau2.map((s) => [slugifyCat(s.label), s.label]));
   try {
@@ -218,6 +222,20 @@ if (level === 2 && sousCategoriesNiveau2 && catLabel) {
   for (const s of sousCategoriesNiveau2) {
     const pick = getSousCategorieImage(rayonSlug, catLabel, s.label);
     if (pick) imagesPerSousCat[s.label] = pick;
+  }
+  /* Now derive the visible list :
+     - keep sub-cats with at least 1 product
+     - also keep sub-cats with a handpicked image (curated "à venir")
+     This drops dead-end cards from the page so the heading count
+     and the rendered grid stay consistent. */
+  visibleSousCategories = sousCategoriesNiveau2.filter((s) => {
+    const count = produitsPerSousCat[s.label] ?? 0;
+    return count > 0 || !!imagesPerSousCat[s.label];
+  });
+  /* Edge case : if every sub-cat ended up filtered out, fall back to
+     showing them all (better than rendering an empty page). */
+  if (visibleSousCategories.length === 0) {
+    visibleSousCategories = sousCategoriesNiveau2;
   }
 }
 
@@ -545,7 +563,7 @@ const pageDesc = (() => {
           </span>
           <h2 class="display-md mt-4 text-balance reveal">
             {level === 1 && (<>Choisissez une catégorie<br/><span class="text-vert">pour affiner.</span></>)}
-            {level === 2 && sousCategoriesNiveau2 && (<>{sousCategoriesNiveau2.length} sélections<br/><span class="text-vert">{catLabel}.</span></>)}
+            {level === 2 && sousCategoriesNiveau2 && visibleSousCategories && (<>{visibleSousCategories.length} sélection{visibleSousCategories.length > 1 ? "s" : ""}<br/><span class="text-vert">{catLabel}.</span></>)}
             {level === 2 && !sousCategoriesNiveau2 && produits.length > 0 && (<>{produits.length} produits<br/><span class="text-vert">en {catLabel}.</span></>)}
             {level === 3 && produits.length > 0 && (<>{produits.length} produits<br/><span class="text-vert">{subLabel}.</span></>)}
             {(level === 2 || level === 3) && produits.length === 0 && !sousCategoriesNiveau2 && (<>Catalogue en cours<br/><span class="text-vert">de constitution.</span></>)}
@@ -619,10 +637,10 @@ const pageDesc = (() => {
         </div>
       )}
 
-      {/* LEVEL 2 with sub-categories : sub-cat cards */}
-      {level === 2 && sousCategoriesNiveau2 && (
+      {/* LEVEL 2 with sub-categories : sub-cat cards (filtered) */}
+      {level === 2 && visibleSousCategories && visibleSousCategories.length > 0 && (
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-5" data-reveal-stagger>
-          {sousCategoriesNiveau2.map((sub) => {
+          {visibleSousCategories.map((sub) => {
             const count = produitsPerSousCat[sub.label] ?? 0;
             return (
               <a

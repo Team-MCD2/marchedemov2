@@ -1,0 +1,101 @@
+---
+/**
+ * StatCard — single tile of the admin dashboard.
+ *
+ * Props
+ *   label     : Required. Top eyebrow.
+ *   value     : Required. Headline number / string.
+ *   total?    : Optional denominator displayed faded (e.g. "/ 142").
+ *   delta?    : Optional signed integer for the 7-day window.
+ *   deltaSuffix? : Optional unit ("nouveaux", "actions", default "").
+ *   href?     : If set, the whole card becomes clickable.
+ *   tone?     : Accent color : "vert" | "rouge" | "noir" | "orange" | "neutral".
+ *   icon?     : Optional SVG markup or emoji rendered top-right.
+ */
+interface Props {
+  label: string;
+  value: string | number;
+  total?: number;
+  delta?: number;
+  deltaSuffix?: string;
+  href?: string;
+  tone?: "vert" | "rouge" | "noir" | "orange" | "neutral";
+  icon?: string;
+  hint?: string;
+}
+
+const {
+  label,
+  value,
+  total,
+  delta,
+  deltaSuffix = "",
+  href,
+  tone = "neutral",
+  icon,
+  hint,
+} = Astro.props as Props;
+
+const toneToClass: Record<NonNullable<Props["tone"]>, { bar: string; text: string; bg: string }> = {
+  vert:    { bar: "bg-vert",        text: "text-vert-dark",    bg: "bg-vert/10" },
+  rouge:   { bar: "bg-rouge",       text: "text-rouge",        bg: "bg-rouge/10" },
+  noir:    { bar: "bg-noir",        text: "text-noir",         bg: "bg-noir/10" },
+  orange:  { bar: "bg-orange-500",  text: "text-orange-700",   bg: "bg-orange-100" },
+  neutral: { bar: "bg-neutral-300", text: "text-neutral-700",  bg: "bg-neutral-100" },
+};
+const t = toneToClass[tone];
+
+const Tag = href ? "a" : "div";
+const baseClass = `relative bg-white rounded-3xl p-5 md:p-6 shadow-card ${
+  href ? "hover:shadow-card-hover transition-all hover:-translate-y-0.5 group block" : ""
+}`;
+---
+
+<Tag href={href} class={baseClass}>
+  <span class:list={["absolute left-0 top-5 bottom-5 w-1 rounded-r", t.bar]} aria-hidden="true"></span>
+
+  <div class="flex items-start justify-between gap-3">
+    <p class="text-[11px] uppercase tracking-[0.15em] text-neutral-500 font-bold">{label}</p>
+    {icon && (
+      <span class:list={["w-7 h-7 rounded-full flex items-center justify-center text-[14px]", t.bg]} aria-hidden="true">
+        <Fragment set:html={icon} />
+      </span>
+    )}
+  </div>
+
+  <div class="flex items-baseline gap-2 mt-3">
+    <span class="font-soft font-bold text-[36px] md:text-[42px] leading-none text-noir tabular-nums">
+      {value}
+    </span>
+    {total != null && (
+      <span class="text-[13px] text-neutral-400 tabular-nums">/ {total}</span>
+    )}
+  </div>
+
+  <div class="mt-3 flex items-center gap-2 text-[12px]">
+    {typeof delta === "number" && delta !== 0 && (
+      <span
+        class:list={[
+          "inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-bold tabular-nums",
+          delta > 0 ? "bg-vert/10 text-vert-dark" : "bg-rouge/10 text-rouge",
+        ]}
+        title={`Variation 7 jours`}
+      >
+        {delta > 0 ? "▲" : "▼"} {Math.abs(delta)}
+        {deltaSuffix && <span class="font-normal opacity-70 ml-0.5">{deltaSuffix}</span>}
+      </span>
+    )}
+    {typeof delta === "number" && delta === 0 && (
+      <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-500 font-bold">
+        — stable
+      </span>
+    )}
+    {hint && <span class="text-neutral-500">{hint}</span>}
+  </div>
+
+  {href && (
+    <span class="absolute right-5 bottom-5 text-[12px] font-bold text-neutral-400 group-hover:text-vert transition">
+      Gérer →
+    </span>
+  )}
+</Tag>

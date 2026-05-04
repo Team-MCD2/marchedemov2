@@ -1,0 +1,53 @@
+---
+/**
+ * EmptyState — neutral empty placeholder for admin lists / panels.
+ *
+ * Props
+ *   title       : Required.
+ *   description?: Optional sub-text.
+ *   icon?       : Optional emoji or short markup.
+ *   ctaLabel?   : Optional CTA label.
+ *   ctaHref?    : Optional CTA link target.
+ *   tone?       : "neutral" | "vert" (success) | "rouge" (problem).
+ */
+interface Props {
+  title: string;
+  description?: string;
+  icon?: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+  tone?: "neutral" | "vert" | "rouge";
+}
+const {
+  title,
+  description,
+  icon = "",
+  ctaLabel,
+  ctaHref,
+  tone = "neutral",
+} = Astro.props as Props;
+
+const toneClass = {
+  neutral: { fg: "text-neutral-600", sub: "text-neutral-400" },
+  vert:    { fg: "text-vert-dark",   sub: "text-neutral-500" },
+  rouge:   { fg: "text-rouge",       sub: "text-neutral-500" },
+}[tone];
+---
+
+<div class="text-center py-10 px-4">
+  {icon && (
+    <p class="text-[28px] mb-2" aria-hidden="true">{icon}</p>
+  )}
+  <p class:list={["font-soft font-bold text-[15px]", toneClass.fg]}>{title}</p>
+  {description && (
+    <p class:list={["mt-1 text-[13px]", toneClass.sub]}>{description}</p>
+  )}
+  {ctaLabel && ctaHref && (
+    <a
+      href={ctaHref}
+      class="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-vert text-white text-[13px] font-bold hover:bg-vert-dark transition"
+    >
+      {ctaLabel}
+    </a>
+  )}
+</div>

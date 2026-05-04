@@ -1,0 +1,59 @@
+---
+/**
+ * QuickAction — chunky button card used in the admin dashboard
+ * "Actions rapides" strip.
+ *
+ * Props
+ *   href     : Required.
+ *   label    : Required.
+ *   sublabel?: Optional second line in smaller type.
+ *   icon?    : Required-ish emoji or unicode.
+ *   tone?    : "vert" | "noir" | "rouge" | "orange" — accent color.
+ *   newTab?  : Optional. Open in new tab.
+ */
+interface Props {
+  href: string;
+  label: string;
+  sublabel?: string;
+  icon?: string;
+  tone?: "vert" | "noir" | "rouge" | "orange";
+  newTab?: boolean;
+}
+const { href, label, sublabel, icon, tone = "vert", newTab } = Astro.props as Props;
+
+const toneToClass = {
+  vert:   { bg: "bg-vert/10",        text: "text-vert-dark",  ring: "hover:ring-vert/40" },
+  noir:   { bg: "bg-noir/10",        text: "text-noir",       ring: "hover:ring-noir/40" },
+  rouge:  { bg: "bg-rouge/10",       text: "text-rouge",      ring: "hover:ring-rouge/40" },
+  orange: { bg: "bg-orange-100",     text: "text-orange-700", ring: "hover:ring-orange-300" },
+}[tone];
+---
+
+<a
+  href={href}
+  {...(newTab ? { target: "_blank", rel: "noopener" } : {})}
+  class:list={[
+    "group relative flex items-start gap-3 bg-white rounded-2xl p-4 ring-1 ring-black/5 transition-all hover:-translate-y-0.5 hover:shadow-card",
+    toneToClass.ring,
+  ]}
+>
+  {icon && (
+    <span
+      class:list={[
+        "w-10 h-10 rounded-xl flex items-center justify-center text-[18px] shrink-0",
+        toneToClass.bg,
+        toneToClass.text,
+      ]}
+      aria-hidden="true"
+    >
+      {icon}
+    </span>
+  )}
+  <span class="min-w-0">
+    <span class="block font-bold text-[14px] text-noir leading-tight truncate">{label}</span>
+    {sublabel && (
+      <span class="block text-[12px] text-neutral-500 mt-0.5 truncate">{sublabel}</span>
+    )}
+  </span>
+  <span class="ml-auto text-neutral-300 group-hover:text-vert transition" aria-hidden="true">→</span>
+</a>

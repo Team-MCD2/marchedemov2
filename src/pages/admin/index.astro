@@ -3,62 +3,102 @@ export const prerender = false;
 
 import Layout from "@layouts/Layout.astro";
 import AdminTopbar from "@components/admin/AdminTopbar.astro";
+import StatCard from "@components/admin/StatCard.astro";
+import QuickAction from "@components/admin/QuickAction.astro";
+import ActivityFeed from "@components/admin/ActivityFeed.astro";
 import { SITE } from "@/lib/site";
 import { isAuthenticated } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
+import { recentActivity } from "@/lib/admin-activity";
 import { getCollection } from "astro:content";
 
 if (!(await isAuthenticated(Astro.cookies))) {
   return Astro.redirect("/admin/login");
 }
 
-/* Promos : live from Supabase (table public.promos).
-   Fallback : Content Collection if DB unreachable or key missing. */
-let promosAll: any[] = [];
-let promosSource: "supabase" | "content-collection" = "content-collection";
-let promosError: string | null = null;
+/* ----------------------------------------------------------------- */
+/* Counts + 7-day deltas                                              */
+/* ----------------------------------------------------------------- */
 
+const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+async function safeCount(
+  table: "promos" | "produits",
+  filter?: (q: any) => any,
+): Promise<number> {
+  if (!supabaseAdmin) return 0;
+  let q: any = supabaseAdmin.from(table).select("id", { count: "exact", head: true });
+  if (filter) q = filter(q);
+  const { count, error } = await q;
+  if (error) return 0;
+  return count ?? 0;
+}
+
+const [
+  promosTotal,
+  promosActives,
+  promosNew7d,
+  produitsTotal,
+  produitsActifs,
+  produitsNew7d,
+  produitsSansImage,
+] = await Promise.all([
+  safeCount("promos"),
+  safeCount("promos", (q) => q.eq("actif", true)),
+  safeCount("promos", (q) => q.gte("created_at", sevenDaysAgo)),
+  safeCount("produits"),
+  safeCount("produits", (q) => q.eq("actif", true)),
+  safeCount("produits", (q) => q.gte("created_at", sevenDaysAgo)),
+  safeCount("produits", (q) => q.is("image_url", null)),
+]);
+
+/* Activity rows : 20 most recent, plus a standalone count for the
+ * "Activité 7 j" stat card. recentActivity() degrades to [] gracefully
+ * when migration 002 hasn't been run yet. */
+const activityRows = await recentActivity(20);
+const activity7d = activityRows.filter((r) => r.created_at >= sevenDaysAgo).length;
+
+/* Recent promos for the right-hand panel — Supabase first, content
+ * collection fallback if DB unreachable. */
+let recentPromos: any[] = [];
+let promosError: string | null = null;
 if (supabaseAdmin) {
-  const { data, error } = await supabaseAdmin.from("promos").select("id, actif, titre, reduction_pct, magasin, rayon").order("updated_at", { ascending: false });
+  const { data, error } = await supabaseAdmin
+    .from("promos")
+    .select("id, actif, titre, reduction_pct, magasin, rayon, updated_at")
+    .order("updated_at", { ascending: false })
+    .limit(5);
   if (error) {
     promosError = error.message;
-    const fallback = await getCollection("promos");
-    promosAll = fallback.map((p) => ({ ...p.data, id: p.id }));
   } else {
-    promosAll = data ?? [];
-    promosSource = "supabase";
+    recentPromos = data ?? [];
   }
-} else {
+}
+if (recentPromos.length === 0) {
   const fallback = await getCollection("promos");
-  promosAll = fallback.map((p) => ({ ...p.data, id: p.id }));
+  recentPromos = fallback
+    .map((p) => ({ ...p.data, id: p.id }))
+    .slice(0, 5);
 }
 
-/* Produits : same pattern. Empty today, scaffolded for Vague 5.2. */
-let produitsTotal = 0;
-let produitsActifs = 0;
+/* Last 5 modified produits — useful for owners reviewing what just shipped. */
+let recentProduits: any[] = [];
 if (supabaseAdmin) {
-  const { count: total } = await supabaseAdmin.from("produits").select("id", { count: "exact", head: true });
-  const { count: actifs } = await supabaseAdmin.from("produits").select("id", { count: "exact", head: true }).eq("actif", true);
-  produitsTotal = total ?? 0;
-  produitsActifs = actifs ?? 0;
+  const { data } = await supabaseAdmin
+    .from("produits")
+    .select("id, nom, slug, rayon, actif, image_url, updated_at")
+    .order("updated_at", { ascending: false })
+    .limit(5);
+  recentProduits = data ?? [];
 }
 
-const activePromos  = promosAll.filter((p) => p.actif).length;
-
+/* Static collections for the lower workflow note. */
 const postes   = await getCollection("postes");
 const articles = await getCollection("articles");
+const activePostes   = postes.filter((p) => p.data.actif).length;
+const activeArticles = articles.filter((a) => a.data.actif).length;
 
-const activePostes    = postes.filter((p) => p.data.actif).length;
-const activeArticles  = articles.filter((a) => a.data.actif).length;
-
-const stats = [
-  { label: "Promos actives",   count: activePromos,   total: promosAll.length,  href: "/admin/promos",   color: "rouge" },
-  { label: "Produits actifs",  count: produitsActifs, total: produitsTotal,     href: "/admin/produits", color: "vert" },
-  { label: "Offres d'emploi",  count: activePostes,   total: postes.length,     href: "/recrutement",    color: "noir" },
-  { label: "Articles",         count: activeArticles, total: articles.length,   href: "/actualites",     color: "neutral" },
-];
-
-const recentPromos = promosAll.slice(0, 5);
+const isOnline = !!supabaseAdmin && !promosError;
 ---
 
 <Layout
@@ -68,111 +108,249 @@ const recentPromos = promosAll.slice(0, 5);
   hideChrome
 >
   <div class="min-h-screen bg-creme">
-    <AdminTopbar current="dashboard" />
+    <AdminTopbar current="dashboard" subtitle="Tableau de bord" />
 
-    <main class="container-mo py-8 md:py-12">
+    <main class="container-mo py-6 md:py-10">
       <!-- Hero -->
-      <section class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-10">
+      <section class="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-6 md:mb-8">
         <div>
           <span class="eyebrow">Tableau de bord</span>
-          <h1 class="display-md mt-3">Bienvenue.</h1>
-          <p class="mt-2 text-[14.5px] text-neutral-500">
-            Gérez vos promos, offres d'emploi, vidéos et articles depuis cette interface.
+          <h1 class="font-soft font-bold text-[26px] md:text-[32px] leading-tight mt-2">
+            Bienvenue.
+          </h1>
+          <p class="mt-1.5 text-[13px] md:text-[14px] text-neutral-500 max-w-xl">
+            Une vue d'ensemble de l'activité du site. Tous les chiffres sont en temps réel.
           </p>
         </div>
-        <div class="text-[13px] text-neutral-500">
-          <span class="inline-flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-vert animate-pulse"></span>
-            Site en ligne
-          </span>
+        <div class="flex items-center gap-3 text-[12.5px] text-neutral-500 shrink-0">
+          {isOnline ? (
+            <span class="inline-flex items-center gap-2 bg-vert/10 text-vert-dark px-3 py-1.5 rounded-full font-bold">
+              <span class="w-1.5 h-1.5 rounded-full bg-vert animate-pulse"></span>
+              Supabase connecté
+            </span>
+          ) : (
+            <span class="inline-flex items-center gap-2 bg-rouge/10 text-rouge px-3 py-1.5 rounded-full font-bold">
+              <span class="w-1.5 h-1.5 rounded-full bg-rouge"></span>
+              {supabaseAdmin ? "Supabase erreur" : "Supabase non configuré"}
+            </span>
+          )}
         </div>
       </section>
 
-      <!-- Stats -->
-      <section class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
-        {stats.map((s) => (
-          <a href={s.href} class="bg-white rounded-3xl p-6 shadow-card hover:shadow-card-hover transition-all hover:-translate-y-0.5 group">
-            <p class="text-[12px] uppercase tracking-wider text-neutral-500 font-bold">{s.label}</p>
-            <div class="flex items-baseline gap-2 mt-3">
-              <span class="font-soft font-bold text-[42px] leading-none text-noir">{s.count}</span>
-              <span class="text-[13px] text-neutral-400">/ {s.total}</span>
+      <!-- Stat cards -->
+      <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        <StatCard
+          label="Promos actives"
+          value={promosActives}
+          total={promosTotal}
+          delta={promosNew7d}
+          deltaSuffix="nouvelles 7j"
+          href="/admin/promos"
+          tone="rouge"
+          icon="🏷"
+          hint={promosTotal === 0 ? "Aucune promo en base" : undefined}
+        />
+        <StatCard
+          label="Produits actifs"
+          value={produitsActifs}
+          total={produitsTotal}
+          delta={produitsNew7d}
+          deltaSuffix="nouveaux 7j"
+          href="/admin/catalogue"
+          tone="vert"
+          icon="🛒"
+          hint={produitsTotal === 0 ? "Aucun produit en base" : undefined}
+        />
+        <StatCard
+          label="Sans image"
+          value={produitsSansImage}
+          total={produitsTotal}
+          href="/admin/images-gap"
+          tone="orange"
+          icon="🖼"
+          hint={
+            produitsTotal === 0
+              ? undefined
+              : `${
+                  produitsTotal > 0
+                    ? Math.round((produitsSansImage / produitsTotal) * 100)
+                    : 0
+                } % du catalogue`
+          }
+        />
+        <StatCard
+          label="Activité 7j"
+          value={activity7d}
+          delta={activity7d}
+          deltaSuffix="actions"
+          tone="noir"
+          icon="📜"
+          hint={activityRows.length === 0 ? "Migration 002 à appliquer" : "Écritures admin"}
+        />
+      </section>
+
+      <!-- Quick actions strip -->
+      <section class="mt-6 md:mt-8">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="eyebrow">Actions rapides</h2>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          <QuickAction
+            href="/admin/promos#new"
+            icon="➕"
+            label="Nouvelle promo"
+            sublabel="Crée + applique"
+            tone="rouge"
+          />
+          <QuickAction
+            href="/admin/produits#new"
+            icon="➕"
+            label="Nouveau produit"
+            sublabel="Catalogue Supabase"
+            tone="vert"
+          />
+          <QuickAction
+            href="/admin/medias"
+            icon="📤"
+            label="Uploader des images"
+            sublabel="Drag & drop"
+            tone="orange"
+          />
+          <QuickAction
+            href="/admin/produits#import"
+            icon="📥"
+            label="Importer CSV / JSON"
+            sublabel="Mise à jour de masse"
+            tone="noir"
+          />
+          <QuickAction
+            href="/admin/catalogue"
+            icon="🌳"
+            label="Naviguer le catalogue"
+            sublabel="Par rayon → catégorie"
+            tone="vert"
+          />
+        </div>
+      </section>
+
+      <!-- Two-column : recent activity + recent items -->
+      <section class="mt-6 md:mt-8 grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-5">
+        <!-- Activity feed -->
+        <div class="bg-white rounded-3xl p-5 md:p-6 shadow-card">
+          <div class="flex items-center justify-between mb-2">
+            <div>
+              <h2 class="eyebrow">Activité récente</h2>
+              <p class="text-[12px] text-neutral-500 mt-0.5">
+                Toutes les écritures admin, ordre antéchronologique.
+              </p>
             </div>
-            <div class="mt-3 inline-flex items-center gap-2 text-[13px] text-neutral-500 group-hover:text-vert transition-colors font-bold">
-              Gérer →
+            {activityRows.length > 0 && (
+              <span class="text-[11px] text-neutral-400 tabular-nums">{activityRows.length} entrée(s)</span>
+            )}
+          </div>
+          <ActivityFeed
+            rows={activityRows}
+            emptyHint="Appliquez supabase/migrations/002_admin_activity.sql, puis effectuez une écriture pour voir le flux."
+          />
+        </div>
+
+        <!-- Recent items column -->
+        <div class="grid grid-cols-1 gap-5">
+          <!-- Recent promos -->
+          <div class="bg-white rounded-3xl p-5 md:p-6 shadow-card">
+            <div class="flex items-center justify-between">
+              <h3 class="eyebrow">Promos modifiées</h3>
+              <a href="/admin/promos" class="text-[11px] text-vert font-bold hover:underline">Gérer →</a>
             </div>
-          </a>
-        ))}
+            {recentPromos.length === 0 ? (
+              <p class="mt-4 text-[12px] text-neutral-400">Aucune promo en base.</p>
+            ) : (
+              <ul class="mt-3 divide-y divide-black/5">
+                {recentPromos.map((p) => (
+                  <li class="py-2.5 flex items-center justify-between gap-3 min-w-0">
+                    <div class="min-w-0 flex-1">
+                      <p class="font-bold text-[13px] truncate">{p.titre}</p>
+                      <p class="text-[11px] text-neutral-500 truncate">
+                        −{p.reduction_pct}% · {p.magasin ?? "tous"}
+                      </p>
+                    </div>
+                    <span
+                      class:list={[
+                        "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0",
+                        p.actif ? "bg-vert/10 text-vert-dark" : "bg-neutral-100 text-neutral-500",
+                      ]}
+                    >
+                      {p.actif ? "Actif" : "Inactif"}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <!-- Recent produits -->
+          <div class="bg-white rounded-3xl p-5 md:p-6 shadow-card">
+            <div class="flex items-center justify-between">
+              <h3 class="eyebrow">Produits modifiés</h3>
+              <a href="/admin/produits" class="text-[11px] text-vert font-bold hover:underline">Gérer →</a>
+            </div>
+            {recentProduits.length === 0 ? (
+              <p class="mt-4 text-[12px] text-neutral-400">Aucun produit modifié récemment.</p>
+            ) : (
+              <ul class="mt-3 divide-y divide-black/5">
+                {recentProduits.map((p) => (
+                  <li class="py-2.5 flex items-center justify-between gap-3 min-w-0">
+                    <div class="min-w-0 flex-1">
+                      <p class="font-bold text-[13px] truncate">{p.nom}</p>
+                      <p class="text-[11px] text-neutral-500 truncate">{p.rayon}</p>
+                    </div>
+                    {!p.image_url ? (
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-100 text-orange-700 shrink-0">
+                        Sans image
+                      </span>
+                    ) : !p.actif ? (
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-neutral-100 text-neutral-500 shrink-0">
+                        Inactif
+                      </span>
+                    ) : (
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-vert/10 text-vert-dark shrink-0">
+                        OK
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
       </section>
 
       <!-- Workflow note -->
-      <section class="mt-12 bg-white rounded-3xl p-6 md:p-8 border border-black/5 shadow-card">
+      <section class="mt-6 md:mt-8 bg-white rounded-3xl p-5 md:p-6 shadow-card">
         <h2 class="eyebrow">Comment gérer le contenu</h2>
-        <div class="mt-4 grid md:grid-cols-2 gap-6 text-[14px] text-neutral-700 leading-relaxed">
+        <div class="mt-3 grid md:grid-cols-2 gap-5 text-[13px] text-neutral-700 leading-relaxed">
           <div>
-            <p class="font-bold text-noir mb-2">✓ Via l'admin (temps réel)</p>
-            <ul class="space-y-1.5 text-[13.5px]">
+            <p class="font-bold text-noir mb-1.5">✓ Via l'admin (temps réel)</p>
+            <ul class="space-y-1 text-[12.5px]">
               <li>• <strong>Promos</strong> → <a href="/admin/promos" class="text-vert hover:underline">/admin/promos</a> — table Supabase, modifs instantanées.</li>
-              <li>• <strong>Produits</strong> → <a href="/admin/produits" class="text-vert hover:underline">/admin/produits</a> — catalogue Supabase (à venir).</li>
-              <li>• <strong>Images</strong> → <a href="/admin/medias" class="text-vert hover:underline">/admin/medias</a> — Supabase Storage (à venir).</li>
+              <li>• <strong>Produits</strong> → <a href="/admin/catalogue" class="text-vert hover:underline">/admin/catalogue</a> — drill-down par rayon.</li>
+              <li>• <strong>Images</strong> → <a href="/admin/medias" class="text-vert hover:underline">/admin/medias</a> — Supabase Storage.</li>
             </ul>
           </div>
           <div>
-            <p class="font-bold text-noir mb-2">✎ Via Git (déploiement)</p>
-            <ul class="space-y-1.5 text-[13.5px]">
-              <li>• <strong>Offres d'emploi</strong> : <code class="bg-creme px-1.5 py-0.5 rounded text-[12.5px]">src/content/postes/*.md</code></li>
-              <li>• <strong>Vidéos TikTok</strong> : <code class="bg-creme px-1.5 py-0.5 rounded text-[12.5px]">src/content/videos/*.json</code></li>
-              <li>• <strong>Articles blog</strong> : <code class="bg-creme px-1.5 py-0.5 rounded text-[12.5px]">src/content/articles/*.md</code></li>
+            <p class="font-bold text-noir mb-1.5">✎ Via Git (déploiement)</p>
+            <ul class="space-y-1 text-[12.5px]">
+              <li>• <strong>Offres d'emploi</strong> ({activePostes}/{postes.length}) : <code class="bg-creme px-1.5 py-0.5 rounded text-[12px]">src/content/postes/*.md</code></li>
+              <li>• <strong>Vidéos TikTok</strong> : <code class="bg-creme px-1.5 py-0.5 rounded text-[12px]">src/content/videos/*.json</code></li>
+              <li>• <strong>Articles blog</strong> ({activeArticles}/{articles.length}) : <code class="bg-creme px-1.5 py-0.5 rounded text-[12px]">src/content/articles/*.md</code></li>
             </ul>
           </div>
         </div>
-        {promosSource === "supabase" && (
-          <p class="mt-6 inline-flex items-center gap-2 text-[12px] text-vert-dark bg-vert/10 px-3 py-1.5 rounded-full">
-            <span class="w-1.5 h-1.5 rounded-full bg-vert animate-pulse"></span>
-            Connecté à Supabase · {promosAll.length} promo(s) en base
-          </p>
-        )}
         {promosError && (
-          <p class="mt-6 text-[12px] text-rouge bg-rouge/5 px-3 py-2 rounded-xl">
+          <p class="mt-4 text-[12px] text-rouge bg-rouge/5 px-3 py-2 rounded-xl">
             ⚠ Supabase erreur : {promosError} — fallback sur Content Collections.
           </p>
         )}
-      </section>
-
-      <!-- Recent activity -->
-      <section class="mt-12 grid lg:grid-cols-2 gap-6">
-        <div class="bg-white rounded-3xl p-6 shadow-card">
-          <div class="flex items-center justify-between">
-            <h3 class="eyebrow">Dernières promos</h3>
-            <a href="/admin/promos" class="text-[12px] text-vert font-bold hover:underline">Gérer →</a>
-          </div>
-          <ul class="mt-4 divide-y divide-black/5">
-            {recentPromos.length === 0 && (
-              <li class="py-6 text-center text-neutral-400 text-[13px]">Aucune promo en base.</li>
-            )}
-            {recentPromos.map((p) => (
-              <li class="py-3 flex items-center justify-between gap-3">
-                <div class="min-w-0">
-                  <p class="font-bold text-[14px] truncate">{p.titre}</p>
-                  <p class="text-[12px] text-neutral-500">-{p.reduction_pct}% · {p.magasin}</p>
-                </div>
-                <span class={`pill ${p.actif ? 'pill-vert' : 'bg-neutral-100 text-neutral-500'}`}>
-                  {p.actif ? "Active" : "Inactive"}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div class="bg-white rounded-3xl p-6 shadow-card">
-          <h3 class="eyebrow">Dernières candidatures reçues</h3>
-          <p class="text-[13px] text-neutral-500 mt-4">
-            Les candidatures sont envoyées par email sur <strong>{SITE.email}</strong>.<br/>
-            Une intégration future permettra de les consulter ici.
-          </p>
-          <div class="mt-6 p-4 bg-creme rounded-xl text-[13px] text-neutral-600">
-            <strong>À venir</strong> — journal des candidatures, archivage CV, statuts.
-          </div>
-        </div>
       </section>
     </main>
   </div>

@@ -1,21 +1,134 @@
 {
   "byRayon": {
-    "boucherie-halal": 1
+    "saveur-sud-amer": 1,
+    "saveurs-afrique": 8
   },
   "moves": [],
   "changes": [
     {
-      "slug": "pastrami-halal",
-      "nom": "Pastrami de dinde halal",
+      "slug": "durum-3276650115570",
+      "nom": "Durum",
       "before": {
-        "rayon": "boucherie-halal",
-        "categorie": "Volailles",
-        "sous_categorie": "Dinde"
+        "rayon": "saveur-sud-amer",
+        "categorie": "Céréales & graines",
+        "sous_categorie": null
       },
       "after": {
-        "rayon": "boucherie-halal",
-        "categorie": "Charcuterie halal",
-        "sous_categorie": "Pastrami"
+        "rayon": "saveur-sud-amer",
+        "categorie": "Céréales & graines",
+        "sous_categorie": "Blé"
+      }
+    },
+    {
+      "slug": "bouillon-cube-legumes-sans-sel-sans-gluten-3760020505936",
+      "nom": "Bouillon cube Légumes sans sel sans gluten",
+      "before": {
+        "rayon": "saveurs-afrique",
+        "categorie": "Épicerie",
+        "sous_categorie": "Poudres"
+      },
+      "after": {
+        "rayon": "saveurs-afrique",
+        "categorie": "Épicerie",
+        "sous_categorie": "Bouillons"
+      }
+    },
+    {
+      "slug": "bouillon-cube-volaille-3760020505998",
+      "nom": "Bouillon cube Volaille",
+      "before": {
+        "rayon": "saveurs-afrique",
+        "categorie": "Épicerie",
+        "sous_categorie": "Poudres"
+      },
+      "after": {
+        "rayon": "saveurs-afrique",
+        "categorie": "Épicerie",
+        "sous_categorie": "Bouillons"
+      }
+    },
+    {
+      "slug": "bouillon-kub-legumes-25-de-sel-7613036750011",
+      "nom": "BOUILLON KUB LEGUMES - 25% DE SEL",
+      "before": {
+        "rayon": "saveurs-afrique",
+        "categorie": "Épicerie",
+        "sous_categorie": "Poudres"
+      },
+      "after": {
+        "rayon": "saveurs-afrique",
+        "categorie": "Épicerie",
+        "sous_categorie": "Bouillons"
+      }
+    },
+    {
+      "slug": "kubor-7613036891530",
+      "nom": "Kubor",
+      "before": {
+        "rayon": "saveurs-afrique",
+        "categorie": "Épicerie",
+        "sous_categorie": "Poudres"
+      },
+      "after": {
+        "rayon": "saveurs-afrique",
+        "categorie": "Épicerie",
+        "sous_categorie": "Bouillons"
+      }
+    },
+    {
+      "slug": "maggi-bouillon-de-volaille-18-cubes-180g-7613033687884",
+      "nom": "MAGGI Bouillon de Volaille 18 cubes - 180g",
+      "before": {
+        "rayon": "saveurs-afrique",
+        "categorie": "Épicerie",
+        "sous_categorie": "Poudres"
+      },
+      "after": {
+        "rayon": "saveurs-afrique",
+        "categorie": "Épicerie",
+        "sous_categorie": "Bouillons"
+      }
+    },
+    {
+      "slug": "maggi-bouillon-kub-bio-legumes-80g-8585002484093",
+      "nom": "MAGGI Bouillon KUB BIO Légumes 80g",
+      "before": {
+        "rayon": "saveurs-afrique",
+        "categorie": "Épicerie",
+        "sous_categorie": "Poudres"
+      },
+      "after": {
+        "rayon": "saveurs-afrique",
+        "categorie": "Épicerie",
+        "sous_categorie": "Bouillons"
+      }
+    },
+    {
+      "slug": "maggi-bouillon-kub-bio-volaille-80g-8585002484079",
+      "nom": "MAGGI Bouillon KUB BIO Volaille 80g",
+      "before": {
+        "rayon": "saveurs-afrique",
+        "categorie": "Épicerie",
+        "sous_categorie": "Poudres"
+      },
+      "after": {
+        "rayon": "saveurs-afrique",
+        "categorie": "Épicerie",
+        "sous_categorie": "Bouillons"
+      }
+    },
+    {
+      "slug": "maggi-bouillon-kub-legumes-180g-7613035781627",
+      "nom": "MAGGI Bouillon KUB Légumes 180g",
+      "before": {
+        "rayon": "saveurs-afrique",
+        "categorie": "Épicerie",
+        "sous_categorie": "Poudres"
+      },
+      "after": {
+        "rayon": "saveurs-afrique",
+        "categorie": "Épicerie",
+        "sous_categorie": "Bouillons"
       }
     }
   ]

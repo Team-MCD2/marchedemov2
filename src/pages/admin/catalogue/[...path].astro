@@ -1,0 +1,408 @@
+---
+/**
+ * /admin/catalogue/[...path] — site-mirroring admin navigation.
+ *
+ * Levels :
+ *   /admin/catalogue                                      → root (all rayons, all produits)
+ *   /admin/catalogue/fruits-legumes                       → rayon scope
+ *   /admin/catalogue/fruits-legumes/fruits                → categorie scope
+ *   /admin/catalogue/fruits-legumes/fruits/exotiques      → sous-categorie scope
+ *
+ * The tree in the left pane mirrors the public site taxonomy (lib/taxonomie.ts).
+ * The right pane is a scoped ProduitsManager island ; the CREATE form
+ * is pre-filled with the current (rayon, categorie, sous_categorie).
+ *
+ * `?view=orphelins` (at rayon or categorie scope) surfaces rows whose
+ * taxonomy field falls outside the canonical tree — a quick cleanup path.
+ */
+
+export const prerender = false;
+
+import Layout from "@layouts/Layout.astro";
+import AdminTopbar from "@components/admin/AdminTopbar.astro";
+import Breadcrumb from "@components/Breadcrumb.astro";
+import ProduitsManager from "@components/islands/admin/ProduitsManager.jsx";
+import AdminCatalogueTree from "@components/islands/admin/AdminCatalogueTree.jsx";
+import { RAYONS, RAYONS_LIST, SITE, type RayonSlug } from "@/lib/site";
+import {
+  TAXONOMIE,
+  slugifyCat,
+  categorieLabelFromSlug,
+  sousCategorieLabelFromSlug,
+} from "@/lib/taxonomie";
+import { isAuthenticated } from "@/lib/auth";
+import { supabaseAdmin } from "@/lib/supabase";
+
+if (!(await isAuthenticated(Astro.cookies))) {
+  return Astro.redirect("/admin/login");
+}
+
+/* ---------------- Parse URL -------------------------------------- */
+const rawPath = Astro.params.path ?? "";
+const parts = rawPath.split("/").filter(Boolean);
+let [rayonSlug, catSlug, subSlug] = parts as [
+  string | undefined,
+  string | undefined,
+  string | undefined,
+];
+
+/* Validate rayon. If invalid, bounce to root. */
+const rayon = rayonSlug ? (RAYONS as any)[rayonSlug] : null;
+if (rayonSlug && !rayon) {
+  return Astro.redirect("/admin/catalogue");
+}
+
+/* Validate cat. */
+const catLabel =
+  rayonSlug && catSlug
+    ? categorieLabelFromSlug(rayonSlug as RayonSlug, catSlug)
+    : null;
+if (catSlug && !catLabel) {
+  return Astro.redirect(`/admin/catalogue/${rayonSlug}`);
+}
+
+/* Validate sub. */
+const subLabel =
+  rayonSlug && catSlug && subSlug
+    ? sousCategorieLabelFromSlug(rayonSlug as RayonSlug, catSlug, subSlug)
+    : null;
+if (subSlug && !subLabel) {
+  return Astro.redirect(`/admin/catalogue/${rayonSlug}/${catSlug}`);
+}
+
+/* Optional orphans drill-down, e.g. /admin/catalogue/boucherie-halal?view=orphelins */
+const viewParam = Astro.url.searchParams.get("view");
+const orphansView = viewParam === "orphelins";
+if (orphansView && subSlug) {
+  /* At sub-scope there's no orphan layer; strip the param. */
+  return Astro.redirect(`/admin/catalogue/${rayonSlug}/${catSlug}/${subSlug}`);
+}
+
+/* ---------------- Data fetch ------------------------------------- */
+let produitsAll: any[] = [];
+let promosAll: any[] = [];
+let errorMsg: string | null = null;
+
+if (!supabaseAdmin) {
+  errorMsg =
+    "SUPABASE_SERVICE_ROLE_KEY non configurée. Ajoutez-la dans .env.local (dev) ou dans Vercel Environment Variables (prod) puis redémarrez.";
+} else {
+  const [produitsRes, promosRes] = await Promise.all([
+    supabaseAdmin
+      .from("produits")
+      .select("*")
+      .order("rayon", { ascending: true })
+      .order("ordre", { ascending: true })
+      .order("nom", { ascending: true }),
+    supabaseAdmin.from("promos").select("id, rayon, actif"),
+  ]);
+  if (produitsRes.error) errorMsg = `Supabase : ${produitsRes.error.message}`;
+  else produitsAll = produitsRes.data ?? [];
+  if (!produitsRes.error && promosRes.error) {
+    errorMsg = `Supabase promos : ${promosRes.error.message}`;
+  } else {
+    promosAll = promosRes.data ?? [];
+  }
+}
+
+/* ---------------- Build the tree --------------------------------- */
+function summarizeProduits(rows: any[]) {
+  return {
+    total: rows.length,
+    actif: rows.filter((p) => p.actif).length,
+    sansImage: rows.filter((p) => !p.image_url).length,
+    orphelin: 0,
+  };
+}
+
+const tree = RAYONS_LIST.map((r) => {
+  const rayonProduits = produitsAll.filter((p) => p.rayon === r.slug);
+  const taxonomieRayon = TAXONOMIE[r.slug] ?? {};
+  const catLabels = Object.keys(taxonomieRayon);
+  const knownCatLabels = new Set(catLabels);
+
+  /* Per-categorie children */
+  const catChildren: any[] = catLabels.map((cl) => {
+    const catProduits = rayonProduits.filter((p) => p.categorie === cl);
+    const subs = taxonomieRayon[cl];
+    let subChildren: any[] | undefined;
+    let subOrphelin = 0;
+    if (Array.isArray(subs) && subs.length > 0) {
+      const knownSubLabels = new Set(subs);
+      subChildren = subs.map((sl) => {
+        const subProduits = catProduits.filter((p) => p.sous_categorie === sl);
+        return {
+          kind: "sub",
+          slug: slugifyCat(sl),
+          label: sl,
+          href: `/admin/catalogue/${r.slug}/${slugifyCat(cl)}/${slugifyCat(sl)}`,
+          counts: summarizeProduits(subProduits),
+        };
+      });
+      /* Orphan sous-categories */
+      const orphanSub = catProduits.filter(
+        (p) => p.sous_categorie && !knownSubLabels.has(p.sous_categorie),
+      );
+      const missingSub = catProduits.filter((p) => !p.sous_categorie);
+      subOrphelin = orphanSub.length + missingSub.length;
+      if (subOrphelin > 0) {
+        subChildren.push({
+          kind: "orphelins",
+          slug: "__orphelins",
+          label: "Orphelins",
+          href: `/admin/catalogue/${r.slug}/${slugifyCat(cl)}?view=orphelins`,
+          isOrphan: true,
+          counts: {
+            total: subOrphelin,
+            actif: [...orphanSub, ...missingSub].filter((p) => p.actif).length,
+            sansImage: [...orphanSub, ...missingSub].filter((p) => !p.image_url).length,
+            orphelin: 0,
+          },
+        });
+      }
+    }
+    const counts = summarizeProduits(catProduits);
+    counts.orphelin = subOrphelin;
+    return {
+      kind: "cat",
+      slug: slugifyCat(cl),
+      label: cl,
+      href: `/admin/catalogue/${r.slug}/${slugifyCat(cl)}`,
+      counts,
+      children: subChildren,
+    };
+  });
+
+  /* Orphan categories at the rayon level */
+  const orphanCat = rayonProduits.filter(
+    (p) => p.categorie && !knownCatLabels.has(p.categorie),
+  );
+  const missingCat = rayonProduits.filter((p) => !p.categorie);
+  const catOrphelin = orphanCat.length + missingCat.length;
+  if (catOrphelin > 0) {
+    catChildren.push({
+      kind: "orphelins",
+      slug: "__orphelins",
+      label: "Orphelins",
+      href: `/admin/catalogue/${r.slug}?view=orphelins`,
+      isOrphan: true,
+      counts: {
+        total: catOrphelin,
+        actif: [...orphanCat, ...missingCat].filter((p) => p.actif).length,
+        sansImage: [...orphanCat, ...missingCat].filter((p) => !p.image_url).length,
+        orphelin: 0,
+      },
+    });
+  }
+
+  const rayonPromos = promosAll.filter((p) => p.rayon === r.slug);
+  const counts = summarizeProduits(rayonProduits);
+  /* Total orphans visible from this rayon = direct + per-cat. */
+  counts.orphelin = catOrphelin + catChildren.reduce((s, c) => s + (c.counts?.orphelin ?? 0), 0);
+  return {
+    kind: "rayon",
+    slug: r.slug,
+    label: r.nom,
+    nomCourt: r.nomCourt,
+    accent: r.accent ?? null,
+    href: `/admin/catalogue/${r.slug}`,
+    counts: {
+      ...counts,
+      promosActives: rayonPromos.filter((p) => p.actif).length,
+      promosTotales: rayonPromos.length,
+    },
+    children: catChildren,
+  };
+});
+
+/* ---------------- Scope + filtered produits ---------------------- */
+const activePath = rawPath;
+
+/* Labels for current cat/sub (knownX arrays help the orphans view). */
+const knownCatLabels = rayonSlug ? Object.keys(TAXONOMIE[rayonSlug as RayonSlug] ?? {}) : [];
+const knownSubLabels =
+  rayonSlug && catLabel
+    ? ((TAXONOMIE[rayonSlug as RayonSlug]?.[catLabel] ?? []) as string[])
+    : [];
+
+const scope: any = {
+  rayon: rayonSlug ?? null,
+  categorie: catLabel,
+  sous_categorie: subLabel,
+  displayLabel: subLabel ?? catLabel ?? rayon?.nom ?? null,
+  view: orphansView ? "orphelins" : null,
+  knownCategorieLabels: knownCatLabels,
+  knownSousCategorieLabels: knownSubLabels,
+};
+
+/* Pre-filter the produits list to minimise bytes sent to the island.
+ * ProduitsManager re-applies the same scope filter client-side so refs
+ * like `filtered` stay consistent even if the SSR filter is off. */
+let scopedProduits = produitsAll;
+if (scope.rayon) scopedProduits = scopedProduits.filter((p) => p.rayon === scope.rayon);
+if (scope.categorie) scopedProduits = scopedProduits.filter((p) => p.categorie === scope.categorie);
+if (scope.sous_categorie)
+  scopedProduits = scopedProduits.filter((p) => p.sous_categorie === scope.sous_categorie);
+
+const scopedCount = scopedProduits.length;
+
+/* ---------------- Public-site deep link -------------------------- */
+let publicUrl: string | null = null;
+if (rayonSlug) {
+  const publicParts = [rayonSlug];
+  if (catSlug) publicParts.push(catSlug);
+  if (subSlug) publicParts.push(subSlug);
+  publicUrl = `/rayons/${publicParts.join("/")}`;
+}
+
+/* ---------------- Breadcrumb ------------------------------------- */
+const breadcrumbItems: { name: string; href?: string }[] = [
+  { name: "Admin", href: "/admin" },
+  { name: "Catalogue", href: "/admin/catalogue" },
+];
+if (rayon) {
+  breadcrumbItems.push({
+    name: rayon.nom,
+    href: `/admin/catalogue/${rayonSlug}`,
+  });
+}
+if (catLabel) {
+  breadcrumbItems.push({
+    name: catLabel,
+    href: subSlug ? `/admin/catalogue/${rayonSlug}/${catSlug}` : undefined,
+  });
+}
+if (subLabel) {
+  breadcrumbItems.push({ name: subLabel });
+}
+if (orphansView) {
+  breadcrumbItems.push({ name: "Orphelins" });
+}
+/* Strip href on last item (current page). */
+if (breadcrumbItems.length > 0) {
+  const last = { ...breadcrumbItems[breadcrumbItems.length - 1] };
+  delete (last as any).href;
+  breadcrumbItems[breadcrumbItems.length - 1] = last;
+}
+
+const rayonsOptions = RAYONS_LIST.map((r) => ({
+  slug: r.slug,
+  nom: r.nomCourt ?? r.nom,
+}));
+
+const pageTitle = (() => {
+  if (orphansView) return `Orphelins · ${catLabel ?? rayon?.nom ?? "Catalogue"} — Admin`;
+  if (subLabel) return `${subLabel} · ${rayon?.nom} — Admin`;
+  if (catLabel) return `${catLabel} · ${rayon?.nom} — Admin`;
+  if (rayon) return `${rayon.nom} — Admin`;
+  return `Catalogue — Admin · ${SITE.name}`;
+})();
+
+const headerTitle = orphansView
+  ? `Orphelins ${catLabel ?? rayon?.nom ?? ""}`
+  : subLabel ?? catLabel ?? rayon?.nom ?? "Tous les rayons";
+
+const currentRayonPromosActives = rayonSlug
+  ? promosAll.filter((p) => p.rayon === rayonSlug && p.actif).length
+  : 0;
+---
+
+<Layout title={pageTitle} description="Administration du catalogue Marché de Mo' — arborescence par rayon.">
+  <AdminTopbar current="catalogue" />
+
+  <main class="container-mo py-4 md:py-6">
+    <Breadcrumb items={breadcrumbItems} />
+
+    {errorMsg ? (
+      <div class="bg-rouge/10 border border-rouge/30 text-rouge px-5 py-4 rounded-2xl text-[13px]">
+        {errorMsg}
+      </div>
+    ) : (
+      <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4 md:gap-6">
+        <!-- Left : tree -->
+        <aside class="lg:sticky lg:top-20 lg:self-start">
+          <AdminCatalogueTree
+            client:load
+            tree={tree}
+            activePath={activePath}
+            publicUrl={publicUrl}
+          />
+        </aside>
+
+        <!-- Right : scoped list -->
+        <section class="min-w-0">
+          <!-- Scope header card -->
+          <div class="bg-white rounded-3xl shadow-card p-5 md:p-6 mb-4 flex items-start justify-between gap-4 flex-wrap">
+            <div class="min-w-0">
+              <p class="text-[11px] uppercase tracking-[0.15em] font-bold text-neutral-400">
+                {orphansView
+                  ? "Produits orphelins"
+                  : subLabel
+                    ? "Sous-catégorie"
+                    : catLabel
+                      ? "Catégorie"
+                      : rayon
+                        ? "Rayon"
+                        : "Catalogue complet"}
+              </p>
+              <h1 class="font-soft font-bold text-[22px] md:text-[26px] mt-1 leading-tight truncate">
+                {headerTitle}
+              </h1>
+              <p class="mt-1 text-[13px] text-neutral-500">
+                <strong class="text-noir">{scopedCount}</strong> produit(s) dans ce scope
+                {rayonSlug && currentRayonPromosActives > 0 && (
+                  <span>
+                    · <strong class="text-noir">{currentRayonPromosActives}</strong> promo(s)
+                    active(s)
+                    <a
+                      href={`/admin/promos?rayon=${rayonSlug}`}
+                      class="ml-2 text-rouge hover:underline font-bold"
+                    >
+                      Voir →
+                    </a>
+                  </span>
+                )}
+              </p>
+            </div>
+            <div class="flex items-center gap-2 flex-wrap shrink-0">
+              {publicUrl && !orphansView && (
+                <a
+                  href={publicUrl}
+                  target="_blank"
+                  rel="noopener"
+                  class="px-3 py-1.5 rounded-full bg-white border-2 border-black/10 text-[12px] font-bold hover:border-vert hover:text-vert transition inline-flex items-center gap-1"
+                >
+                  Voir sur le site public ↗
+                </a>
+              )}
+              {!orphansView && rayonSlug && (
+                <a
+                  href={`/admin/catalogue/${rayonSlug}${catSlug ? "/" + catSlug : ""}?view=orphelins`}
+                  class="px-3 py-1.5 rounded-full bg-rouge/10 text-rouge text-[12px] font-bold hover:bg-rouge/20 transition"
+                >
+                  Orphelins ⚠
+                </a>
+              )}
+              {orphansView && (
+                <a
+                  href={`/admin/catalogue/${rayonSlug}${catSlug ? "/" + catSlug : ""}`}
+                  class="px-3 py-1.5 rounded-full bg-white border-2 border-black/10 text-[12px] font-bold hover:border-noir transition"
+                >
+                  ← Retour
+                </a>
+              )}
+            </div>
+          </div>
+
+          <!-- Scoped products -->
+          <ProduitsManager
+            client:load
+            initialProduits={scopedProduits}
+            rayonsOptions={rayonsOptions}
+            scope={scope}
+          />
+        </section>
+      </div>
+    )}
+  </main>
+</Layout>

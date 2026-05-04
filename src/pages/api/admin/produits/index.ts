@@ -17,6 +17,7 @@
 import type { APIRoute } from "astro";
 import { isAuthenticated } from "@/lib/auth";
 import { supabaseAdmin, type RayonSlug } from "@/lib/supabase";
+import { logActivity } from "@/lib/admin-activity";
 
 export const prerender = false;
 
@@ -116,6 +117,13 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       .select()
       .single();
     if (error) throw error;
+    logActivity({
+      entity: "produit",
+      entity_id: data?.id ?? null,
+      entity_label: data?.nom ?? row.slug,
+      action: "create",
+      payload: { rayon: data?.rayon, slug: data?.slug },
+    });
     return json({ produit: data }, 201);
   } catch (err: any) {
     return json({ error: err.message || String(err) }, 400);
@@ -137,6 +145,15 @@ export const PUT: APIRoute = async ({ request, cookies }) => {
       .upsert(rows, { onConflict: "slug" })
       .select();
     if (error) throw error;
+    logActivity({
+      entity: "produit",
+      action: "import",
+      entity_label: `${data?.length ?? 0} produit(s)`,
+      payload: {
+        count: data?.length ?? 0,
+        slugs: (data ?? []).slice(0, 50).map((r: any) => r.slug),
+      },
+    });
     return json({ produits: data ?? [], count: data?.length ?? 0 });
   } catch (err: any) {
     return json({ error: err.message || String(err) }, 400);

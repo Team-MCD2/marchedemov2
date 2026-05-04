@@ -4,4 +4,4 @@ Disallow: /admin
 Disallow: /admin/
 Disallow: /api/
 
-Sitemap: https://marchedemo.vercel.app/sitemap-index.xml
+Sitemap: https://marchedemov2.vercel.app/sitemap-index.xml

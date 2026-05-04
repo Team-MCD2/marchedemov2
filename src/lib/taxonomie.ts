@@ -59,7 +59,7 @@ export const TAXONOMIE: Record<RayonSlug, RayonTaxonomie> = {
     "Sauces & condiments": null,
     "Féculents & farines": ["Attiéké", "Mil", "Manioc", "Riz"],
     "Huiles": null,
-    "Épicerie": ["Poudres", "Graines", "Boissons"],
+    "Épicerie": ["Bouillons", "Poudres", "Boissons"],
   },
 
   "saveurs-asie": {
@@ -78,7 +78,7 @@ export const TAXONOMIE: Record<RayonSlug, RayonTaxonomie> = {
   },
 
   "saveur-sud-amer": {
-    "Céréales & graines": ["Quinoa", "Maïs", "Amarante"],
+    "Céréales & graines": ["Quinoa", "Maïs", "Amarante", "Blé"],
     "Légumineuses": ["Haricots", "Pois", "Lentilles"],
     "Farines": null,
     "Épicerie": null,

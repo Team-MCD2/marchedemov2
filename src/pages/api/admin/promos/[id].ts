@@ -10,6 +10,7 @@
 import type { APIRoute } from "astro";
 import { isAuthenticated } from "@/lib/auth";
 import { supabaseAdmin, type RayonSlug, type MagasinSlug } from "@/lib/supabase";
+import { logActivity } from "@/lib/admin-activity";
 
 export const prerender = false;
 
@@ -125,6 +126,13 @@ export const PATCH: APIRoute = async ({ params, request, cookies }) => {
       .select()
       .single();
     if (error) throw error;
+    logActivity({
+      entity: "promo",
+      entity_id: data?.id ?? uuid,
+      entity_label: data?.titre ?? null,
+      action: "update",
+      payload: { fields: Object.keys(patch), patch },
+    });
     return json({ promo: data });
   } catch (err: any) {
     return json({ error: err.message || String(err) }, 400);
@@ -144,7 +152,21 @@ export const DELETE: APIRoute = async ({ params, cookies }) => {
   const uuid = await resolveIdToUuid(rawId);
   if (!uuid) return json({ error: "Promo introuvable" }, 404);
 
+  /* Snapshot for the audit feed before the row vanishes. */
+  const { data: snap } = await supabaseAdmin!
+    .from("promos")
+    .select("id, titre, slug, rayon")
+    .eq("id", uuid)
+    .maybeSingle();
+
   const { error } = await supabaseAdmin!.from("promos").delete().eq("id", uuid);
   if (error) return json({ error: error.message }, 500);
+  logActivity({
+    entity: "promo",
+    entity_id: uuid,
+    entity_label: snap?.titre ?? snap?.slug ?? null,
+    action: "delete",
+    payload: { rayon: snap?.rayon ?? null, slug: snap?.slug ?? null },
+  });
   return new Response(null, { status: 204 });
 };

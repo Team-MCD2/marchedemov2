@@ -7,7 +7,10 @@ import vercel from '@astrojs/vercel/serverless';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://marchedemo.vercel.app',
+  // Canonical site URL — used by sitemap, robots.txt, RSS, and Open Graph
+  // tags. Must match the production domain exactly (no trailing slash).
+  // Update this whenever the public domain changes.
+  site: 'https://marchedemov2.vercel.app',
   output: 'hybrid',
   adapter: vercel({
     // ─── Vercel Web Analytics ─────────────────────────────────────────────

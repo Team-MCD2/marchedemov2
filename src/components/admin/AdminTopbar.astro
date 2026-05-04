@@ -1,60 +1,170 @@
 ---
 /**
  * AdminTopbar — sticky header shared across every /admin/* page.
- * The `current` prop highlights the active nav item.
+ *
+ * Props
+ *   current?  : id of the active nav item (highlighted pill).
+ *   subtitle? : free text shown next to the brand on the second row
+ *               on >=md viewports (e.g. "Tableau de bord", "Catalogue · Fruits").
+ *
+ * Phase D refresh
+ * ---------------
+ *  - Environment badge (Local / Preview / Production) derived from
+ *    `process.env.VERCEL_ENV` and `import.meta.env.DEV`.
+ *  - Two-row layout that gracefully wraps on mobile.
+ *  - User menu via <details> (CSS-only) — keyboard accessible.
+ *  - "Catalogue" included in the nav for Phase C.
  */
 import { SITE } from "@/lib/site";
 
 interface Props {
-  current?: "dashboard" | "promos" | "produits" | "medias" | "images-gap";
+  current?: "dashboard" | "catalogue" | "promos" | "produits" | "medias" | "images-gap";
+  subtitle?: string;
 }
 
-const { current } = Astro.props as Props;
+const { current, subtitle } = Astro.props as Props;
 
 const navItems = [
-  { id: "dashboard",  label: "Tableau de bord", href: "/admin" },
-  { id: "promos",     label: "Promos",           href: "/admin/promos" },
-  { id: "produits",   label: "Produits",         href: "/admin/produits" },
-  { id: "medias",     label: "Images",           href: "/admin/medias" },
-  { id: "images-gap", label: "Manquantes",       href: "/admin/images-gap" },
+  { id: "dashboard",  label: "Tableau de bord", href: "/admin",            icon: "📊" },
+  { id: "catalogue",  label: "Catalogue",        href: "/admin/catalogue", icon: "🌳" },
+  { id: "promos",     label: "Promos",           href: "/admin/promos",     icon: "🏷" },
+  { id: "produits",   label: "Produits",         href: "/admin/produits",   icon: "🛒" },
+  { id: "medias",     label: "Images",           href: "/admin/medias",     icon: "🖼" },
+  { id: "images-gap", label: "Manquantes",       href: "/admin/images-gap", icon: "⚠" },
 ] as const;
+
+/* Environment badge.
+ * Vercel exposes `VERCEL_ENV` ∈ { "production", "preview", "development" }
+ * as a build-time + runtime env var. Locally it's undefined and we
+ * fall back to import.meta.env.DEV. */
+const vercelEnv =
+  (typeof process !== "undefined" && process.env && (process.env.VERCEL_ENV as string)) || null;
+const isDev = import.meta.env.DEV;
+let envLabel: string;
+let envToneClass: string;
+let envDotClass: string;
+if (isDev) {
+  envLabel = "Local";
+  envToneClass = "bg-orange-100 text-orange-700 border-orange-200";
+  envDotClass = "bg-orange-500";
+} else if (vercelEnv === "preview") {
+  envLabel = "Preview";
+  envToneClass = "bg-blue-50 text-blue-700 border-blue-200";
+  envDotClass = "bg-blue-500";
+} else {
+  envLabel = "Production";
+  envToneClass = "bg-vert/10 text-vert-dark border-vert/30";
+  envDotClass = "bg-vert";
+}
+
+const showSubtitle = !!subtitle;
 ---
 
-<header class="sticky top-0 z-40 bg-white border-b border-black/5 backdrop-blur">
-  <div class="container-mo flex items-center justify-between h-16 gap-4">
-    <div class="flex items-center gap-2 md:gap-6 min-w-0">
-      <a href="/admin" class="flex items-center gap-3 shrink-0">
-        <img src="/logos/favicon-marchedemo.png" alt="" class="h-7" aria-hidden="true" />
-        <div class="hidden sm:block">
-          <p class="text-[11px] uppercase tracking-[0.15em] font-bold text-neutral-400 leading-tight">Admin</p>
-          <p class="font-soft font-bold text-[15px] leading-tight">{SITE.name}</p>
-        </div>
-      </a>
-      <nav class="flex items-center gap-1 overflow-x-auto no-scrollbar">
-        {navItems.map((n) => (
-          <a
-            href={n.href}
-            class:list={[
-              "px-3 py-1.5 rounded-full text-[13px] font-bold whitespace-nowrap transition",
-              current === n.id
-                ? "bg-noir text-white"
-                : "text-neutral-600 hover:bg-neutral-100",
-            ]}
-            aria-current={current === n.id ? "page" : undefined}
+<header class="sticky top-0 z-40 bg-white/95 border-b border-black/5 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+  <div class="container-mo">
+    <!-- Row 1 : brand + env badge + actions -->
+    <div class="flex items-center justify-between h-14 gap-3">
+      <div class="flex items-center gap-3 min-w-0">
+        <a href="/admin" class="flex items-center gap-3 shrink-0 group">
+          <img
+            src="/logos/favicon-marchedemo.png"
+            alt=""
+            class="h-7 w-7 rounded-md ring-1 ring-black/5 group-hover:ring-vert/40 transition"
+            aria-hidden="true"
+          />
+          <div class="hidden sm:flex flex-col leading-tight">
+            <p class="text-[10px] uppercase tracking-[0.18em] font-bold text-neutral-400">
+              Admin {SITE.name}
+            </p>
+            <p class="font-soft font-bold text-[14px] truncate max-w-[18ch] md:max-w-none">
+              {showSubtitle ? subtitle : "Tableau de bord"}
+            </p>
+          </div>
+        </a>
+
+        <span
+          class:list={[
+            "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-wider",
+            envToneClass,
+          ]}
+          title={`Environnement : ${envLabel}`}
+        >
+          <span class:list={["w-1.5 h-1.5 rounded-full", envDotClass]} aria-hidden="true"></span>
+          {envLabel}
+        </span>
+      </div>
+
+      <div class="flex items-center gap-2 shrink-0">
+        <a
+          href="/"
+          class="text-[12px] text-neutral-500 hover:text-vert transition hidden md:inline-flex items-center gap-1"
+        >
+          <span>Voir le site</span>
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M7 17 17 7M9 7h8v8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+
+        <details class="relative group">
+          <summary
+            class="list-none flex items-center gap-2 cursor-pointer rounded-full px-2 py-1 hover:bg-neutral-100 transition"
+            aria-label="Menu administrateur"
           >
-            {n.label}
-          </a>
-        ))}
-      </nav>
+            <span
+              class="w-7 h-7 rounded-full bg-noir text-white text-[11px] font-bold flex items-center justify-center"
+              aria-hidden="true"
+            >M</span>
+            <span class="text-[12px] font-bold hidden sm:inline">Admin</span>
+            <svg class="w-3 h-3 text-neutral-400 transition group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="m6 9 6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </summary>
+          <div class="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-card border border-black/5 p-2 z-50">
+            <a href="/admin" class="block px-3 py-2 rounded-lg text-[13px] font-bold hover:bg-creme">
+              Tableau de bord
+            </a>
+            <a href="/admin/medias" class="block px-3 py-2 rounded-lg text-[13px] hover:bg-creme">
+              Images
+            </a>
+            <a href="/admin/images-gap" class="block px-3 py-2 rounded-lg text-[13px] hover:bg-creme">
+              Produits sans image
+            </a>
+            <a href="/" class="block px-3 py-2 rounded-lg text-[13px] hover:bg-creme md:hidden">
+              Voir le site public
+            </a>
+            <hr class="my-1 border-black/5" />
+            <a
+              href="/api/logout"
+              class="block px-3 py-2 rounded-lg text-[13px] font-bold text-rouge hover:bg-rouge/5"
+            >
+              Déconnexion
+            </a>
+          </div>
+        </details>
+      </div>
     </div>
-    <div class="flex items-center gap-3 shrink-0">
-      <a href="/" class="text-[13px] text-neutral-600 hover:text-vert transition hidden sm:block">
-        Voir le site →
-      </a>
-      <a href="/api/logout" class="pill bg-noir text-white hover:bg-noir-softer transition">
-        Déconnexion
-      </a>
-    </div>
+
+    <!-- Row 2 : nav -->
+    <nav
+      class="flex items-center gap-1 overflow-x-auto no-scrollbar pb-2 -mx-1 px-1"
+      aria-label="Sections administrateur"
+    >
+      {navItems.map((n) => (
+        <a
+          href={n.href}
+          class:list={[
+            "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-bold whitespace-nowrap transition",
+            current === n.id
+              ? "bg-noir text-white shadow-card"
+              : "text-neutral-600 hover:bg-creme hover:text-noir",
+          ]}
+          aria-current={current === n.id ? "page" : undefined}
+        >
+          <span aria-hidden="true" class="text-[11px]">{n.icon}</span>
+          {n.label}
+        </a>
+      ))}
+    </nav>
   </div>
 </header>
 

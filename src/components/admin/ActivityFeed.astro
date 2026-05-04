@@ -1,0 +1,113 @@
+---
+/**
+ * ActivityFeed — renders the most recent admin_activity rows.
+ *
+ * Server-side only (Astro). The dashboard fetches the rows via
+ * `recentActivity()` from `lib/admin-activity.ts` and passes them in.
+ * Keeping this dumb and SSR-only avoids hydrating a React island just
+ * to display read-only audit data.
+ */
+import type { AdminActivityRow } from "@/lib/admin-activity";
+
+interface Props {
+  rows: AdminActivityRow[];
+  emptyHint?: string;
+}
+const { rows, emptyHint } = Astro.props as Props;
+
+/* Friendly human label for entity + action combos. */
+function actionLabel(row: AdminActivityRow): string {
+  const v = `${row.entity}.${row.action}`;
+  const map: Record<string, string> = {
+    "promo.create":     "a créé une promo",
+    "promo.update":     "a modifié la promo",
+    "promo.delete":     "a supprimé la promo",
+    "promo.bulk":       "action groupée sur les promos",
+    "promo.reorder":    "a réorganisé les promos",
+    "promo.import":     "a importé des promos",
+    "produit.create":   "a créé un produit",
+    "produit.update":   "a modifié le produit",
+    "produit.delete":   "a supprimé le produit",
+    "produit.bulk":     "action groupée sur les produits",
+    "produit.reorder":  "a réorganisé les produits",
+    "produit.import":   "a importé des produits",
+    "media.upload":     "a uploadé une image",
+    "media.delete":     "a supprimé une image",
+  };
+  return map[v] ?? v;
+}
+
+function entityHref(row: AdminActivityRow): string | null {
+  if (row.entity === "promo") return "/admin/promos";
+  if (row.entity === "produit") return "/admin/produits";
+  if (row.entity === "media") return "/admin/medias";
+  return null;
+}
+
+function entityIcon(row: AdminActivityRow): string {
+  if (row.entity === "promo") return "🏷";
+  if (row.entity === "produit") return "🛒";
+  if (row.entity === "media") return "🖼";
+  return "•";
+}
+
+/* Relative time formatter (FR). */
+function relTime(iso: string): string {
+  const t = new Date(iso).getTime();
+  if (!Number.isFinite(t)) return "";
+  const diff = Date.now() - t;
+  const s = Math.floor(diff / 1000);
+  if (s < 60) return `il y a ${s}s`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `il y a ${m} min`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `il y a ${h} h`;
+  const d = Math.floor(h / 24);
+  if (d < 7) return `il y a ${d} j`;
+  return new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+}
+---
+
+{rows.length === 0 ? (
+  <div class="text-center py-10">
+    <p class="text-[28px] mb-2" aria-hidden="true">📜</p>
+    <p class="font-soft font-bold text-[14px] text-neutral-600">Aucune activité enregistrée</p>
+    <p class="mt-1 text-[12px] text-neutral-400">
+      {emptyHint ?? "Les écritures admin apparaîtront ici."}
+    </p>
+  </div>
+) : (
+  <ul class="divide-y divide-black/5">
+    {rows.map((r) => {
+      const href = entityHref(r);
+      const Inner = (
+        <li class="py-2.5 flex items-start gap-3">
+          <span class="w-7 h-7 rounded-full bg-creme flex items-center justify-center text-[12px] shrink-0" aria-hidden="true">
+            {entityIcon(r)}
+          </span>
+          <div class="min-w-0 flex-1">
+            <p class="text-[12.5px] leading-snug">
+              <span class="text-neutral-500">{r.actor}</span>
+              {" "}
+              <span class="text-neutral-700">{actionLabel(r)}</span>
+              {r.entity_label && (
+                <>
+                  {" "}
+                  <strong class="text-noir">« {r.entity_label} »</strong>
+                </>
+              )}
+            </p>
+            <p class="text-[11px] text-neutral-400 mt-0.5">{relTime(r.created_at)}</p>
+          </div>
+        </li>
+      );
+      return href ? (
+        <a href={href} class="block hover:bg-creme/40 -mx-2 px-2 rounded-lg transition">
+          {Inner}
+        </a>
+      ) : (
+        Inner
+      );
+    })}
+  </ul>
+)}

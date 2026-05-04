@@ -18,6 +18,7 @@
 import type { APIRoute } from "astro";
 import { isAuthenticated } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
+import { logActivity } from "@/lib/admin-activity";
 
 export const prerender = false;
 
@@ -160,6 +161,13 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   }
 
   const { data: pub } = supabaseAdmin!.storage.from(BUCKET).getPublicUrl(data.path);
+  logActivity({
+    entity: "media",
+    entity_id: data.path,
+    entity_label: safeName,
+    action: "upload",
+    payload: { folder, size: file.size, mime: file.type, upsert },
+  });
   return json(
     {
       file: {
@@ -192,5 +200,12 @@ export const DELETE: APIRoute = async ({ url, cookies }) => {
 
   const { error } = await supabaseAdmin!.storage.from(BUCKET).remove([path]);
   if (error) return json({ error: error.message }, 500);
+  logActivity({
+    entity: "media",
+    entity_id: path,
+    entity_label: path.split("/").pop() ?? path,
+    action: "delete",
+    payload: { folder },
+  });
   return new Response(null, { status: 204 });
 };

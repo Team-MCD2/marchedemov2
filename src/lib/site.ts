@@ -9,7 +9,7 @@ export const SITE = {
   tagline: "Commerçant engagé. Saveurs du Monde.",
   shortPitch:
     "Le plus grand supermarché ethnique d'Occitanie · 10 000+ références · Ouvert 7j/7",
-  url: "https://marchedemo.vercel.app",
+  url: "https://marchedemov2.vercel.app",
   locale: "fr_FR",
   phone: "05 82 95 82 52",
   phoneE164: "+33582958252",

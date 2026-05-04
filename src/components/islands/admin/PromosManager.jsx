@@ -1,4 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import InlineImageUpload from "./InlineImageUpload.jsx";
+import BulkActionsBar from "./BulkActionsBar.jsx";
+import SortableHeader from "./SortableHeader.jsx";
+import FilterChip from "./FilterChip.jsx";
+import { compareRows, useAdminListState } from "./useAdminListState.js";
+import { derivePrices } from "../../../lib/priceDerivation";
 
 /**
  * PromosManager — interactive admin table for the public.promos table.
@@ -64,8 +70,41 @@ export default function PromosManager({ initialPromos, rayonsOptions, magasinsOp
   const [promos, setPromos] = useState(initialPromos ?? []);
   const [editing, setEditing] = useState(null); // null | EMPTY_PROMO | existing row
   const [importing, setImporting] = useState(false);
-  const [filter, setFilter] = useState({ q: "", rayon: "", magasin: "", statut: "all" });
   const [toast, setToast] = useState(null); // { type: 'ok' | 'err', msg }
+  const [selected, setSelected] = useState(() => new Set());
+  const [reorderMode, setReorderMode] = useState(false);
+  const [undoData, setUndoData] = useState(null); // { snapshot: Promo[], message, timer }
+  const [dragId, setDragId] = useState(null);
+  const [dragOverId, setDragOverId] = useState(null);
+  const searchInputRef = useRef(null);
+
+  /* URL-persisted filters + sort, also mirrored to localStorage so opening
+   * /admin/promos without query args restores the last view. */
+  const STATUT_OPTS = ["all", "active", "inactive"];
+  const SORT_OPTS = [
+    "ordre",
+    "titre",
+    "rayon",
+    "magasin",
+    "prix_promo",
+    "reduction_pct",
+    "date_fin",
+    "updated_at",
+    "actif",
+  ];
+  const { state: listState, set: setFilter, reset: resetFilter, activeCount } = useAdminListState({
+    defaults: { q: "", rayon: "", magasin: "", statut: "all", sort: "ordre", dir: "asc" },
+    allowed: { statut: STATUT_OPTS, dir: ["asc", "desc"], sort: SORT_OPTS },
+    storageKey: "admin.promos.list",
+  });
+  const filter = listState;
+  const sort = useMemo(() => ({ field: listState.sort, dir: listState.dir }), [listState.sort, listState.dir]);
+  function setSort(field, dir) {
+    setFilter({ sort: field, dir });
+  }
+
+  /* Reorder mode is only meaningful when sorted by ordre ascending. */
+  const canReorder = sort.field === "ordre" && sort.dir === "asc";
 
   const rayonNom = useMemo(() => {
     const m = new Map();
@@ -80,7 +119,7 @@ export default function PromosManager({ initialPromos, rayonsOptions, magasinsOp
   }, [magasinsOptions]);
 
   const filtered = useMemo(() => {
-    return promos.filter((p) => {
+    const base = promos.filter((p) => {
       if (filter.rayon && p.rayon !== filter.rayon) return false;
       if (filter.magasin && p.magasin !== filter.magasin) return false;
       if (filter.statut === "active" && !p.actif) return false;
@@ -92,7 +131,36 @@ export default function PromosManager({ initialPromos, rayonsOptions, magasinsOp
       }
       return true;
     });
-  }, [promos, filter]);
+    if (sort.field) base.sort((a, b) => compareRows(a, b, sort.field, sort.dir));
+    return base;
+  }, [promos, filter, sort]);
+
+  /* Selection helpers (only rows currently visible can be selected). */
+  const visibleIds = useMemo(() => filtered.map((p) => p.id), [filtered]);
+  const allVisibleSelected = visibleIds.length > 0 && visibleIds.every((id) => selected.has(id));
+  function toggleSelected(id) {
+    setSelected((cur) => {
+      const nxt = new Set(cur);
+      if (nxt.has(id)) nxt.delete(id);
+      else nxt.add(id);
+      return nxt;
+    });
+  }
+  function toggleSelectAllVisible() {
+    setSelected((cur) => {
+      if (allVisibleSelected) {
+        const nxt = new Set(cur);
+        visibleIds.forEach((id) => nxt.delete(id));
+        return nxt;
+      }
+      const nxt = new Set(cur);
+      visibleIds.forEach((id) => nxt.add(id));
+      return nxt;
+    });
+  }
+  function clearSelection() {
+    setSelected(new Set());
+  }
 
   function notify(type, msg) {
     setToast({ type, msg });
@@ -194,7 +262,7 @@ export default function PromosManager({ initialPromos, rayonsOptions, magasinsOp
         body: JSON.stringify({ promos: arr }),
       });
       if (!res.ok) throw new Error((await res.json()).error || res.statusText);
-      const { promos: imported, count } = await res.json();
+      const { count } = await res.json();
       /* Refresh the table from the server truth. */
       const refreshed = await fetch(`/api/admin/promos`).then((r) => r.json());
       setPromos(refreshed.promos ?? []);
@@ -205,78 +273,390 @@ export default function PromosManager({ initialPromos, rayonsOptions, magasinsOp
     }
   }
 
+  /* ---------------- Bulk actions (activate/deactivate/feature/delete) ---------------- */
+  async function bulkAction(action) {
+    const ids = Array.from(selected);
+    if (ids.length === 0) return;
+
+    /* For destructive actions, stash a snapshot so we can offer Undo. */
+    const snapshot = promos;
+
+    if (action === "delete") {
+      if (!confirm(`Supprimer ${ids.length} promo(s) ? Vous aurez 8 s pour annuler.`)) return;
+      /* Optimistic: remove locally. */
+      setPromos((cur) => cur.filter((p) => !selected.has(p.id)));
+      clearSelection();
+    } else if (action === "activate" || action === "deactivate") {
+      const val = action === "activate";
+      setPromos((cur) => cur.map((p) => (selected.has(p.id) ? { ...p, actif: val } : p)));
+    } else if (action === "feature" || action === "unfeature") {
+      const val = action === "feature";
+      setPromos((cur) =>
+        cur.map((p) => (selected.has(p.id) ? { ...p, mise_en_avant: val } : p))
+      );
+    }
+
+    try {
+      const res = await fetch(`/api/admin/promos/bulk`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids, action }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error || res.statusText);
+      const { affected } = await res.json();
+
+      if (action === "delete") {
+        /* Offer undo for 8 s. Because we already persisted the delete,
+         * undo re-inserts the snapshot via the bulk import endpoint. */
+        const msg = `${affected} promo(s) supprimée(s).`;
+        if (undoData?.timer) clearTimeout(undoData.timer);
+        const timer = setTimeout(() => setUndoData(null), 8000);
+        setUndoData({
+          snapshot: snapshot.filter((p) => ids.includes(p.id)),
+          message: msg,
+          timer,
+        });
+        notify("ok", msg);
+      } else {
+        clearSelection();
+        notify("ok", `${affected} promo(s) mise(s) à jour.`);
+      }
+    } catch (err) {
+      setPromos(snapshot);
+      notify("err", `Erreur : ${err.message}`);
+    }
+  }
+
+  /* ---------------- Undo last bulk delete ---------------- */
+  async function undoBulkDelete() {
+    if (!undoData) return;
+    const rows = undoData.snapshot;
+    if (undoData.timer) clearTimeout(undoData.timer);
+    setUndoData(null);
+    try {
+      const res = await fetch(`/api/admin/promos`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ promos: rows }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error || res.statusText);
+      const refreshed = await fetch(`/api/admin/promos`).then((r) => r.json());
+      setPromos(refreshed.promos ?? []);
+      notify("ok", `${rows.length} promo(s) restaurée(s).`);
+    } catch (err) {
+      notify("err", `Restauration impossible : ${err.message}`);
+    }
+  }
+
+  /* ---------------- Reorder (drag + up/down buttons) ---------------- */
+  async function persistReorder(rows) {
+    /* rows is the NEW visible order. Re-index ordre from 0..N. */
+    const payload = rows.map((p, i) => ({ id: p.id, ordre: i }));
+    try {
+      const res = await fetch(`/api/admin/promos/reorder`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rows: payload }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error || res.statusText);
+    } catch (err) {
+      notify("err", `Erreur réorganisation : ${err.message}`);
+    }
+  }
+
+  function applyReorder(nextFiltered) {
+    /* Merge the new visible order back into the full `promos` list:
+     * - rebuild the filtered subset
+     * - keep rows not in the visible set at their original position */
+    const filteredIds = new Set(nextFiltered.map((p) => p.id));
+    const visibleIndexes = [];
+    promos.forEach((p, i) => {
+      if (filteredIds.has(p.id)) visibleIndexes.push(i);
+    });
+    const next = [...promos];
+    visibleIndexes.forEach((idx, k) => {
+      next[idx] = nextFiltered[k];
+    });
+    /* Reassign ordre globally so the server sees a clean sequence. */
+    const reindexed = next.map((p, i) => ({ ...p, ordre: i }));
+    setPromos(reindexed);
+    persistReorder(reindexed);
+  }
+
+  function moveRow(id, delta) {
+    const idx = filtered.findIndex((p) => p.id === id);
+    if (idx < 0) return;
+    const target = idx + delta;
+    if (target < 0 || target >= filtered.length) return;
+    const next = [...filtered];
+    const [moved] = next.splice(idx, 1);
+    next.splice(target, 0, moved);
+    applyReorder(next);
+  }
+
+  function onDragStart(id) {
+    setDragId(id);
+  }
+  function onDragOverRow(e, id) {
+    if (!dragId || dragId === id) return;
+    e.preventDefault();
+    setDragOverId(id);
+  }
+  function onDropRow(id) {
+    if (!dragId || dragId === id) {
+      setDragId(null);
+      setDragOverId(null);
+      return;
+    }
+    const from = filtered.findIndex((p) => p.id === dragId);
+    const to = filtered.findIndex((p) => p.id === id);
+    if (from < 0 || to < 0) {
+      setDragId(null);
+      setDragOverId(null);
+      return;
+    }
+    const next = [...filtered];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    setDragId(null);
+    setDragOverId(null);
+    applyReorder(next);
+  }
+
+  /* ---------------- Deep-link hashes (#new, #import) -------------- */
+  /* Run once on mount. Lets the dashboard "Actions rapides" tiles
+   * land directly on an open modal. We strip the hash afterwards so
+   * a refresh doesn't re-open it. */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const h = window.location.hash;
+    if (h === "#new") {
+      setEditing({ ...EMPTY_PROMO });
+    } else if (h === "#import") {
+      setImporting(true);
+    } else {
+      return;
+    }
+    try {
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    } catch {
+      /* read-only contexts (e.g. some embed) — harmless to ignore */
+    }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, []);
+
+  /* ---------------- List-level keyboard shortcuts ---------------- */
+  useEffect(() => {
+    function onKey(e) {
+      /* Skip when focus is in an editable element or a modal is open. */
+      if (editing || importing) return;
+      const target = e.target;
+      const tag = target?.tagName?.toLowerCase();
+      const editable =
+        tag === "input" || tag === "textarea" || tag === "select" || target?.isContentEditable;
+      if (editable) {
+        /* Still allow Escape to clear selection. */
+        if (e.key === "Escape" && selected.size > 0) {
+          e.preventDefault();
+          clearSelection();
+        }
+        return;
+      }
+      if (e.key === "/" && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        searchInputRef.current?.select();
+      } else if ((e.key === "n" || e.key === "N") && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        setEditing({ ...EMPTY_PROMO });
+      } else if (e.key === "Escape") {
+        if (selected.size > 0) {
+          e.preventDefault();
+          clearSelection();
+        } else if (reorderMode) {
+          setReorderMode(false);
+        }
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [editing, importing, selected.size, reorderMode]);
+
+  /* Clear selection if the visible rows change and selected rows fall out of view. */
+  useEffect(() => {
+    setSelected((cur) => {
+      let changed = false;
+      const nxt = new Set();
+      for (const id of cur) {
+        if (promos.some((p) => p.id === id)) nxt.add(id);
+        else changed = true;
+      }
+      return changed ? nxt : cur;
+    });
+  }, [promos]);
+
   /* =========================================================== */
   return (
     <div>
-      {/* Toolbar */}
-      <div className="bg-white rounded-3xl shadow-card p-4 md:p-5 flex flex-col md:flex-row gap-3 md:items-center">
-        <div className="flex-1 flex flex-col sm:flex-row gap-2">
-          <input
-            type="search"
-            placeholder="Rechercher titre, slug…"
-            value={filter.q}
-            onChange={(e) => setFilter({ ...filter, q: e.target.value })}
-            className="flex-1 min-w-0 px-4 py-2 rounded-full border border-black/10 text-[14px] focus:border-vert focus:outline-none bg-creme"
-          />
-          <select
-            value={filter.rayon}
-            onChange={(e) => setFilter({ ...filter, rayon: e.target.value })}
-            className="px-3 py-2 rounded-full border border-black/10 text-[13px] bg-white"
-          >
-            <option value="">Tous rayons</option>
-            {rayonsOptions.map((r) => (
-              <option key={r.slug} value={r.slug}>
-                {r.nom}
-              </option>
-            ))}
-          </select>
-          <select
-            value={filter.magasin}
-            onChange={(e) => setFilter({ ...filter, magasin: e.target.value })}
-            className="px-3 py-2 rounded-full border border-black/10 text-[13px] bg-white"
-          >
-            <option value="">Tous magasins</option>
-            {magasinsOptions.map((m) => (
-              <option key={m.slug} value={m.slug}>
-                {m.nom}
-              </option>
-            ))}
-          </select>
-          <select
-            value={filter.statut}
-            onChange={(e) => setFilter({ ...filter, statut: e.target.value })}
-            className="px-3 py-2 rounded-full border border-black/10 text-[13px] bg-white"
-          >
-            <option value="all">Tous statuts</option>
-            <option value="active">Actives</option>
-            <option value="inactive">Inactives</option>
-          </select>
+      {/* Sticky toolbar */}
+      <div className="sticky top-0 z-30 -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8 pt-2 pb-3 bg-creme/85 backdrop-blur-md">
+        <div className="bg-white rounded-3xl shadow-card p-4 md:p-5 flex flex-col md:flex-row gap-3 md:items-center">
+          <div className="flex-1 flex flex-col sm:flex-row gap-2">
+            <div className="flex-1 min-w-0 relative">
+              <input
+                ref={searchInputRef}
+                type="search"
+                placeholder="Rechercher titre, slug…  (raccourci : /)"
+                value={filter.q}
+                onChange={(e) => setFilter({ q: e.target.value })}
+                className="w-full px-4 py-2 pr-9 rounded-full border border-black/10 text-[14px] focus:border-vert focus:outline-none bg-creme"
+                aria-label="Recherche"
+              />
+              {filter.q && (
+                <button
+                  type="button"
+                  onClick={() => setFilter({ q: "" })}
+                  aria-label="Effacer la recherche"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full text-neutral-400 hover:bg-neutral-100 flex items-center justify-center"
+                >
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                    <path d="M18 6 6 18M6 6l12 12" strokeLinecap="round" />
+                  </svg>
+                </button>
+              )}
+            </div>
+            <select
+              value={filter.rayon}
+              onChange={(e) => setFilter({ rayon: e.target.value })}
+              className="px-3 py-2 rounded-full border border-black/10 text-[13px] bg-white"
+              aria-label="Filtrer par rayon"
+            >
+              <option value="">Tous rayons</option>
+              {rayonsOptions.map((r) => (
+                <option key={r.slug} value={r.slug}>
+                  {r.nom}
+                </option>
+              ))}
+            </select>
+            <select
+              value={filter.magasin}
+              onChange={(e) => setFilter({ magasin: e.target.value })}
+              className="px-3 py-2 rounded-full border border-black/10 text-[13px] bg-white"
+              aria-label="Filtrer par magasin"
+            >
+              <option value="">Tous magasins</option>
+              {magasinsOptions.map((m) => (
+                <option key={m.slug} value={m.slug}>
+                  {m.nom}
+                </option>
+              ))}
+            </select>
+            <select
+              value={filter.statut}
+              onChange={(e) => setFilter({ statut: e.target.value })}
+              className="px-3 py-2 rounded-full border border-black/10 text-[13px] bg-white"
+              aria-label="Filtrer par statut"
+            >
+              <option value="all">Tous statuts</option>
+              <option value="active">Actives</option>
+              <option value="inactive">Inactives</option>
+            </select>
+          </div>
+          <div className="flex gap-2 shrink-0 flex-wrap">
+            {canReorder && (
+              <button
+                type="button"
+                onClick={() => setReorderMode((m) => !m)}
+                aria-pressed={reorderMode}
+                title={reorderMode ? "Sortir du mode réorganisation (Esc)" : "Activer le mode glisser-déposer"}
+                className={`px-4 py-2 rounded-full text-[13px] font-bold transition inline-flex items-center gap-1.5 ${
+                  reorderMode
+                    ? "bg-rouge text-white hover:bg-rouge/90"
+                    : "bg-white border-2 border-black/10 hover:border-noir"
+                }`}
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M8 6h.01M8 12h.01M8 18h.01M16 6h.01M16 12h.01M16 18h.01" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                {reorderMode ? "Terminer" : "Réorganiser"}
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setImporting(true)}
+              className="px-4 py-2 rounded-full bg-white border-2 border-black/10 text-[13px] font-bold hover:border-vert hover:text-vert transition"
+            >
+              Importer JSON
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditing({ ...EMPTY_PROMO })}
+              title="Créer une promo (n)"
+              className="px-4 py-2 rounded-full bg-vert text-white text-[13px] font-bold hover:bg-vert-dark transition"
+            >
+              + Nouvelle promo
+            </button>
+          </div>
         </div>
-        <div className="flex gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={() => setImporting(true)}
-            className="px-4 py-2 rounded-full bg-white border-2 border-black/10 text-[13px] font-bold hover:border-vert hover:text-vert transition"
-          >
-            Importer JSON
-          </button>
-          <button
-            type="button"
-            onClick={() => setEditing({ ...EMPTY_PROMO })}
-            className="px-4 py-2 rounded-full bg-vert text-white text-[13px] font-bold hover:bg-vert-dark transition"
-          >
-            + Nouvelle promo
-          </button>
-        </div>
+
+        {/* Active filters chips */}
+        {activeCount > 0 && (
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">
+              Filtres actifs :
+            </span>
+            {filter.q && (
+              <FilterChip label={`« ${filter.q} »`} onRemove={() => setFilter({ q: "" })} />
+            )}
+            {filter.rayon && (
+              <FilterChip
+                label={`Rayon : ${rayonNom(filter.rayon)}`}
+                onRemove={() => setFilter({ rayon: "" })}
+              />
+            )}
+            {filter.magasin && (
+              <FilterChip
+                label={`Magasin : ${magasinNom(filter.magasin)}`}
+                onRemove={() => setFilter({ magasin: "" })}
+              />
+            )}
+            {filter.statut !== "all" && (
+              <FilterChip
+                label={`Statut : ${filter.statut === "active" ? "actives" : "inactives"}`}
+                onRemove={() => setFilter({ statut: "all" })}
+              />
+            )}
+            {(sort.field !== "ordre" || sort.dir !== "asc") && (
+              <FilterChip
+                label={`Tri : ${sort.field} ${sort.dir === "asc" ? "↑" : "↓"}`}
+                onRemove={() => setSort("ordre", "asc")}
+              />
+            )}
+            <button
+              type="button"
+              onClick={resetFilter}
+              className="text-[11px] font-bold text-neutral-500 hover:text-rouge transition underline underline-offset-2"
+            >
+              Tout réinitialiser
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Count line */}
-      <p className="mt-4 text-[13px] text-neutral-500">
-        <strong className="text-noir">{filtered.length}</strong> promo(s) affichée(s)
-        {promos.length !== filtered.length && (
-          <span> sur <strong className="text-noir">{promos.length}</strong> au total</span>
+      {/* Count line + reorder-mode hint */}
+      <div className="mt-3 flex items-center justify-between flex-wrap gap-2">
+        <p className="text-[13px] text-neutral-500">
+          <strong className="text-noir">{filtered.length}</strong> promo(s) affichée(s)
+          {promos.length !== filtered.length && (
+            <span> sur <strong className="text-noir">{promos.length}</strong> au total</span>
+          )}
+        </p>
+        {reorderMode && (
+          <span className="inline-block px-3 py-1 rounded-full bg-rouge/10 text-rouge font-bold text-[11px] uppercase tracking-wider">
+            → Mode réorganisation : glissez les lignes ou utilisez ↑↓
+          </span>
         )}
-      </p>
+      </div>
 
       {/* Table */}
       <div className="mt-3 bg-white rounded-3xl shadow-card overflow-hidden">
@@ -284,116 +664,222 @@ export default function PromosManager({ initialPromos, rayonsOptions, magasinsOp
           <table className="w-full text-[13px]">
             <thead>
               <tr className="bg-creme text-neutral-500 text-left text-[11px] uppercase tracking-wider">
-                <th className="px-4 py-3 font-bold">Image</th>
-                <th className="px-4 py-3 font-bold">Titre</th>
-                <th className="px-4 py-3 font-bold">Rayon</th>
-                <th className="px-4 py-3 font-bold">Prix</th>
-                <th className="px-4 py-3 font-bold">Réduc</th>
-                <th className="px-4 py-3 font-bold">Magasin</th>
-                <th className="px-4 py-3 font-bold">Fin</th>
-                <th className="px-4 py-3 font-bold">Statut</th>
-                <th className="px-4 py-3 font-bold text-right">Actions</th>
+                <th scope="col" className="px-3 py-3 w-10">
+                  <input
+                    type="checkbox"
+                    checked={allVisibleSelected}
+                    onChange={toggleSelectAllVisible}
+                    aria-label="Tout sélectionner dans la vue"
+                    className="w-4 h-4 accent-vert cursor-pointer"
+                  />
+                </th>
+                {reorderMode && <th scope="col" className="px-2 py-3 w-10" aria-label="Réorganiser" />}
+                <th scope="col" className="px-4 py-3 font-bold">Image</th>
+                <SortableHeader field="titre" label="Titre" sort={sort} onSort={setSort} />
+                <SortableHeader field="rayon" label="Rayon" sort={sort} onSort={setSort} />
+                <SortableHeader field="prix_promo" label="Prix" sort={sort} onSort={setSort} />
+                <SortableHeader field="reduction_pct" label="Réduc" sort={sort} onSort={setSort} />
+                <SortableHeader field="magasin" label="Magasin" sort={sort} onSort={setSort} />
+                <SortableHeader field="date_fin" label="Fin" sort={sort} onSort={setSort} />
+                <SortableHeader field="actif" label="Statut" sort={sort} onSort={setSort} />
+                <th scope="col" className="px-4 py-3 font-bold text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="px-4 py-16 text-center text-neutral-400">
+                  <td colSpan={reorderMode ? 11 : 10} className="px-4 py-16 text-center text-neutral-400">
                     Aucune promo ne correspond aux filtres.
                   </td>
                 </tr>
               )}
-              {filtered.map((p) => (
-                <tr key={p.id} className="border-t border-black/5 hover:bg-creme/50 transition">
-                  <td className="px-4 py-3">
-                    {p.image_url ? (
-                      <img
-                        src={p.image_url}
-                        alt=""
-                        className="w-12 h-12 rounded-lg object-cover ring-1 ring-black/5"
-                        loading="lazy"
+              {filtered.map((p) => {
+                const isSel = selected.has(p.id);
+                const isDragOver = reorderMode && dragOverId === p.id;
+                return (
+                  <tr
+                    key={p.id}
+                    onDragOver={reorderMode ? (e) => onDragOverRow(e, p.id) : undefined}
+                    onDrop={reorderMode ? () => onDropRow(p.id) : undefined}
+                    className={[
+                      "border-t border-black/5 transition",
+                      isSel ? "bg-vert/5" : "hover:bg-creme/50",
+                      isDragOver ? "outline outline-2 outline-vert -outline-offset-2" : "",
+                    ].join(" ")}
+                  >
+                    <td className="px-3 py-3">
+                      <input
+                        type="checkbox"
+                        checked={isSel}
+                        onChange={() => toggleSelected(p.id)}
+                        aria-label={`Sélectionner ${p.titre}`}
+                        className="w-4 h-4 accent-vert cursor-pointer"
                       />
-                    ) : (
-                      <div className="w-12 h-12 rounded-lg bg-creme flex items-center justify-center text-neutral-400">
-                        —
-                      </div>
+                    </td>
+                    {reorderMode && (
+                      <td className="px-2 py-3">
+                        <div className="flex items-center gap-0.5">
+                          <span
+                            draggable
+                            onDragStart={() => onDragStart(p.id)}
+                            onDragEnd={() => {
+                              setDragId(null);
+                              setDragOverId(null);
+                            }}
+                            className="cursor-grab active:cursor-grabbing text-neutral-400 hover:text-noir select-none"
+                            title="Glisser pour déplacer"
+                            aria-hidden="true"
+                          >
+                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                              <circle cx="9" cy="6" r="1.5" />
+                              <circle cx="15" cy="6" r="1.5" />
+                              <circle cx="9" cy="12" r="1.5" />
+                              <circle cx="15" cy="12" r="1.5" />
+                              <circle cx="9" cy="18" r="1.5" />
+                              <circle cx="15" cy="18" r="1.5" />
+                            </svg>
+                          </span>
+                          <div className="flex flex-col">
+                            <button
+                              type="button"
+                              onClick={() => moveRow(p.id, -1)}
+                              aria-label="Monter d'un rang"
+                              className="w-4 h-4 text-neutral-400 hover:text-noir transition flex items-center justify-center"
+                            >
+                              <svg className="w-3 h-3" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0 10 6H0z" /></svg>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => moveRow(p.id, +1)}
+                              aria-label="Descendre d'un rang"
+                              className="w-4 h-4 text-neutral-400 hover:text-noir transition flex items-center justify-center"
+                            >
+                              <svg className="w-3 h-3" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6 0 0h10z" /></svg>
+                            </button>
+                          </div>
+                        </div>
+                      </td>
                     )}
-                  </td>
-                  <td className="px-4 py-3 max-w-[280px]">
-                    <p className="font-bold text-noir truncate">{p.titre}</p>
-                    <p className="text-[11px] text-neutral-400 truncate">{p.slug}</p>
-                  </td>
-                  <td className="px-4 py-3 text-neutral-600">{rayonNom(p.rayon)}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <span className="font-bold text-rouge">{fmtPrice(p.prix_promo)}</span>
-                    <span className="ml-1 text-neutral-400 line-through">
-                      {fmtPrice(p.prix_original)}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="inline-block px-2 py-0.5 rounded-full bg-rouge/10 text-rouge font-bold text-[12px]">
-                      -{p.reduction_pct}%
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-neutral-600 whitespace-nowrap">
-                    {magasinNom(p.magasin)}
-                  </td>
-                  <td className="px-4 py-3 text-neutral-600 whitespace-nowrap">
-                    {fmtDate(p.date_fin)}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-col gap-1">
-                      <button
-                        type="button"
-                        onClick={() => togglePromoField(p, "actif")}
-                        className={`px-2 py-0.5 rounded-full text-[11px] font-bold transition ${
-                          p.actif
-                            ? "bg-vert/15 text-vert-dark hover:bg-vert/25"
-                            : "bg-neutral-200 text-neutral-500 hover:bg-neutral-300"
-                        }`}
-                      >
-                        {p.actif ? "● Active" : "○ Inactive"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => togglePromoField(p, "mise_en_avant")}
-                        className={`px-2 py-0.5 rounded-full text-[11px] font-bold transition ${
-                          p.mise_en_avant
-                            ? "bg-rouge/15 text-rouge hover:bg-rouge/25"
-                            : "bg-transparent text-neutral-400 hover:bg-neutral-100 border border-neutral-200"
-                        }`}
-                      >
-                        ★ Vedette
-                      </button>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="inline-flex gap-1">
-                      <button
-                        type="button"
-                        onClick={() => setEditing(p)}
-                        className="px-3 py-1 rounded-full bg-noir text-white text-[12px] font-bold hover:bg-noir-soft transition"
-                      >
-                        Éditer
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => deletePromo(p)}
-                        aria-label="Supprimer"
-                        className="w-8 h-8 rounded-full text-neutral-400 hover:bg-rouge/10 hover:text-rouge transition flex items-center justify-center"
-                      >
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    <td className="px-4 py-3">
+                      {p.image_url ? (
+                        <img
+                          src={p.image_url}
+                          alt=""
+                          className="w-12 h-12 rounded-lg object-cover ring-1 ring-black/5"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-lg bg-creme flex items-center justify-center text-neutral-400">
+                          —
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 max-w-[280px]">
+                      <p className="font-bold text-noir truncate">{p.titre}</p>
+                      <p className="text-[11px] text-neutral-400 truncate">{p.slug}</p>
+                    </td>
+                    <td className="px-4 py-3 text-neutral-600">{rayonNom(p.rayon)}</td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <span className="font-bold text-rouge">{fmtPrice(p.prix_promo)}</span>
+                      <span className="ml-1 text-neutral-400 line-through">
+                        {fmtPrice(p.prix_original)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="inline-block px-2 py-0.5 rounded-full bg-rouge/10 text-rouge font-bold text-[12px]">
+                        -{p.reduction_pct}%
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-neutral-600 whitespace-nowrap">
+                      {magasinNom(p.magasin)}
+                    </td>
+                    <td className="px-4 py-3 text-neutral-600 whitespace-nowrap">
+                      {fmtDate(p.date_fin)}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col gap-1">
+                        <button
+                          type="button"
+                          onClick={() => togglePromoField(p, "actif")}
+                          className={`px-2 py-0.5 rounded-full text-[11px] font-bold transition ${
+                            p.actif
+                              ? "bg-vert/15 text-vert-dark hover:bg-vert/25"
+                              : "bg-neutral-200 text-neutral-500 hover:bg-neutral-300"
+                          }`}
+                        >
+                          {p.actif ? "● Active" : "○ Inactive"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => togglePromoField(p, "mise_en_avant")}
+                          className={`px-2 py-0.5 rounded-full text-[11px] font-bold transition ${
+                            p.mise_en_avant
+                              ? "bg-rouge/15 text-rouge hover:bg-rouge/25"
+                              : "bg-transparent text-neutral-400 hover:bg-neutral-100 border border-neutral-200"
+                          }`}
+                        >
+                          ★ Vedette
+                        </button>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="inline-flex gap-1">
+                        <button
+                          type="button"
+                          onClick={() => setEditing(p)}
+                          className="px-3 py-1 rounded-full bg-noir text-white text-[12px] font-bold hover:bg-noir-soft transition"
+                        >
+                          Éditer
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => deletePromo(p)}
+                          aria-label="Supprimer"
+                          className="w-8 h-8 rounded-full text-neutral-400 hover:bg-rouge/10 hover:text-rouge transition flex items-center justify-center"
+                        >
+                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
       </div>
+
+      {/* Bulk actions bar (shown when rows selected) */}
+      <BulkActionsBar
+        count={selected.size}
+        onClear={clearSelection}
+        actions={[
+          { label: "Activer", onClick: () => bulkAction("activate") },
+          { label: "Désactiver", onClick: () => bulkAction("deactivate") },
+          { label: "★ Vedette", onClick: () => bulkAction("feature") },
+          { label: "Retirer vedette", onClick: () => bulkAction("unfeature") },
+          { label: "Supprimer", tone: "danger", onClick: () => bulkAction("delete") },
+        ]}
+      />
+
+      {/* Undo toast for bulk delete */}
+      {undoData && (
+        <div
+          role="status"
+          className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-noir text-white text-[13px] font-bold shadow-2xl flex items-center gap-3"
+        >
+          <span>{undoData.message}</span>
+          <button
+            type="button"
+            onClick={undoBulkDelete}
+            className="px-3 py-1 rounded-full bg-vert hover:bg-vert-dark transition"
+          >
+            Annuler
+          </button>
+        </div>
+      )}
 
       {/* Edit / create modal */}
       {editing && (
@@ -438,6 +924,12 @@ export default function PromosManager({ initialPromos, rayonsOptions, magasinsOp
 function EditModal({ promo, rayonsOptions, magasinsOptions, onCancel, onSave }) {
   const [form, setForm] = useState({ ...promo });
   const [saving, setSaving] = useState(false);
+  /* Track the last price field the user typed into so the three-way
+   * derivation picks the "oldest" sibling to refresh. */
+  const [lastEdited, setLastEdited] = useState(null);
+  /* User-pinned fields: never re-derived. */
+  const [locked, setLocked] = useState(() => new Set());
+  const formRef = useRef(null);
 
   const isNew = !promo.id;
 
@@ -445,19 +937,61 @@ function EditModal({ promo, rayonsOptions, magasinsOptions, onCancel, onSave }) 
     setForm((f) => ({ ...f, [field]: value }));
   }
 
-  /* Auto-compute reduction_pct from prix */
+  /* Bidirectional three-way derivation across prix_original / prix_promo /
+   * reduction_pct. Powered by src/lib/priceDerivation.ts.
+   *
+   * NOTE: we preserve the user's raw typed value on the edited field (so
+   * mid-typing states like "1." survive). Only the two OTHER fields are
+   * overwritten by the derived values. */
   function setPrix(field, value) {
     const next = { ...form, [field]: value };
-    const orig = parseFloat(next.prix_original);
-    const promoP = parseFloat(next.prix_promo);
-    if (Number.isFinite(orig) && Number.isFinite(promoP) && orig > 0) {
-      next.reduction_pct = Math.round(((orig - promoP) / orig) * 100);
-    }
-    setForm(next);
+    const result = derivePrices(next, { edited: field, lastEdited, locked });
+    setForm({
+      ...next,
+      prix_original: field === "prix_original" ? value : result.prix_original,
+      prix_promo: field === "prix_promo" ? value : result.prix_promo,
+      reduction_pct: field === "reduction_pct" ? value : result.reduction_pct,
+    });
+    setLastEdited(result.lastEdited);
   }
+
+  function toggleLock(field) {
+    setLocked((cur) => {
+      const nxt = new Set(cur);
+      if (nxt.has(field)) nxt.delete(field);
+      else nxt.add(field);
+      return nxt;
+    });
+  }
+
+  /* ----- Inline validation ----- */
+  const dateError =
+    form.date_debut && form.date_fin && form.date_fin < form.date_debut
+      ? "La date de fin doit être postérieure à la date de début."
+      : null;
+
+  const canSave = !saving && !dateError;
+
+  /* ----- Keyboard shortcuts : Esc = cancel, Ctrl/Cmd+S = save ----- */
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onCancel();
+        return;
+      }
+      if ((e.metaKey || e.ctrlKey) && (e.key === "s" || e.key === "S")) {
+        e.preventDefault();
+        if (canSave) formRef.current?.requestSubmit();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onCancel, canSave]);
 
   async function submit(e) {
     e.preventDefault();
+    if (!canSave) return;
     setSaving(true);
     await onSave(form);
     setSaving(false);
@@ -482,7 +1016,7 @@ function EditModal({ promo, rayonsOptions, magasinsOptions, onCancel, onSave }) 
           </button>
         </div>
 
-        <form onSubmit={submit} className="p-6 space-y-5">
+        <form ref={formRef} onSubmit={submit} className="p-6 space-y-5">
           <Field label="Titre" required>
             <input
               type="text"
@@ -515,59 +1049,51 @@ function EditModal({ promo, rayonsOptions, magasinsOptions, onCancel, onSave }) 
             />
           </Field>
 
-          <Field label="URL de l'image" hint="Chemin relatif, ex : /images/promos/agneau.jpg — ou URL complète Supabase Storage.">
-            <input
-              type="text"
-              value={form.image_url ?? ""}
-              onChange={(e) => set("image_url", e.target.value)}
-              className="input"
-              placeholder="/images/promos/agneau.jpg"
-            />
-            {form.image_url && (
-              <img
-                src={form.image_url}
-                alt=""
-                className="mt-2 w-24 h-24 object-cover rounded-lg ring-1 ring-black/5"
-                onError={(e) => (e.currentTarget.style.display = "none")}
-              />
-            )}
-          </Field>
+          <InlineImageUpload
+            folder="promos"
+            value={form.image_url}
+            onChange={(url) => set("image_url", url)}
+            renameTo={form.slug || form.titre}
+            label="Image de la promo"
+            hint="Déposer une image l'envoie dans Supabase Storage. JPEG, PNG, WebP, AVIF. 8 Mo max."
+          />
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <Field label="Prix original (€)" required>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                required
-                value={form.prix_original}
-                onChange={(e) => setPrix("prix_original", e.target.value)}
-                className="input"
-              />
-            </Field>
-            <Field label="Prix promo (€)" required>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                required
-                value={form.prix_promo}
-                onChange={(e) => setPrix("prix_promo", e.target.value)}
-                className="input"
-              />
-            </Field>
-            <Field label="Réduction (%)" required hint="Auto-calculée si vous saisissez les 2 prix.">
-              <input
-                type="number"
-                step="1"
-                min="0"
-                max="99"
-                required
-                value={form.reduction_pct}
-                onChange={(e) => set("reduction_pct", e.target.value)}
-                className="input"
-              />
-            </Field>
+            <PriceField
+              label="Prix original (€)"
+              field="prix_original"
+              value={form.prix_original}
+              step="0.01"
+              min="0"
+              required
+              locked={locked.has("prix_original")}
+              onToggleLock={() => toggleLock("prix_original")}
+              onChange={(v) => setPrix("prix_original", v)}
+            />
+            <PriceField
+              label="Prix promo (€)"
+              field="prix_promo"
+              value={form.prix_promo}
+              step="0.01"
+              min="0"
+              required
+              locked={locked.has("prix_promo")}
+              onToggleLock={() => toggleLock("prix_promo")}
+              onChange={(v) => setPrix("prix_promo", v)}
+            />
+            <PriceField
+              label="Réduction (%)"
+              field="reduction_pct"
+              value={form.reduction_pct}
+              step="1"
+              min="0"
+              max="99"
+              required
+              hint="Éditez 2 des 3 champs, le 3e se calcule seul."
+              locked={locked.has("reduction_pct")}
+              onToggleLock={() => toggleLock("reduction_pct")}
+              onChange={(v) => setPrix("reduction_pct", v)}
+            />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -618,10 +1144,17 @@ function EditModal({ promo, rayonsOptions, magasinsOptions, onCancel, onSave }) 
                 required
                 value={form.date_fin}
                 onChange={(e) => set("date_fin", e.target.value)}
-                className="input"
+                className={`input ${dateError ? "!border-rouge" : ""}`}
+                aria-invalid={!!dateError}
+                aria-describedby={dateError ? "promo-date-error" : undefined}
               />
             </Field>
           </div>
+          {dateError && (
+            <p id="promo-date-error" className="text-[12px] font-bold text-rouge -mt-3">
+              {dateError}
+            </p>
+          )}
 
           <div className="flex flex-wrap gap-5 items-center">
             <label className="inline-flex items-center gap-2 text-[14px]">
@@ -663,8 +1196,9 @@ function EditModal({ promo, rayonsOptions, magasinsOptions, onCancel, onSave }) 
             </button>
             <button
               type="submit"
-              disabled={saving}
+              disabled={!canSave}
               className="flex-1 px-5 py-2 rounded-full bg-vert text-white font-bold text-[13px] hover:bg-vert-dark transition disabled:opacity-50"
+              title="Ctrl/Cmd + S pour enregistrer"
             >
               {saving ? "Enregistrement…" : isNew ? "Créer la promo" : "Enregistrer"}
             </button>
@@ -696,6 +1230,74 @@ function Field({ label, hint, required, inline, children }) {
         {required && <span className="text-rouge ml-1">*</span>}
       </label>
       {children}
+      {hint && <p className="mt-1 text-[11px] text-neutral-400 leading-snug">{hint}</p>}
+    </div>
+  );
+}
+
+/**
+ * PriceField - input with an inline lock toggle. Clicking the lock
+ * pins the field so the three-way derivation never overwrites it.
+ */
+function PriceField({
+  label,
+  field,
+  value,
+  step,
+  min,
+  max,
+  required,
+  hint,
+  locked,
+  onToggleLock,
+  onChange,
+}) {
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1.5">
+        <label
+          htmlFor={`price-${field}`}
+          className="block text-[12px] font-bold text-neutral-500 uppercase tracking-wider"
+        >
+          {label}
+          {required && <span className="text-rouge ml-1">*</span>}
+        </label>
+        <button
+          type="button"
+          onClick={onToggleLock}
+          aria-pressed={locked}
+          aria-label={locked ? `Déverrouiller ${label}` : `Verrouiller ${label} pour éviter le re-calcul automatique`}
+          title={locked ? "Verrouillé - cliquer pour libérer" : "Verrouiller - ne sera plus re-calculé"}
+          className={`w-6 h-6 rounded-full flex items-center justify-center transition shrink-0 ${
+            locked
+              ? "bg-rouge/15 text-rouge hover:bg-rouge/25"
+              : "text-neutral-300 hover:text-neutral-600 hover:bg-neutral-100"
+          }`}
+        >
+          {locked ? (
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <rect x="4" y="11" width="16" height="10" rx="2" />
+              <path d="M8 11V7a4 4 0 0 1 8 0v4" strokeLinecap="round" />
+            </svg>
+          ) : (
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <rect x="4" y="11" width="16" height="10" rx="2" />
+              <path d="M8 11V7a4 4 0 0 1 7.5-1.8" strokeLinecap="round" />
+            </svg>
+          )}
+        </button>
+      </div>
+      <input
+        id={`price-${field}`}
+        type="number"
+        step={step}
+        min={min}
+        max={max}
+        required={required}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={`input ${locked ? "ring-2 ring-rouge/30" : ""}`}
+      />
       {hint && <p className="mt-1 text-[11px] text-neutral-400 leading-snug">{hint}</p>}
     </div>
   );

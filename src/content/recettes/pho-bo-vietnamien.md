@@ -1,7 +1,7 @@
 ---
 titre: "Phở bò vietnamien — bouillon de bœuf aux herbes fraîches"
 resume: "Le plat emblématique de Hanoï : bouillon de bœuf mijoté 4h, nouilles de riz plates, lamelles de bœuf saisies, coriandre et basilic thaï. Léger et réconfortant."
-image: "/images/rayons/saveurs-asie/image-de-arnie-chou.jpg"
+image: "/images/recettes/pho-bo-vietnamien.jpg"
 imageAlt: "Bol de phở bò fumant aux herbes fraîches et lamelles de bœuf"
 tempsMin: 240
 tempsPrepMin: 30

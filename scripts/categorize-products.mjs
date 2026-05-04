@@ -220,11 +220,11 @@ const RAYON_RULES = {
     { when: [/huile.*palme/, /palm.*oil/, /azeite.*dende/, /huile rouge/, /\bdende\b/], cat: "Huiles", sub: null },
     /* Sauces & condiments. */
     { when: [/pate d.?arachide/, /peanut paste/, /\bsauce\b/, /tomate/], cat: "Sauces & condiments", sub: null },
-    /* Épicerie — boissons (bissap), poudres, graines. */
+    /* Épicerie. Bouillons (MAGGI cubes) MUST come before the generic
+       Poudres rule — MAGGI bouillons aren't poudres, they're cubes. */
+    { when: [/bouillon/, /\bkubor\b/, /\bkub\b/, /maggi/, /\bcube\b/], cat: "Épicerie", sub: "Bouillons" },
     { when: [/bissap/, /hibiscus/, /gingembre/], cat: "Épicerie", sub: "Boissons" },
-    { when: [/baobab/, /poudre/], cat: "Épicerie", sub: "Poudres" },
-    { when: [/graine/, /sesame/], cat: "Épicerie", sub: "Graines" },
-    { when: [/bouillon/, /\bkubor\b/, /\bkub\b/, /maggi/], cat: "Épicerie", sub: "Poudres" },
+    { when: [/baobab/, /\bnere\b/, /poudre/], cat: "Épicerie", sub: "Poudres" },
     /* fallback */
     { when: [/.*/], cat: "Épicerie", sub: null },
   ],
@@ -277,7 +277,8 @@ const RAYON_RULES = {
     { when: [/quinoa/], cat: "Céréales & graines", sub: "Quinoa" },
     { when: [/\bmais\b/, /\bmaize\b/, /popcorn/, /maize/], cat: "Céréales & graines", sub: "Maïs" },
     { when: [/amarante/, /chia/, /\bsorgho/], cat: "Céréales & graines", sub: "Amarante" },
-    { when: [/\bdurum\b/, /\bavoine\b/, /\borge\b/], cat: "Céréales & graines", sub: null },
+    { when: [/\bdurum\b/, /\bble dur\b/, /\bepeautre\b/, /semoule de ble/], cat: "Céréales & graines", sub: "Blé" },
+    { when: [/\bavoine\b/, /\borge\b/], cat: "Céréales & graines", sub: null },
     /* Farines. */
     { when: [/farine/], cat: "Farines", sub: null },
     /* fallback */

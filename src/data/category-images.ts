@@ -54,8 +54,10 @@ const OFF = {
   cornichonsPickles:   "https://images.openfoodfacts.org/images/products/359/671/046/9611/front_fr.54.400.jpg",
   /* saveur-sud-amer */
   amaranteGraines:     "https://images.openfoodfacts.org/images/products/332/948/871/1251/front.7.400.jpg",
-  poisChiches:         "https://images.openfoodfacts.org/images/products/20475598/front.3.400.jpg",
-  lentilles:           "https://images.openfoodfacts.org/images/products/302/169/020/1116/front.7.400.jpg",
+  /* saveur-mediterranee — fresh-cheese fallback (no in-DB product yet) */
+  freshMozzarella:     "https://images.openfoodfacts.org/images/products/001/111/004/3740/front_en.3.400.jpg",
+  /* extra Asian épicerie — used for the level-1 Épicerie card */
+  huileSesameAsie:     "https://images.openfoodfacts.org/images/products/333/659/010/6264/front_en.65.400.jpg",
   /* balkans-turques */
   kasharPeynir:        "https://images.openfoodfacts.org/images/products/868/067/934/0281/front_tr.3.400.jpg",
   noisettesDecortiquees: "https://images.openfoodfacts.org/images/products/350/249/019/2106/front_fr.37.400.jpg",
@@ -186,7 +188,10 @@ export const CATEGORY_IMAGES: Partial<Record<RayonSlug, RayonImagePack>> = {
       "Sauces & condiments": L.africanRiceDishes,    // rice/stew/plantain plates
       "Féculents & farines": L.peelingManioc,        // woman peeling cassava
       "Épicerie": L.coffeeBeans,                     // roasted coffee beans
-      "Huiles": OFF.maniocCongele,                   // borrow until we have a palm-oil packshot (matches the rayon's tubercule heritage visually)
+      // "Huiles" intentionally NOT overridden — the rayon page falls back
+      // to the first DB product image (huile de palme), which is what the
+      // category actually contains. The previous OFF.maniocCongele override
+      // was a placeholder that confusingly showed cassava on the Huiles card.
     },
     sousCategories: {
       "Féculents & farines": {
@@ -203,7 +208,7 @@ export const CATEGORY_IMAGES: Partial<Record<RayonSlug, RayonImagePack>> = {
     categories: {
       "Riz & nouilles": L.riceGrains,                // white rice macro
       "Sauces & condiments": L.sushiSoy,             // sushi + soy sauce bottle
-      "Épicerie": L.hkStreet,                        // HK street with signs
+      "Épicerie": OFF.huileSesameAsie,               // CAUVIN huile sésame grillé — bottle packshot, on-topic for pantry
       "Frais": L.dumplings,                          // steamed dumplings
     },
     sousCategories: {
@@ -218,11 +223,19 @@ export const CATEGORY_IMAGES: Partial<Record<RayonSlug, RayonImagePack>> = {
   },
 
   "saveur-mediterranee": {
-    // No local or GF image cleanly matched the categories — every card
-    // here is now backed by real product photos (huile d'olive, olives,
+    // No local or GF image cleanly matched the level-1 categories — every
+    // card there is backed by real product photos (huile d'olive, olives,
     // feta, couscous, harissa) so the gradient fallback rarely shows.
     categories: {},
-    sousCategories: {},
+    sousCategories: {
+      // Fromages > Frais has no in-DB product yet (no mozzarella/burrata/
+      // ricotta in the catalogue), so the card was rendering the empty
+      // gradient placeholder. Borrow an OFF "Fresh mozzarella" packshot
+      // until the buyer adds the SKU.
+      "Fromages": {
+        "Frais": OFF.freshMozzarella,
+      },
+    },
   },
 
   "saveur-sud-amer": {
@@ -233,10 +246,9 @@ export const CATEGORY_IMAGES: Partial<Record<RayonSlug, RayonImagePack>> = {
       "Céréales & graines": {
         "Amarante": OFF.amaranteGraines,
       },
-      "Légumineuses": {
-        "Pois": OFF.poisChiches,
-        "Lentilles": OFF.lentilles,
-      },
+      // "Légumineuses > Pois/Lentilles" intentionally absent — no products
+      // in the catalogue yet, so the rayon page filter hides them rather
+      // than show aspirational-empty cards next to the populated Haricots.
     },
   },
 
